@@ -10,6 +10,7 @@ import AuthLayout from '@/layouts/auth-layout';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
+import AppearanceToggleTab from '@/components/appearance-tabs';
 
 type Props = {
     status?: string;
@@ -36,6 +37,7 @@ export default function Login({
             >
                 {({ processing, errors }) => (
                     <>
+                        <AppearanceToggleTab />
                         <div className="grid gap-6">
                             <div className="grid gap-2">
                                 <Label htmlFor="email">Email address</Label>
