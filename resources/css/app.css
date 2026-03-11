@@ -11,7 +11,9 @@ input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
-
+* {
+    scroll-behavior: smooth;
+}
 /* For Firefox */
 input[type='number'] {
     -moz-appearance: textfield;
@@ -72,6 +74,7 @@ input[type='number'] {
 
 :root {
     --main-color: #2ca87f;
+    --secondary-color: #3b82f6;
     --main-color-dark: #14532d;
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);

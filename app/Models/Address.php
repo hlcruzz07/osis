@@ -17,6 +17,16 @@ class Address extends Model
         'zip_code',
     ];
 
+
+    protected $casts =
+        [
+            'island' => 'encrypted',
+            'region' => 'encrypted',
+            'province' => 'encrypted',
+            'city' => 'encrypted',
+            'brgy' => 'encrypted',
+            'zip_code' => 'encrypted',
+        ];
     public function student()
     {
         return $this->belongsTo(Student::class, 'student_id');

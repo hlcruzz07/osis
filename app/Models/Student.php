@@ -36,6 +36,37 @@ class Student extends Model
         'house_monthly_income',
         'ordinal_position',
     ];
+    protected $casts
+        = [
+            'lrn' => 'encrypted',
+            'year_level' => 'encrypted',
+            'campus' => 'encrypted',
+            'course' => 'encrypted',
+            'date_admitted' => 'encrypted',
+            'student_type' => 'encrypted',
+            'equity_indicator' => 'encrypted',
+            'fname' => 'encrypted',
+            'mname' => 'encrypted',
+            'lname' => 'encrypted',
+            'suffix' => 'encrypted',
+            'birthdate' => 'encrypted',
+            'birthplace' => 'encrypted',
+            'weekly_allowance' => 'encrypted',
+            'financer' => 'encrypted',
+            'last_attended_school' => 'encrypted',
+            'email' => 'encrypted',
+            'mobile_num' => 'encrypted',
+            'religion' => 'encrypted',
+            'citizenship' => 'encrypted',
+            'civil_status' => 'encrypted',
+            'sexual_orient' => 'encrypted',
+            'height' => 'encrypted',
+            'weight' => 'encrypted',
+            'family_size' => 'encrypted',
+            'nature_residence' => 'encrypted',
+            'house_monthly_income' => 'encrypted',
+            'ordinal_position' => 'encrypted',
+        ];
 
 
     public function guardians()

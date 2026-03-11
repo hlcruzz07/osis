@@ -9,8 +9,16 @@ class SubQuestion extends Model
     protected $fillable = [
         'question_id',
         'sub_question',
-        'answer_type'
+        'answer_type',
+        'is_required',
+        'is_deleted',
     ];
+
+    protected $casts =
+        [
+            'is_required' => 'boolean',
+            'is_deleted' => 'boolean',
+        ];
 
     public function question()
     {

@@ -17,17 +17,12 @@ import {
 
 type FinishAlertModalProps = {
     isOpen: boolean;
-    onClose: () => void;
     onFinish: () => void;
 };
 
-export function FinishAlertModal({
-    isOpen,
-    onClose,
-    onFinish,
-}: FinishAlertModalProps) {
+export function FinishAlertModal({ isOpen, onFinish }: FinishAlertModalProps) {
     return (
-        <AlertDialog open={isOpen} onOpenChange={onClose}>
+        <AlertDialog open={isOpen}>
             <AlertDialogContent>
                 <AlertDialogHeader className="my-5 space-y-5">
                     <div className="flex w-full items-center justify-center">

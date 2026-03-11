@@ -129,7 +129,10 @@ export default function StudentInfo({
                             type="text"
                             className="ps-9"
                             disabled
-                            value={academic_year_and_semester.semester}
+                            value={
+                                academic_year_and_semester?.semester ??
+                                'No Semester Found'
+                            }
                         />
                     </div>
                 </div>
@@ -141,7 +144,10 @@ export default function StudentInfo({
                             type="text"
                             className="ps-9"
                             disabled
-                            value={academic_year_and_semester.academic_year}
+                            value={
+                                academic_year_and_semester?.academic_year ??
+                                'No Academic Year Found'
+                            }
                         />
                     </div>
                 </div>
@@ -156,6 +162,7 @@ export default function StudentInfo({
                         onValueChange={(value) => {
                             setData('student.year_level', value);
                         }}
+                        name="student.year_level"
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Choose an option" />
@@ -179,6 +186,7 @@ export default function StudentInfo({
                     </Label>
                     <Select
                         value={data.student.campus}
+                        name="student.campus"
                         onValueChange={(value) => {
                             setData('student.campus', value);
                         }}
@@ -207,6 +215,7 @@ export default function StudentInfo({
                     </Label>
                     <Input
                         type="date"
+                        name="student.date_admitted"
                         value={data.student.date_admitted || ''}
                         onChange={(e) => {
                             setData('student.date_admitted', e.target.value);
@@ -221,6 +230,7 @@ export default function StudentInfo({
                     </Label>
                     <Select
                         value={data.student.student_type}
+                        name="student.student_type"
                         onValueChange={(value) => {
                             setData('student.student_type', value);
 
@@ -256,6 +266,7 @@ export default function StudentInfo({
                 </Label>
                 <Select
                     value={data.student.course}
+                    name="student.course"
                     onValueChange={(value) => {
                         setData('student.course', value);
                     }}
@@ -281,6 +292,7 @@ export default function StudentInfo({
                     <Label>LRN ( Learner Reference Number )</Label>
                     <Input
                         type="text"
+                        name="student.lrn"
                         inputMode="numeric"
                         maxLength={12}
                         value={data.student.lrn ?? ''}
@@ -301,6 +313,7 @@ export default function StudentInfo({
                     </Label>
                     <Select
                         value={data.student.equity_indicator}
+                        name="student.equity_indicator"
                         onValueChange={(value) => {
                             setData('student.equity_indicator', value);
                         }}
@@ -330,6 +343,7 @@ export default function StudentInfo({
                     </Label>
                     <Input
                         value={data.student.fname}
+                        name="student.fname"
                         onChange={(e) =>
                             setData(
                                 'student.fname',
@@ -346,6 +360,7 @@ export default function StudentInfo({
                     <Label>Middle Name</Label>
                     <Input
                         type="text"
+                        name="student.mname"
                         value={data.student.mname ?? ''}
                         onChange={(e) => {
                             if (e.target.value === '') {
@@ -372,6 +387,7 @@ export default function StudentInfo({
                     </Label>
                     <Input
                         type="text"
+                        name="student.lname"
                         value={data.student.lname}
                         onChange={(e) =>
                             setData(
@@ -388,6 +404,7 @@ export default function StudentInfo({
                     <Label>Suffix</Label>
                     <Select
                         value={data.student.suffix ?? ''}
+                        name="student.suffix"
                         onValueChange={(value) => {
                             if (value === 'None') {
                                 setData('student.suffix', null);
@@ -421,6 +438,7 @@ export default function StudentInfo({
                     </Label>
                     <Input
                         type="date"
+                        name="student.birthdate"
                         value={data.student.birthdate}
                         onChange={(e) =>
                             setData('student.birthdate', e.target.value)
@@ -435,6 +453,7 @@ export default function StudentInfo({
                     </Label>
                     <Input
                         type="text"
+                        name="student.birthplace"
                         value={data.student.birthplace}
                         maxLength={100}
                         onChange={(e) =>
@@ -456,6 +475,7 @@ export default function StudentInfo({
                         <RulerIcon size={15} className="absolute start-3" />
                         <Input
                             type="number"
+                            name="student.height"
                             value={data.student.height ?? ''}
                             onChange={(e) => {
                                 const value = e.target.value.slice(0, 3);
@@ -474,6 +494,7 @@ export default function StudentInfo({
                         <WeightIcon size={15} className="absolute start-3" />
                         <Input
                             type="number"
+                            name="student.weight"
                             value={data.student.weight ?? ''}
                             onChange={(e) => {
                                 const value = e.target.value.slice(0, 3);

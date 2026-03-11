@@ -20,7 +20,20 @@ class Education extends Model
         'scholarship_address',
         'scholarship_mobile_num',
     ];
-
+    protected $casts =
+        [
+            'education_level' => 'encrypted',
+            'school_name' => 'encrypted',
+            'school_address' => 'encrypted',
+            'school_type' => 'encrypted',
+            'year_graduated' => 'encrypted',
+            'general_average' => 'encrypted',
+            'course' => 'encrypted',
+            'academic_year' => 'encrypted',
+            'scholarship_program' => 'encrypted',
+            'scholarship_address' => 'encrypted',
+            'scholarship_mobile_num' => 'encrypted',
+        ];
 
     public function student()
     {

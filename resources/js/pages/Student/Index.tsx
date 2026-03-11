@@ -27,6 +27,7 @@ import { clear } from 'console';
 import { ConfirmAlertModal } from './Modal/ConfirmAlertModal';
 import { Spinner } from '@/components/ui/spinner';
 import { FinishAlertModal } from './Modal/FinishAlertModal';
+import Maintenance from './Maintenance/Maintenance';
 
 type PageProps = {
     questions: QuestionProps[];
@@ -35,12 +36,14 @@ type PageProps = {
         academic_year: string;
         semester: string;
     };
-    isFinished: boolean;
+    student: StudentProps;
 };
 
 export default function Index() {
-    const { questions, academic_year_and_semester, isFinished } =
+    const { questions, academic_year_and_semester, student } =
         usePage<PageProps>().props;
+
+    console.log(student);
 
     const { data, setData, errors, processing, post, clearErrors, reset } =
         useForm<StudentUseFormProps>({
@@ -155,6 +158,7 @@ export default function Index() {
         if (step === 2) {
             post(validateStudentContactAddress().url, {
                 preserveScroll: true,
+
                 onSuccess: () => {
                     setStep((prev) => prev + 1);
                 },
@@ -215,7 +219,9 @@ export default function Index() {
         if (step === 6) {
             post('/student/store', {
                 preserveScroll: true,
-                onSuccess: () => {},
+                onSuccess: () => {
+                    setSuccess(true);
+                },
                 onError: (err) => {
                     handleErrors(err);
                     console.log('Error submitting student form store', err);
@@ -239,41 +245,41 @@ export default function Index() {
     }, [flash]);
 
     const initFatherData = () => {
-        const basePath = `family.guardians.${0}`;
-
-        setData(`${basePath}.fname`, '');
-        setData(`${basePath}.mname`, null);
-        setData(`${basePath}.lname`, '');
-        setData(`${basePath}.suffix`, null);
-        setData(`${basePath}.role`, 'Father');
-        setData(`${basePath}.birthdate`, '');
-        setData(`${basePath}.birthplace`, null);
-        setData(`${basePath}.mobile_num`, null);
-        setData(`${basePath}.religion`, '');
-        setData(`${basePath}.citizenship`, null);
-        setData(`${basePath}.highest_educ_attainment`, '');
-        setData(`${basePath}.life_status`, '');
-        setData(`${basePath}.occupation`, null);
-        setData(`${basePath}.is_contact_person`, false);
+        setData(`family.guardians.0`, {
+            fname: '',
+            mname: null,
+            lname: '',
+            suffix: null,
+            role: 'Father',
+            birthdate: '',
+            birthplace: null,
+            mobile_num: null,
+            religion: '',
+            citizenship: null,
+            highest_educ_attainment: '',
+            life_status: '',
+            occupation: null,
+            is_contact_person: false,
+        });
     };
 
     const initMotherData = () => {
-        const basePath = `family.guardians.${1}`;
-
-        setData(`${basePath}.fname`, '');
-        setData(`${basePath}.mname`, null);
-        setData(`${basePath}.lname`, '');
-        setData(`${basePath}.suffix`, null);
-        setData(`${basePath}.role`, 'Mother');
-        setData(`${basePath}.birthdate`, '');
-        setData(`${basePath}.birthplace`, '');
-        setData(`${basePath}.mobile_num`, null);
-        setData(`${basePath}.religion`, '');
-        setData(`${basePath}.citizenship`, null);
-        setData(`${basePath}.highest_educ_attainment`, '');
-        setData(`${basePath}.life_status`, '');
-        setData(`${basePath}.occupation`, null);
-        setData(`${basePath}.is_contact_person`, false);
+        setData(`family.guardians.1`, {
+            fname: '',
+            mname: null,
+            lname: '',
+            suffix: null,
+            role: 'Mother',
+            birthdate: '',
+            birthplace: null,
+            mobile_num: null,
+            religion: '',
+            citizenship: null,
+            highest_educ_attainment: '',
+            life_status: '',
+            occupation: null,
+            is_contact_person: false,
+        });
     };
 
     useEffect(() => {
@@ -283,17 +289,12 @@ export default function Index() {
 
     const [openCancelModal, setOpenCancelModal] = useState(false);
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
-    const [openSuccessModal, setOpenSuccessModal] = useState(false);
-
-    const handleFinishForm = () => {
-        reset();
-        clearErrors();
-        setStep(1);
-        setOpenSuccessModal(false);
-    };
+    const [success, setSuccess] = useState(false);
 
     return (
         <>
+            <ThemeButton />
+
             <Toaster
                 closeButton
                 position="top-left"
@@ -315,9 +316,8 @@ export default function Index() {
             />
 
             <FinishAlertModal
-                isOpen={openSuccessModal}
-                onClose={() => setOpenSuccessModal(false)}
-                onFinish={handleFinishForm}
+                isOpen={success}
+                onFinish={() => location.reload()}
             />
 
             <header className="relative flex min-h-150 items-center justify-center bg-[url(/chmsu.webp)] bg-cover bg-fixed bg-bottom bg-no-repeat">
@@ -409,7 +409,6 @@ export default function Index() {
                         errors={errors}
                     />
                 )}
-
                 <div className="flex justify-end">
                     <div className="flex w-full gap-3 md:w-auto">
                         {step > 1 && (
@@ -461,8 +460,6 @@ export default function Index() {
                     </div>
                 </div>
             </form>
-
-            <ThemeButton />
         </>
     );
 }

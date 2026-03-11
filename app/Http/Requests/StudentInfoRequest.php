@@ -130,14 +130,6 @@ class StudentInfoRequest extends FormRequest
                     'Divorced',
                 ])
             ],
-            // 'student.sexual_orient' => 'required|max:25',
-            // 'student.height' => 'required|numeric|min:30|digits_between:1,3',
-            // 'student.weight' => 'required|numeric|min:30|digits_between:1,3',
-
-            // 'student.address.island' => 'required|max:50',
-            // 'student.address.province' => 'required|max:50',
-            // 'student.address.city' => 'required|max:50',
-            // 'student.address.barangay' => 'required|max:50',
         ];
 
 

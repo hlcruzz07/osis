@@ -26,6 +26,24 @@ class Guardian extends Model
         'is_contact_person',
     ];
 
+    protected $casts = [
+        'fname' => 'encrypted',
+        'mname' => 'encrypted',
+        'lname' => 'encrypted',
+        'suffix' => 'encrypted',
+        'role' => 'encrypted',
+        'birthdate' => 'encrypted',
+        'birthplace' => 'encrypted',
+        'mobile_num' => 'encrypted',
+        'religion' => 'encrypted',
+        'citizenship' => 'encrypted',
+        'highest_educ_attainment' => 'encrypted',
+        'life_status' => 'encrypted',
+        'cause_of_death' => 'encrypted',
+        'year_of_death' => 'encrypted',
+        'occupation' => 'encrypted',
+        'is_contact_person' => 'boolean',
+    ];
 
     public function student()
     {

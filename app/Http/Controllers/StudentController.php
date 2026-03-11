@@ -28,12 +28,14 @@ class StudentController extends Controller
 
     public function index()
     {
+        $student = $this->studentRepo->find(1);
         $questions = $this->questionRepo->getActive();
         $academic_year_and_semester = $this->academicYearAndSemesterRepo->getLatest();
 
         return Inertia::render('Student/Index', [
             'questions' => $questions,
-            'academic_year_and_semester' => $academic_year_and_semester
+            'academic_year_and_semester' => $academic_year_and_semester,
+            'student' => $student
         ]);
     }
 
@@ -43,9 +45,6 @@ class StudentController extends Controller
     }
     public function validateStudentInfo(StudentInfoRequest $request)
     {
-
-
-
         return back()->with('success', "Student's information validated");
     }
 
@@ -79,9 +78,8 @@ class StudentController extends Controller
 
             StoreStudentSubmission::dispatch($request->all());
 
-            return redirect()->route('home');
+            return Inertia::render('Student/Index', ['success' => true]);
 
-            // $this->studentRepo->store($request->all());
 
         } catch (Exception $e) {
 

@@ -275,6 +275,7 @@ export default function AdditionalInfo({
                                     data.answers[findAnswerIndex(q.id, null)]
                                         ?.answer || ''
                                 }
+                                name={`question_${q.id}`}
                                 onValueChange={(val) =>
                                     handleAnswerChange(q.id, null, val)
                                 }
@@ -312,6 +313,7 @@ export default function AdditionalInfo({
                             </Label>
                             <Input
                                 type={q.answer_type}
+                                name={`question_${q.id}`}
                                 value={
                                     q.answer_type === 'date'
                                         ? formatDateForInput(
@@ -373,6 +375,7 @@ export default function AdditionalInfo({
 
                                         <Input
                                             type={subQ.answer_type}
+                                            name={`question_${q.id}_subquestion_${subQ.id}`}
                                             placeholder={subQ.sub_question}
                                             value={
                                                 subQ.answer_type === 'date'

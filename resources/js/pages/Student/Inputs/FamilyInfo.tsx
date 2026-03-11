@@ -449,6 +449,7 @@ export default function FamilyInfo({
                     />
                     <Input
                         type="number"
+                        name="student.family_size"
                         value={data.student.family_size ?? ''}
                         onChange={(e) =>
                             setData('student.family_size', e.target.value)
@@ -464,6 +465,7 @@ export default function FamilyInfo({
                     </Label>
                     <Select
                         value={selectedMartialStatus ?? ''}
+                        name="student.parent_marital_status"
                         onValueChange={(value) => {
                             setSelectedMaritalStatus(value);
                             if (value !== 'Others') {
@@ -491,6 +493,7 @@ export default function FamilyInfo({
                     {selectedMartialStatus === 'Others' && (
                         <Input
                             value={data.student.parent_marital_status ?? ''}
+                            name="student.parent_marital_status"
                             onChange={(e) =>
                                 setData(
                                     'student.parent_marital_status',
@@ -514,6 +517,7 @@ export default function FamilyInfo({
                     </Label>
                     <Select
                         value={data.student.house_monthly_income}
+                        name="student.house_monthly_income"
                         onValueChange={(value) => {
                             setData('student.house_monthly_income', value);
                         }}
@@ -543,6 +547,7 @@ export default function FamilyInfo({
                     />
                     <Input
                         value={data.student.ordinal_position}
+                        name="student.ordinal_position"
                         onChange={(e) =>
                             setData(
                                 'student.ordinal_position',
@@ -564,6 +569,7 @@ export default function FamilyInfo({
                     </Label>
                     <Select
                         value={selectedNatureOfResidence ?? ''}
+                        name="student.nature_residence"
                         onValueChange={(value) => {
                             setSelectedNatureOfResidence(value);
                             if (value !== 'Others') {
@@ -591,6 +597,7 @@ export default function FamilyInfo({
                     {selectedNatureOfResidence === 'Others' && (
                         <Input
                             value={data.student.nature_residence ?? ''}
+                            name="student.nature_residence"
                             onChange={(e) =>
                                 setData(
                                     'student.nature_residence',
@@ -1394,6 +1401,10 @@ export default function FamilyInfo({
                             <Input
                                 type="text"
                                 maxLength={100}
+                                disabled={
+                                    data.family.guardians?.[index]
+                                        ?.life_status === 'Deceased'
+                                }
                                 value={
                                     data.family.guardians?.[index]
                                         ?.occupation ?? ''
@@ -1820,11 +1831,12 @@ export default function FamilyInfo({
                             disabled={isUsingAddress}
                             className="w-full"
                             type="button"
+                            variant="secondary"
                             onClick={() => useStudentAddress(index)}
                         >
                             {isUsingAddress ? (
                                 <>
-                                    <Spinner /> Using Address
+                                    <Spinner /> Loading...
                                 </>
                             ) : (
                                 <>

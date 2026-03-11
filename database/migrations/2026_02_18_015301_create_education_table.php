@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('education', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('student_id');
-            $table->enum('education_level', ['Elementary', 'Junior Highschool', 'Senior Highschool', 'College']);
+            $table->string('education_level');
 
             $table->string('school_name');
             $table->string('school_address');
@@ -34,9 +34,6 @@ return new class extends Migration {
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('education');

@@ -107,6 +107,7 @@ export default function ContactAddressInfo({
                         <MailIcon size={15} className="absolute start-3" />
                         <Input
                             type="text"
+                            name="student.email"
                             value={data.student.email ?? ''}
                             onChange={(e) =>
                                 setData('student.email', e.target.value)
@@ -128,6 +129,7 @@ export default function ContactAddressInfo({
                         <span className="absolute start-3 text-sm">+63</span>
                         <Input
                             type="number"
+                            name="student.mobile_num"
                             value={data.student.mobile_num ?? ''}
                             onChange={(e) => {
                                 const value = e.target.value.slice(0, 10);
@@ -152,6 +154,7 @@ export default function ContactAddressInfo({
                     </Label>
                     <Select
                         value={data.student.address.island}
+                        name="student.address.island"
                         onValueChange={(value) => {
                             setData('student.address.island', value);
 
@@ -195,6 +198,7 @@ export default function ContactAddressInfo({
                     </Label>
                     <Select
                         value={data.student.address.region}
+                        name="student.address.region"
                         onValueChange={(value) => {
                             setData('student.address.region', value);
 
@@ -244,6 +248,7 @@ export default function ContactAddressInfo({
                     </Label>
                     <Select
                         value={data.student.address.province}
+                        name="student.address.province"
                         onValueChange={(value) => {
                             setData('student.address.province', value);
                             resetForProvince();
@@ -439,6 +444,7 @@ export default function ContactAddressInfo({
                     </Label>
                     <Input
                         type="number"
+                        name="student.address.zip_code"
                         value={data.student.address.zip_code ?? ''}
                         onChange={(e) => {
                             const value = e.target.value.slice(0, 4);

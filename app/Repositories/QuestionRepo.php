@@ -21,6 +21,16 @@ class QuestionRepo
 
     public function getActive()
     {
-        return $this->model->with(['subQuestions.selectItems', 'selectItems'])->where('is_active', true)->get();
+        return $this->model
+            ->with([
+                'subQuestions' => function ($query) {
+                    $query->where('is_deleted', false);
+                },
+                'subQuestions.selectItems',
+                'selectItems'
+            ])
+            ->where('is_active', true)
+            ->where('is_deleted', false)
+            ->get();
     }
 }

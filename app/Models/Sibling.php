@@ -17,6 +17,10 @@ class Sibling extends Model
     ];
 
     protected $cast = [
+        'fname' => 'encrypted',
+        'mname' => 'encrypted',
+        'lname' => 'encrypted',
+        'suffix' => 'encrypted',
         'is_attending_college' => 'boolean',
         'is_employed' => 'boolean',
     ];

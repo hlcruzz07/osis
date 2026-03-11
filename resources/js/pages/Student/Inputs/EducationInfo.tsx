@@ -100,6 +100,7 @@ export default function EducationInfo({
                             <School size={15} className="absolute start-3" />
                             <Input
                                 type="text"
+                                name="education.elementary.school_name"
                                 maxLength={150}
                                 value={data.education.elementary.school_name}
                                 onChange={(e) =>
@@ -123,6 +124,7 @@ export default function EducationInfo({
                         </Label>
                         <Select
                             value={data.education.elementary.school_type}
+                            name="education.elementary.school_type"
                             onValueChange={(value) =>
                                 setData(
                                     'education.elementary.school_type',
@@ -156,6 +158,7 @@ export default function EducationInfo({
                     </Label>
                     <Textarea
                         value={data.education.elementary.school_address}
+                        name="education.elementary.school_address"
                         maxLength={250}
                         onChange={(e) =>
                             setData(
@@ -181,6 +184,7 @@ export default function EducationInfo({
                         <div className="relative flex items-center">
                             <Input
                                 type="number"
+                                name="education.elementary.year_graduated"
                                 value={data.education.elementary.year_graduated}
                                 onChange={(e) =>
                                     setData(
@@ -207,6 +211,7 @@ export default function EducationInfo({
                         <div className="relative flex items-center">
                             <Input
                                 type="number"
+                                name="education.elementary.general_average"
                                 placeholder="Enter General Average"
                                 value={
                                     data.education.elementary.general_average ??
@@ -258,6 +263,7 @@ export default function EducationInfo({
                             <School size={15} className="absolute start-3" />
                             <Input
                                 type="text"
+                                name="education.junior_high.school_name"
                                 value={data.education.junior_high.school_name}
                                 maxLength={150}
                                 onChange={(e) =>
@@ -283,6 +289,7 @@ export default function EducationInfo({
                         </Label>
                         <Select
                             value={data.education.junior_high.school_type}
+                            name="education.junior_high.school_type"
                             onValueChange={(value) =>
                                 setData(
                                     'education.junior_high.school_type',
@@ -318,6 +325,7 @@ export default function EducationInfo({
                     </Label>
                     <Textarea
                         value={data.education.junior_high.school_address}
+                        name="education.junior_high.school_address"
                         maxLength={250}
                         onChange={(e) =>
                             setData(
@@ -343,6 +351,7 @@ export default function EducationInfo({
                         <div className="relative flex items-center">
                             <Input
                                 type="number"
+                                name="education.junior_high.year_graduated"
                                 value={
                                     data.education.junior_high.year_graduated
                                 }
@@ -371,6 +380,7 @@ export default function EducationInfo({
                         <div className="relative flex items-center">
                             <Input
                                 type="number"
+                                name="education.junior_high.general_average"
                                 placeholder="Enter General Average"
                                 value={
                                     data.education.junior_high
@@ -421,6 +431,7 @@ export default function EducationInfo({
                             <School size={15} className="absolute start-3" />
                             <Input
                                 type="text"
+                                name="education.senior_high.school_name"
                                 value={data.education.senior_high.school_name}
                                 maxLength={150}
                                 onChange={(e) =>
@@ -446,6 +457,7 @@ export default function EducationInfo({
                         </Label>
                         <Select
                             value={data.education.senior_high.school_type}
+                            name="education.senior_high.school_type"
                             onValueChange={(value) =>
                                 setData(
                                     'education.senior_high.school_type',
@@ -481,6 +493,7 @@ export default function EducationInfo({
                     />
                     <Input
                         value={data.education.senior_high.strand}
+                        name="education.senior_high.strand"
                         maxLength={100}
                         onChange={(e) =>
                             setData(
@@ -503,6 +516,7 @@ export default function EducationInfo({
                     </Label>
                     <Textarea
                         value={data.education.senior_high.school_address}
+                        name="education.senior_high.school_address"
                         maxLength={250}
                         onChange={(e) =>
                             setData(
@@ -528,6 +542,7 @@ export default function EducationInfo({
                         <div className="relative flex items-center">
                             <Input
                                 type="number"
+                                name="education.senior_high.year_graduated"
                                 value={
                                     data.education.senior_high.year_graduated
                                 }
@@ -556,6 +571,7 @@ export default function EducationInfo({
                         <div className="relative flex items-center">
                             <Input
                                 type="number"
+                                name="education.senior_high.general_average"
                                 placeholder="Enter General Average"
                                 value={
                                     data.education.senior_high

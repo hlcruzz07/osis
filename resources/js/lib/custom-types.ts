@@ -151,7 +151,7 @@ type GuardiansProps = {
     occupation: string | null;
     is_contact_person: boolean;
 
-    address: AddressProps;
+    address?: AddressProps;
 };
 
 type FamilyProps = {

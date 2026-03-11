@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('question_id');
             $table->string('sub_question');
             $table->enum('answer_type', ['text', 'number', 'date', 'select']);
+            $table->boolean('is_deleted')->default(false);
 
             $table->foreign('question_id')->references('id')->on('questions')->onDelete('cascade');
             $table->timestamps();

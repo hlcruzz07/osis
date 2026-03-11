@@ -18,7 +18,7 @@ export default function ThemeButton({}: HTMLAttributes<HTMLDivElement>) {
     ];
 
     return (
-        <div className="fixed top-5 right-5 z-100">
+        <div className="fixed top-3 right-3 z-100">
             <Popover
                 open={popoverOpen}
                 onOpenChange={(open) => setPopoverOpen(open)}
