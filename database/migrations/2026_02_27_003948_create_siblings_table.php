@@ -13,10 +13,10 @@ return new class extends Migration {
         Schema::create('siblings', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('student_id');
-            $table->string('fname');
-            $table->string('mname')->nullable();
-            $table->string('lname');
-            $table->string('suffix')->nullable();
+            $table->text('fname');
+            $table->text('mname')->nullable();
+            $table->text('lname');
+            $table->text('suffix')->nullable();
             $table->boolean('is_attending_college')->default(false);
             $table->boolean('is_employed')->default(false);
 

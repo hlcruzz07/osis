@@ -35,6 +35,8 @@ type BrgyProps = {
 };
 
 type StudentProps = {
+    academic_year: string;
+    semester: string;
     lrn: string | null;
     year_level: string;
     campus: string;

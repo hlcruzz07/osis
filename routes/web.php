@@ -1,13 +1,13 @@
 <?php
 
+use App\Http\Controllers\AdminStudentsController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Laravel\Fortify\Features;
 
 Route::get('/', [StudentController::class, 'index'])->name('home');
 
-// Validations
+// Student Validations & Submission
 Route::middleware('check.student.submitted')->group(function () {
     Route::post('/student/validate/student-info', [StudentController::class, 'validateStudentInfo'])->name('validateStudentInfo');
     Route::post('/student/validate/student-address', [StudentController::class, 'validateStudentContactAddress'])->name('validateStudentContactAddress');
@@ -18,9 +18,13 @@ Route::middleware('check.student.submitted')->group(function () {
 });
 
 
+Route::get('/students', [AdminStudentsController::class, 'index'])->name('students');
+Route::get('/student/{id}', [AdminStudentsController::class, 'view'])->name('viewStudent');
+Route::put('/student/{id}/student-info', [AdminStudentsController::class, 'updateStudentInfo'])->name('updateStudentInfo');
 
-Route::get('dashboard', function () {
+Route::get('/dashboard', function () {
     return Inertia::render('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->name('dashboard');
 
 require __DIR__ . '/settings.php';
+require __DIR__ . '/api.php';

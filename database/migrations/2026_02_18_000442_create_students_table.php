@@ -12,36 +12,38 @@ return new class extends Migration {
     {
         Schema::create('students', function (Blueprint $table) {
             $table->id();
-            $table->string('lrn')->nullable()->unique();
-            $table->string('year_level');
-            $table->string('campus');
-            $table->string('course');
-            $table->string('date_admitted');
-            $table->string('student_type');
-            $table->string('equity_indicator');
+            $table->text('academic_year');
+            $table->text('semester');
+            $table->text('lrn')->nullable()->unique();
+            $table->text('year_level');
+            $table->text('campus');
+            $table->text('course');
+            $table->text('date_admitted');
+            $table->text('student_type');
+            $table->text('equity_indicator');
 
-            $table->string('fname');
-            $table->string('mname')->nullable();
-            $table->string('lname');
-            $table->string('suffix')->nullable();
-            $table->string('birthdate');
-            $table->string('birthplace');
-            $table->string('weekly_allowance');
-            $table->string('financer');
-            $table->string('last_attended_school');
-            $table->string('email')->nullable();
-            $table->string('mobile_num')->nullable();
-            $table->string('religion');
-            $table->string('citizenship');
-            $table->string('civil_status');
-            $table->string('sexual_orient');
-            $table->string('height');
-            $table->string('weight');
+            $table->text('fname');
+            $table->text('mname')->nullable();
+            $table->text('lname');
+            $table->text('suffix')->nullable();
+            $table->text('birthdate');
+            $table->text('birthplace');
+            $table->text('weekly_allowance');
+            $table->text('financer');
+            $table->text('last_attended_school');
+            $table->text('email')->nullable();
+            $table->text('mobile_num')->nullable();
+            $table->text('religion');
+            $table->text('citizenship');
+            $table->text('civil_status');
+            $table->text('sexual_orient');
+            $table->text('height');
+            $table->text('weight');
 
-            $table->string('family_size');
-            $table->string('nature_residence');
-            $table->string('house_monthly_income');
-            $table->string('ordinal_position');
+            $table->text('family_size');
+            $table->text('nature_residence');
+            $table->text('house_monthly_income');
+            $table->text('ordinal_position');
             $table->timestamps();
         });
     }

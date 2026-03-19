@@ -9,9 +9,13 @@ use App\Http\Requests\StudentContactAddressInfo;
 use App\Http\Requests\StudentInfoRequest;
 use App\Http\Requests\StudentStoreRequest;
 use App\Jobs\StoreStudentSubmission;
+use App\Models\EntityDropdown;
 use App\Repositories\AcademicYearAndSemesterRepo;
+use App\Repositories\AnswerRepo;
+use App\Repositories\GuardianRepo;
 use App\Repositories\QuestionRepo;
 use App\Repositories\StudentRepo;
+use Arr;
 use Exception;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,20 +26,19 @@ class StudentController extends Controller
      * Display a listing of the resource.
      */
 
-    public function __construct(protected StudentRepo $studentRepo, protected QuestionRepo $questionRepo, protected AcademicYearAndSemesterRepo $academicYearAndSemesterRepo)
+    public function __construct(protected StudentRepo $studentRepo, protected QuestionRepo $questionRepo, protected AcademicYearAndSemesterRepo $academicYearAndSemesterRepo, protected GuardianRepo $guardianRepo, protected AnswerRepo $answerRepo)
     {
     }
 
     public function index()
     {
-        $student = $this->studentRepo->find(1);
         $questions = $this->questionRepo->getActive();
         $academic_year_and_semester = $this->academicYearAndSemesterRepo->getLatest();
 
         return Inertia::render('Student/Index', [
             'questions' => $questions,
             'academic_year_and_semester' => $academic_year_and_semester,
-            'student' => $student
+            'dropdowns' => EntityDropdown::all()
         ]);
     }
 
@@ -76,15 +79,52 @@ class StudentController extends Controller
     {
         try {
 
-            StoreStudentSubmission::dispatch($request->all());
+            $data = $request->all();
 
-            return Inertia::render('Student/Index', ['success' => true]);
 
+            $student_data =
+                Arr::except($data, [
+                    'education',
+                    'family',
+                    'answers',
+                    'is_agree',
+                    'student.address'
+                ])['student'];
+
+            $address_data = data_get($data, 'student.address');
+
+
+            $education_data = collect(data_get($data, 'education'))->filter()->values()->toArray();
+            $guardians_data = data_get($data, 'family.guardians');
+            $siblings_data = data_get($data, 'family.siblings') ?? null;
+            $answers_data = data_get($data, 'answers');
+
+            $student_main_answers = collect($answers_data)
+                ->filter(fn($item) => is_null($item['sub_question_id']))
+                ->values()
+                ->toArray();
+
+            $student_sub_answers = collect($answers_data)
+                ->filter(fn($item) => !is_null($item['sub_question_id']) && !is_null($item['answer']))
+                ->values()
+                ->toArray();
+
+
+            StoreStudentSubmission::dispatch([
+                'student' => $student_data,
+                'address' => $address_data,
+                'siblings' => $siblings_data,
+                'education' => $education_data,
+                'guardians' => $guardians_data,
+                'answers' => $student_main_answers,
+                'sub_answers' => $student_sub_answers,
+            ]);
+
+            return back()->with('success', 'Student successfully submitted!');
 
         } catch (Exception $e) {
 
-            return back()->with('error', 'Something went wrong, please try again');
-
+            return back()->with('error', 'Something went wrong, please try again' . $e->getMessage());
         }
     }
 

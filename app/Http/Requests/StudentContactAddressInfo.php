@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Student;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,8 +24,9 @@ class StudentContactAddressInfo extends FormRequest
     public function rules(): array
     {
         return [
-            'student.email' => 'nullable|email|max:50|unique:students,email',
-            'student.mobile_num' => 'nullable|numeric|starts_with:9|digits:10|unique:students,mobile_num',
+            'student.email' => 'nullable|email|max:50',
+            'student.mobile_num' => 'nullable|numeric|starts_with:9|digits:10',
+
             'student.address.island' => ['required', Rule::in(['Luzon', 'Visayas', 'Mindanao'])],
             'student.address.region' => 'required',
             'student.address.province' => 'required',
@@ -40,13 +42,11 @@ class StudentContactAddressInfo extends FormRequest
             // Email
             'student.email.email' => 'Please enter a valid email address.',
             'student.email.max' => 'Email must not exceed 50 characters.',
-            'student.email.unique' => 'This email is already taken.',
 
             // Mobile number
             'student.mobile_num.numeric' => 'Mobile number must contain numbers only.',
             'student.mobile_num.starts_with' => 'Mobile number should always starts with 9.',
             'student.mobile_num.digits' => 'Mobile number must be exactly 10 digits.',
-            'student.mobile_num.unique' => 'This mobile number is already taken.',
 
             // Island
             'student.address.island.required' => 'Please select an island.',
@@ -69,5 +69,47 @@ class StudentContactAddressInfo extends FormRequest
             'student.address.zip_code.numeric' => 'Zip code must be numeric.',
             'student.address.zip_code.digits' => 'Zip code must be exactly 4 digits.',
         ];
+    }
+
+    public function withValidator(\Illuminate\Validation\Validator $validator)
+    {
+        $validator->after(function ($validator) {
+
+            $email = $this->input('student.email');
+            $mobile_num = $this->input('student.mobile_num');
+
+            if (empty($email) && empty($mobile_num)) {
+                return;
+            }
+
+            if (!empty($email)) {
+                $emailHash = hash('sha256', trim($email));
+
+                $exists = Student::where('email_hash', $emailHash)->exists();
+
+                if ($exists) {
+                    $validator->errors()->add(
+                        'student.email',
+                        'This email is already taken.'
+                    );
+                }
+            }
+
+            if (!empty($mobile_num)) {
+                $mobileNumHash = hash('sha256', trim($mobile_num));
+
+                $exists = Student::where('mobile_num_hash', $mobileNumHash)->exists();
+
+                if ($exists) {
+                    $validator->errors()->add(
+                        'student.mobile_num',
+                        'This mobile number is already taken.'
+                    );
+                }
+            }
+
+
+
+        });
     }
 }

@@ -13,21 +13,21 @@ return new class extends Migration {
         Schema::create('guardians', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('student_id');
-            $table->string('fname');
-            $table->string('mname')->nullable();
-            $table->string('lname');
-            $table->string('suffix')->nullable();
-            $table->string('role');
-            $table->string('birthdate')->nullable();
-            $table->string('birthplace')->nullable();
-            $table->string('mobile_num')->nullable();
-            $table->string('religion');
-            $table->string('citizenship');
-            $table->string('highest_educ_attainment');
-            $table->string('life_status');
-            $table->string('cause_of_death')->nullable();
-            $table->string('year_of_death')->nullable();
-            $table->string('occupation')->nullable();
+            $table->text('fname');
+            $table->text('mname')->nullable();
+            $table->text('lname');
+            $table->text('suffix')->nullable();
+            $table->text('role');
+            $table->text('birthdate')->nullable();
+            $table->text('birthplace')->nullable();
+            $table->text('mobile_num')->nullable();
+            $table->text('religion');
+            $table->text('citizenship');
+            $table->text('highest_educ_attainment');
+            $table->text('life_status');
+            $table->text('cause_of_death')->nullable();
+            $table->text('year_of_death')->nullable();
+            $table->text('occupation')->nullable();
             $table->boolean('is_contact_person')->default(false);
 
             $table->foreign('student_id')

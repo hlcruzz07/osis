@@ -14,12 +14,11 @@ class Question extends Model
         'is_deleted',
     ];
 
-    protected $casts
-        = [
-            'is_required' => 'boolean',
-            'is_deleted' => 'boolean',
-        ];
-
+    protected $casts = [
+        'question' => 'encrypted',
+        'is_required' => 'boolean',
+        'is_deleted' => 'boolean',
+    ];
 
 
     public function subQuestions()

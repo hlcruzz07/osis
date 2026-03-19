@@ -10,8 +10,11 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('education', function (Blueprint $table) {
-            $table->string('strand')->nullable()->after('year_graduated');
+        Schema::create('entity_dropdowns', function (Blueprint $table) {
+            $table->id();
+            $table->text('title');
+            $table->text('dropdowns');
+            $table->timestamps();
         });
     }
 
@@ -20,8 +23,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('education', function (Blueprint $table) {
-            $table->dropColumn('strand');
-        });
+        Schema::dropIfExists('entity_dropdowns');
     }
 };

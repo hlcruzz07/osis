@@ -13,18 +13,19 @@ return new class extends Migration {
         Schema::create('education', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('student_id');
-            $table->string('education_level');
+            $table->text('education_level');
 
-            $table->string('school_name');
-            $table->string('school_address');
-            $table->string('school_type');
-            $table->string('year_graduated');
-            $table->string('general_average', 5, 2);
-            $table->string('course')->nullable()->default(null);
-            $table->string('academic_year')->nullable()->default(null);
-            $table->string('scholarship_program')->nullable()->default(null);
-            $table->string('scholarship_address')->nullable()->default(null);
-            $table->string('scholarship_mobile_num')->nullable()->default(null);
+            $table->text('school_name');
+            $table->text('school_address');
+            $table->text('school_type');
+            $table->text('year_graduated');
+            $table->text('general_average', 5, 2);
+            $table->text('strand')->nullable();
+            $table->text('course')->nullable()->default(null);
+            $table->text('academic_year')->nullable()->default(null);
+            $table->text('scholarship_program')->nullable()->default(null);
+            $table->text('scholarship_address')->nullable()->default(null);
+            $table->text('scholarship_mobile_num')->nullable()->default(null);
 
             $table->foreign('student_id')
                 ->references('id')

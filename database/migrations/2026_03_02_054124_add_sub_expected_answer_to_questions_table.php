@@ -9,7 +9,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('questions', function (Blueprint $table) {
-            $table->string('sub_expected_answer')->nullable()->after('answer_type');
+            $table->text('sub_expected_answer')->nullable()->after('answer_type');
         });
     }
 

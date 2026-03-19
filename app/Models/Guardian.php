@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Guardian extends Model
 {
     protected $fillable = [
+        // Original fields
         'student_id',
         'fname',
         'mname',
@@ -24,6 +25,23 @@ class Guardian extends Model
         'year_of_death',
         'occupation',
         'is_contact_person',
+
+        // Hash fields
+        'fname_hash',
+        'mname_hash',
+        'lname_hash',
+        'suffix_hash',
+        'role_hash',
+        'birthdate_hash',
+        'birthplace_hash',
+        'mobile_num_hash',
+        'religion_hash',
+        'citizenship_hash',
+        'highest_educ_attainment_hash',
+        'life_status_hash',
+        'cause_of_death_hash',
+        'year_of_death_hash',
+        'occupation_hash',
     ];
 
     protected $casts = [

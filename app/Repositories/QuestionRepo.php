@@ -13,6 +13,28 @@ class QuestionRepo
     {
     }
 
+    protected function hashValue(?string $value): ?string
+    {
+        if (is_null($value) || $value === '') {
+            return null;
+        }
+        return hash('sha256', $value);
+    }
+
+    public function store(array $data): Question
+    {
+        return $this->model->create([
+            'question' => $data['question'],
+            'question_hash' => $this->hashValue($data['question'] ?? null),
+            'answer_type' => $data['answer_type'] ?? null,
+            'answer_type_hash' => $this->hashValue($data['answer_type'] ?? null),
+            'sub_expected_answer' => $data['sub_expected_answer'] ?? null,
+            'sub_expected_answer_hash' => $this->hashValue($data['sub_expected_answer'] ?? null),
+            'is_required' => $data['is_required'] ?? false,
+            'is_active' => $data['is_active'] ?? true,
+            'academic_year_id' => $data['academic_year_id'] ?? null,
+        ]);
+    }
 
     public function all()
     {

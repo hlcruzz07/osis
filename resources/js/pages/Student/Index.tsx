@@ -28,6 +28,7 @@ import { ConfirmAlertModal } from './Modal/ConfirmAlertModal';
 import { Spinner } from '@/components/ui/spinner';
 import { FinishAlertModal } from './Modal/FinishAlertModal';
 import Maintenance from './Maintenance/Maintenance';
+import { DropdownProps } from '@/types/dropdowns';
 
 type PageProps = {
     questions: QuestionProps[];
@@ -37,17 +38,18 @@ type PageProps = {
         semester: string;
     };
     student: StudentProps;
+    dropdowns: DropdownProps[];
 };
 
 export default function Index() {
-    const { questions, academic_year_and_semester, student } =
+    const { questions, academic_year_and_semester, student, dropdowns } =
         usePage<PageProps>().props;
-
-    console.log(student);
 
     const { data, setData, errors, processing, post, clearErrors, reset } =
         useForm<StudentUseFormProps>({
             student: {
+                academic_year: '',
+                semester: '',
                 lrn: null as string | null,
                 year_level: '',
                 campus: '',
@@ -131,7 +133,15 @@ export default function Index() {
             is_agree: false,
         });
 
-    const [step, setStep] = useState(1);
+    useEffect(() => {
+        setData(
+            'student.academic_year',
+            academic_year_and_semester.academic_year,
+        );
+        setData('student.semester', academic_year_and_semester.semester);
+    }, []);
+
+    const [step, setStep] = useState(4);
     const { appearance } = useAppearance();
     const formRef = useRef<HTMLFormElement>(null);
 
@@ -194,7 +204,7 @@ export default function Index() {
                 },
                 onError: (err) => {
                     handleErrors(err);
-                    console.log('Error submitting step 4', err);
+                    console.error('Error submitting step 4', err);
                 },
             });
 
@@ -209,7 +219,7 @@ export default function Index() {
                 },
                 onError: (err) => {
                     handleErrors(err);
-                    console.log('Error submitting step 5', err);
+                    console.error('Error submitting step 5', err);
                 },
             });
 
@@ -220,11 +230,11 @@ export default function Index() {
             post('/student/store', {
                 preserveScroll: true,
                 onSuccess: () => {
-                    setSuccess(true);
+                    setIsSuccess(true);
                 },
                 onError: (err) => {
                     handleErrors(err);
-                    console.log('Error submitting student form store', err);
+                    console.error('Error submitting student form store', err);
                 },
             });
             return;
@@ -289,7 +299,8 @@ export default function Index() {
 
     const [openCancelModal, setOpenCancelModal] = useState(false);
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
-    const [success, setSuccess] = useState(false);
+
+    const [isSuccess, setIsSuccess] = useState(false);
 
     return (
         <>
@@ -316,7 +327,7 @@ export default function Index() {
             />
 
             <FinishAlertModal
-                isOpen={success}
+                isOpen={isSuccess}
                 onFinish={() => location.reload()}
             />
 
@@ -370,6 +381,7 @@ export default function Index() {
                         setData={setData}
                         errors={errors}
                         academic_year_and_semester={academic_year_and_semester}
+                        dropdowns={dropdowns}
                     />
                 )}
 
@@ -386,11 +398,17 @@ export default function Index() {
                         data={data}
                         setData={setData}
                         errors={errors}
+                        dropdowns={dropdowns}
                     />
                 )}
 
                 {step === 4 && (
-                    <FamilyInfo data={data} setData={setData} errors={errors} />
+                    <FamilyInfo
+                        data={data}
+                        setData={setData}
+                        errors={errors}
+                        dropdowns={dropdowns}
+                    />
                 )}
 
                 {step === 5 && (

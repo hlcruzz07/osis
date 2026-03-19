@@ -8,7 +8,14 @@ class AcademicYearAndSemester extends Model
 {
     protected $fillable = [
         'academic_year',
-        'semester'
+        'semester',
+        'academic_year_hash',
+        'semester_hash'
+    ];
+
+    protected $casts = [
+        'academic_year' => 'encrypted',
+        'semester' => 'encrypted'
     ];
 
 

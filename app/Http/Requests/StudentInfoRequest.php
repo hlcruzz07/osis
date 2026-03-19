@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\EntityDropdown;
 use App\Models\Student;
+use App\Repositories\EntityDropdownRepo;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,6 +18,10 @@ class StudentInfoRequest extends FormRequest
         return true;
     }
 
+    public function __construct()
+    {
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -23,113 +29,58 @@ class StudentInfoRequest extends FormRequest
      */
     public function rules(): array
     {
+        $entityRepo = new EntityDropdownRepo();
+
+        $validYearLevels = $entityRepo->getDropdownsByTitle('Year Levels');
+        $validCourses = $entityRepo->getDropdownsByTitle('Courses');
+        $validCampuses = $entityRepo->getDropdownsByTitle('Campuses');
+        $validStudentType = $entityRepo->getDropdownsByTitle('Student Type');
+        $validSuffixes = $entityRepo->getDropdownsByTitle('Suffix');
+        $validEquityIndicator = $entityRepo->getDropdownsByTitle('Equity Indicator');
+        $validReligions = $entityRepo->getDropdownsByTitle('Religion');
+        $validCivilStatus = $entityRepo->getDropdownsByTitle('Civil Status');
+
         return [
+            'student.academic_year' => 'required',
+            'student.semester' => 'required',
             'student.lrn' => 'nullable|string|max:12',
-            'student.year_level' => 'required',
-            'student.campus' => 'required|in:Talisay,Alijis,Fortune Towne,Binalbagan',
+            'student.year_level' => ['required', Rule::in($validYearLevels)],
+            'student.campus' => ['required', Rule::in($validCampuses)],
             'student.course' => [
                 'required',
-                Rule::in([
-                    'Ba In English Language',
-                    'Ba Social Science',
-                    'Bs Psychology',
-                    'B Of Public Administration',
-                    'Bs In Applied Mathematics',
-                    'B Of Elementary Education',
-                    'B Of Early Childhood Educ',
-                    'B Of Physical Education',
-                    'B Of Secondary Education',
-                    'B Of Special Needs Education',
-                    'B Of Technology & Livelihood Education',
-                    'B Of Industrial Technology',
-                    'Bs In Industrial Technology',
-                    'Bs In Hospitality Management',
-                    'Bs In Information Systems',
-                    'Bs In Civil Engineering',
-                ]),
+                Rule::in($validCourses),
             ],
             'student.date_admitted' => 'required|date',
             'student.student_type' => [
                 'required',
-                Rule::in([
-                    'Shiftee',
-                    'Returnee',
-                    'Continuing',
-                    'Transferee',
-                    'Fresh Graduate'
-                ])
+                Rule::in($validStudentType)
             ],
 
             'student.equity_indicator' => [
                 'required',
-                Rule::in([
-                    'First Generation College Student',
-                    'Four Ps Beneficiary',
-                    'Solo Parent',
-                    'Raised By A Single Or Solo Parent',
-                    'Orphan',
-                    'Person With Disability',
-                    'Living In A Geographically Isolated And Disadvantaged Area',
-                    'Member Of Indigenous People',
-                    'Belongs To A Family Of Subsistence Farmers Or Fisher Folks',
-                    'Belongs To A Family Of Rebel Returnees',
-                    'Not Applicable',
-                ])
+                Rule::in($validEquityIndicator)
             ],
             'student.fname' => 'required|max:50',
             'student.mname' => 'nullable|max:50',
             'student.lname' => 'required|max:50',
-            'student.suffix' => ['nullable', Rule::in(['Jr', 'Sr', 'I', 'II', 'III', 'IV', 'V'])],
+            'student.suffix' => ['nullable', Rule::in($validSuffixes)],
             'student.birthdate' => 'required|date',
             'student.birthplace' => 'required|max:100',
             'student.weekly_allowance' => 'required|numeric|min:0',
             'student.financer' => 'required|max:50',
             'student.last_attended_school' => 'required|max:100',
-
             'student.religion' => [
                 'required',
-                Rule::in([
-                    'Roman Catholic',
-                    'Baptist',
-                    'Methodist',
-                    'Pentecostal',
-                    'Evangelical',
-                    'Seventh-day Adventist',
-                    'Lutheran',
-                    'Presbyterian',
-                    'United Church Of Christ In the Philippines (UCCP)',
-                    'Iglesia Ni Cristo',
-                    'Sunni Islam',
-                    'Shia Islam',
-                    'Aglipayan Church (Philippine Independent Church)',
-                    "Jehovah's Witnesses",
-                    'Church Of Jesus Christ Of Latter-day Saints (Mormons)',
-                    'Judaism',
-                    'Mahayana Buddhism',
-                    'Theravada Buddhism',
-                    'Vaishnavism (Hinduism)',
-                    'Shaivism (Hinduism)',
-                    'Lumad Spirituality',
-                    'Cordillera Indigenous Religions',
-                    'Anito / Ancestor Worship',
-                    'Shamanistic Practices',
-                    'Agnostic',
-                    'Atheist',
-                    'Humanist',
-                    'Secular',
-                ])
+                Rule::in($validReligions)
             ],
             'student.citizenship' => 'required',
             'student.civil_status' => [
                 'required',
-                Rule::in([
-                    'None',
-                    'Single',
-                    'Married',
-                    'Widow',
-                    'Divorced',
-                ])
+                Rule::in($validCivilStatus)
             ],
+            'student.sexual_orient' => 'required|max:25',
+            'student.height' => 'required|numeric|min:30|digits_between:2,3',
+            'student.weight' => 'required|numeric|min:30|digits_between:2,3',
         ];
 
 
@@ -145,6 +96,7 @@ class StudentInfoRequest extends FormRequest
 
             // Year & Campus
             'student.year_level.required' => 'Year level is required.',
+            'student.year_level.in' => 'Selected year level is invalid.',
             'student.campus.required' => 'Campus is required.',
             'student.campus.in' => 'Selected campus is invalid.',
 
@@ -201,8 +153,8 @@ class StudentInfoRequest extends FormRequest
             'student.civil_status.in' => 'Selected civil status is invalid.',
 
             // Personal
-            'student.sexual_orient.required' => 'Sexual orientation is required.',
-            'student.sexual_orient.max' => 'Sexual orientation must not exceed 25 characters.',
+            'student.sexual_orientrequired' => 'Sexual orientation is required.',
+            'student.sexual_orientmax' => 'Sexual orientation must not exceed 25 characters.',
 
             'student.height.required' => 'Height is required.',
             'student.height.numeric' => 'Height must be a number.',
@@ -214,11 +166,6 @@ class StudentInfoRequest extends FormRequest
             'student.weight.numeric' => 'Weight must be a number.',
             'student.weight.min' => 'Weight must be at least 30 kg.',
             'student.weight.digits_between' => 'Weight must be between 2 and 3 digits.',
-            // Address
-            // 'student.address.island.required' => 'Island is required.',
-            // 'student.address.province.required' => 'Province is required.',
-            // 'student.address.city.required' => 'City is required.',
-            // 'student.address.barangay.required' => 'Barangay is required.',
 
         ];
     }
@@ -231,16 +178,21 @@ class StudentInfoRequest extends FormRequest
             $mname = $this->input('student.mname');
             $lname = $this->input('student.lname');
 
-            $query = Student::where('fname', $fname)
-                ->where('lname', $lname);
+            $fnameHash = hash('sha256', trim($fname));
+            $lnameHash = hash('sha256', trim($lname));
+            $mnameHash = !empty($mname)
+                ? hash('sha256', trim($mname))
+                : null;
 
-            if (!empty($mname)) {
-                $query->where('mname', $mname);
+            $query = Student::where('fname_hash', $fnameHash)
+                ->where('lname_hash', $lnameHash);
+
+            if ($mnameHash) {
+                $query->where('mname_hash', $mnameHash);
             } else {
-
                 $query->where(function ($q) {
-                    $q->whereNull('mname')
-                        ->orWhere('mname', '');
+                    $q->whereNull('mname_hash')
+                        ->orWhere('mname_hash', '');
                 });
             }
 

@@ -15,6 +15,13 @@ class Address extends Model
         'city',
         'brgy',
         'zip_code',
+
+        'island_hash',
+        'region_hash',
+        'province_hash',
+        'city_hash',
+        'brgy_hash',
+        'zip_code_hash',
     ];
 
 

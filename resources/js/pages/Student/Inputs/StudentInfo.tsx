@@ -26,18 +26,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    campusArr,
-    civilStatusArr,
-    coursesArr,
-    equityIndicatorArr,
-    financerArr,
-    religionArr,
-    sexualOrientArr,
-    studentTypeArr,
-    suffixArr,
-    yearLevelsArr,
-} from '@/lib/dropdowns';
+
 import {
     capitalizeString,
     cn,
@@ -48,6 +37,7 @@ import {
     fetchProvinceByRegionId,
     fetchRegionsByIslandId,
 } from '@/lib/utils';
+import { DropdownProps } from '@/types/dropdowns';
 import {
     Asterisk,
     Calendar1Icon,
@@ -71,6 +61,7 @@ type StudentInfoProps = {
         academic_year: string;
         semester: string;
     };
+    dropdowns: DropdownProps[];
 };
 export default function StudentInfo({
     data,
@@ -79,7 +70,50 @@ export default function StudentInfo({
     setModalOpen,
     onCancel,
     academic_year_and_semester,
+    dropdowns,
 }: StudentInfoProps) {
+    // Entity Dropdowns
+
+    const campusArr = dropdowns.find(
+        (item) => item.title === 'Campuses',
+    )?.dropdowns;
+
+    const civilStatusArr = dropdowns.find(
+        (item) => item.title === 'Civil Status',
+    )?.dropdowns;
+
+    const coursesArr = dropdowns.find(
+        (item) => item.title === 'Courses',
+    )?.dropdowns;
+
+    const equityIndicatorArr = dropdowns.find(
+        (item) => item.title === 'Equity Indicator',
+    )?.dropdowns;
+
+    const financerArr = dropdowns.find(
+        (item) => item.title === 'Financer',
+    )?.dropdowns;
+
+    const religionArr = dropdowns.find(
+        (item) => item.title === 'Religion',
+    )?.dropdowns;
+
+    const sexualOrientArr = dropdowns.find(
+        (item) => item.title === 'Sexual Orientation',
+    )?.dropdowns;
+
+    const studentTypeArr = dropdowns.find(
+        (item) => item.title === 'Student Type',
+    )?.dropdowns;
+
+    const suffixArr = dropdowns.find(
+        (item) => item.title === 'Suffix',
+    )?.dropdowns;
+
+    const yearLevelsArr = dropdowns.find(
+        (item) => item.title === 'Year Levels',
+    )?.dropdowns;
+
     const [citizenArr, setCitizenArr] = useState<string[]>([]);
 
     const [religionPopover, setReligionPopover] = useState(false);
@@ -169,7 +203,7 @@ export default function StudentInfo({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                {yearLevelsArr.map((item, index) => (
+                                {yearLevelsArr?.map((item, index) => (
                                     <SelectItem key={index} value={item}>
                                         {item}
                                     </SelectItem>
@@ -196,7 +230,7 @@ export default function StudentInfo({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                {campusArr.map((item, index) => (
+                                {campusArr?.map((item, index) => (
                                     <SelectItem key={index} value={item}>
                                         {item}
                                     </SelectItem>
@@ -247,7 +281,7 @@ export default function StudentInfo({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                {studentTypeArr.map((item, index) => (
+                                {studentTypeArr?.map((item, index) => (
                                     <SelectItem key={index} value={item}>
                                         {item}
                                     </SelectItem>
@@ -276,7 +310,7 @@ export default function StudentInfo({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
-                            {coursesArr.map((item, index) => (
+                            {coursesArr?.map((item, index) => (
                                 <SelectItem key={index} value={item}>
                                     {item}
                                 </SelectItem>
@@ -323,7 +357,7 @@ export default function StudentInfo({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                {equityIndicatorArr.map((item, index) => (
+                                {equityIndicatorArr?.map((item, index) => (
                                     <SelectItem key={index} value={item}>
                                         {item}
                                     </SelectItem>
@@ -418,7 +452,7 @@ export default function StudentInfo({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                {suffixArr.map((item, index) => (
+                                {suffixArr?.map((item, index) => (
                                     <SelectItem key={index} value={item}>
                                         {item}
                                     </SelectItem>
@@ -545,7 +579,7 @@ export default function StudentInfo({
                                     </CommandEmpty>
 
                                     <CommandGroup>
-                                        {religionArr.map((item, index) => (
+                                        {religionArr?.map((item, index) => (
                                             <CommandItem
                                                 key={index}
                                                 value={item}
@@ -668,7 +702,7 @@ export default function StudentInfo({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                {civilStatusArr.map((item, index) => (
+                                {civilStatusArr?.map((item, index) => (
                                     <SelectItem key={index} value={item}>
                                         {item}
                                     </SelectItem>
@@ -699,7 +733,7 @@ export default function StudentInfo({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                {sexualOrientArr.map((item, index) => (
+                                {sexualOrientArr?.map((item, index) => (
                                     <SelectItem key={index} value={item}>
                                         {item}
                                     </SelectItem>
@@ -773,7 +807,7 @@ export default function StudentInfo({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                {financerArr.map((item, index) => (
+                                {financerArr?.map((item, index) => (
                                     <SelectItem key={index} value={item}>
                                         {item}
                                     </SelectItem>

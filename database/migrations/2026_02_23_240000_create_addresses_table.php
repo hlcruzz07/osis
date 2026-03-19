@@ -15,12 +15,12 @@ return new class extends Migration {
             $table->unsignedBigInteger('student_id')->nullable();
             $table->unsignedBigInteger('guardian_id')->nullable();
 
-            $table->string('island');
-            $table->string('region');
-            $table->string('province');
-            $table->string('city');
-            $table->string('brgy');
-            $table->string('zip_code');
+            $table->text('island');
+            $table->text('region');
+            $table->text('province');
+            $table->text('city');
+            $table->text('brgy');
+            $table->text('zip_code');
 
             $table->foreign('student_id')
                 ->references('id')

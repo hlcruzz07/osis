@@ -32,44 +32,24 @@ class StoreStudentSubmission implements ShouldQueue
 
         DB::transaction(function () use ($studentRepo, $guardianRepo, $answerRepo) {
 
-            $student_data = Arr::except($this->data, [
-                'education',
-                'family',
-                'answers',
-                'is_agree',
-                'student.address'
-            ])['student'];
-
-            $address_data = data_get($this->data, 'student.address');
-            $education_data = collect(data_get($this->data, 'education'))->filter()->values()->toArray();
-            $guardians_data = data_get($this->data, 'family.guardians');
-            $siblings_data = data_get($this->data, 'family.siblings');
-            $answers_data = data_get($this->data, 'answers');
-
-            $student_main_answers = collect($answers_data)
-                ->filter(fn($item) => is_null($item['sub_question_id']))
-                ->values()
-                ->toArray();
-
-            $student_sub_answers = collect($answers_data)
-                ->filter(fn($item) => !is_null($item['sub_question_id']) && !is_null($item['answer']))
-                ->values()
-                ->toArray();
-
             // INSERTIONS
-            $student_id = $studentRepo->storeStudent($student_data);
+            $student_id = $studentRepo->storeStudent($this->data['student']);
 
-            $studentRepo->storeStudentAddress($address_data, $student_id);
+            $studentRepo->storeStudentAddress($this->data['address'], $student_id);
 
-            $studentRepo->storeSiblings($siblings_data, $student_id);
+            if (!empty($this->data['siblings'])) {
+                $studentRepo->storeSiblings($this->data['siblings'], $student_id);
+            }
 
-            $studentRepo->storeStudentEducation($education_data, $student_id);
+            $studentRepo->storeStudentEducation($this->data['education'], $student_id);
 
-            $guardianRepo->store($guardians_data, $student_id);
+            $guardianRepo->store($this->data['guardians'], $student_id);
 
-            $answerRepo->storeAnswers($student_main_answers, $student_id);
+            $answerRepo->storeAnswers($this->data['answers'], $student_id);
 
-            $answerRepo->storeSubAnswers($student_sub_answers, $student_id);
+            if (!empty($this->data['sub_answers'])) {
+                $answerRepo->storeSubAnswers($this->data['sub_answers'], $student_id);
+            }
         });
     }
 }

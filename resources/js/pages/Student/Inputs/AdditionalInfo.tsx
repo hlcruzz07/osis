@@ -222,8 +222,6 @@ export default function AdditionalInfo({
         setData('answers', updatedAnswers);
     };
 
-    console.log(questions);
-
     return (
         <>
             <Heading

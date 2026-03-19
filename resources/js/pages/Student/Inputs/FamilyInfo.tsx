@@ -37,21 +37,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
-import {
-    civilStatusArr,
-    educAttainmentArr,
-    equityIndicatorArr,
-    familyRoleArr,
-    financerArr,
-    houseMonthlyIncomeArr,
-    lifeStatusArr,
-    natureOfResidenceArr,
-    parentsMaritalStatusArr,
-    religionArr,
-    schoolType,
-    sexualOrientArr,
-    suffixArr,
-} from '@/lib/dropdowns';
+
 import {
     capitalizeString,
     cn,
@@ -62,6 +48,7 @@ import {
     fetchProvinceByRegionId,
     fetchRegionsByIslandId,
 } from '@/lib/utils';
+import { DropdownProps } from '@/types/dropdowns';
 import {
     Asterisk,
     Building2,
@@ -85,17 +72,58 @@ type StudentInfoProps = {
     data: StudentUseFormProps;
     setData: (key: string, value: any) => void;
     errors: Record<string, string>;
-    setModalOpen?: () => void;
-    onCancel?: () => void;
+    dropdowns: DropdownProps[];
 };
 
 export default function FamilyInfo({
     data,
     setData,
     errors,
-    setModalOpen,
-    onCancel,
+    dropdowns,
 }: StudentInfoProps) {
+    //     import {
+    //     educAttainmentArr,
+    //     familyRoleArr,
+    //     houseMonthlyIncomeArr,
+    //     lifeStatusArr,
+    //     natureOfResidenceArr,
+    //     parentsMaritalStatusArr,
+    //     religionArr,
+    //     suffixArr,
+    // } from '@/lib/dropdowns';
+
+    const educAttainmentArr = dropdowns.find(
+        (item) => item.title === 'Educational Attainment',
+    )?.dropdowns;
+
+    const familyRoleArr = dropdowns.find(
+        (item) => item.title === 'Family Role',
+    )?.dropdowns;
+
+    const houseMonthlyIncomeArr = dropdowns.find(
+        (item) => item.title === 'Household Monthly Income',
+    )?.dropdowns;
+
+    const lifeStatusArr = dropdowns.find(
+        (item) => item.title === 'Life Status',
+    )?.dropdowns;
+
+    const natureOfResidenceArr = dropdowns.find(
+        (item) => item.title === 'Nature Of Residence',
+    )?.dropdowns;
+
+    const parentsMaritalStatusArr = dropdowns.find(
+        (item) => item.title === 'Parents Marital Status',
+    )?.dropdowns;
+
+    const religionArr = dropdowns.find(
+        (item) => item.title === 'Religion',
+    )?.dropdowns;
+
+    const suffixArr = dropdowns.find(
+        (item) => item.title === 'Suffix',
+    )?.dropdowns;
+
     const [siblingCount, setSiblingCount] = useState<number>(0);
     const [selectedMartialStatus, setSelectedMaritalStatus] = useState(
         data.student.parent_marital_status ?? '',
@@ -398,7 +426,6 @@ export default function FamilyInfo({
                     `family.guardians.${index}.address.city`,
                     data.student.address.city,
                 );
-                console.log(`City set to: ${data.student.address.city}`);
             }, 100);
 
             // Fetch barangays for the city
@@ -430,8 +457,6 @@ export default function FamilyInfo({
             setIsUsingAddress(false);
         }
     };
-
-    console.log(data);
 
     return (
         <>
@@ -481,7 +506,7 @@ export default function FamilyInfo({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                {parentsMaritalStatusArr.map((item, index) => (
+                                {parentsMaritalStatusArr?.map((item, index) => (
                                     <SelectItem key={index} value={item}>
                                         {item}
                                     </SelectItem>
@@ -527,7 +552,7 @@ export default function FamilyInfo({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                {houseMonthlyIncomeArr.map((item, index) => (
+                                {houseMonthlyIncomeArr?.map((item, index) => (
                                     <SelectItem key={index} value={item}>
                                         {item}
                                     </SelectItem>
@@ -585,7 +610,7 @@ export default function FamilyInfo({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                {natureOfResidenceArr.map((item, index) => (
+                                {natureOfResidenceArr?.map((item, index) => (
                                     <SelectItem key={index} value={item}>
                                         {item}
                                     </SelectItem>
@@ -801,7 +826,7 @@ export default function FamilyInfo({
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectGroup>
-                                                {suffixArr.map(
+                                                {suffixArr?.map(
                                                     (item, index) => (
                                                         <SelectItem
                                                             key={index}
@@ -906,7 +931,7 @@ export default function FamilyInfo({
                         <SelectContent>
                             <SelectGroup>
                                 {familyRoleArr
-                                    .filter(
+                                    ?.filter(
                                         (role) =>
                                             role !== 'Other' &&
                                             !selectedGuardians.includes(role),
@@ -1073,7 +1098,7 @@ export default function FamilyInfo({
 
                                         <SelectContent>
                                             <SelectGroup>
-                                                {suffixArr.map(
+                                                {suffixArr?.map(
                                                     (item, index) => (
                                                         <SelectItem
                                                             key={index}
@@ -1214,7 +1239,7 @@ export default function FamilyInfo({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            {religionArr.map((item, index) => (
+                                            {religionArr?.map((item, index) => (
                                                 <SelectItem
                                                     key={index}
                                                     value={item}
@@ -1320,7 +1345,7 @@ export default function FamilyInfo({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            {educAttainmentArr.map(
+                                            {educAttainmentArr?.map(
                                                 (item, index) => (
                                                     <SelectItem
                                                         key={index}
@@ -1373,7 +1398,7 @@ export default function FamilyInfo({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            {lifeStatusArr.map(
+                                            {lifeStatusArr?.map(
                                                 (item, index) => (
                                                     <SelectItem
                                                         key={index}
@@ -1386,6 +1411,80 @@ export default function FamilyInfo({
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
+
+                                {data.family.guardians[index].life_status ===
+                                    'Deceased' && (
+                                    <>
+                                        <div className="flex flex-col gap-3">
+                                            <Label>
+                                                Cause of Death{' '}
+                                                <Asterisk
+                                                    size={12}
+                                                    color="red"
+                                                />
+                                            </Label>
+                                            <Input
+                                                type="text"
+                                                maxLength={100}
+                                                value={
+                                                    data.family.guardians?.[
+                                                        index
+                                                    ]?.cause_of_death ?? ''
+                                                }
+                                                onChange={(e) =>
+                                                    setData(
+                                                        `family.guardians.${index}.cause_of_death`,
+                                                        capitalizeString(
+                                                            e.target.value,
+                                                        ),
+                                                    )
+                                                }
+                                                placeholder="Enter Cause of death"
+                                            />
+                                            <InputError
+                                                message={
+                                                    errors[
+                                                        `family.guardians.${index}.cause_of_death`
+                                                    ]
+                                                }
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col gap-3">
+                                            <LabelExample
+                                                title="Year of Death"
+                                                isRequired
+                                                example="2012, 2015"
+                                            />
+                                            <Input
+                                                type="number"
+                                                maxLength={100}
+                                                value={
+                                                    data.family.guardians?.[
+                                                        index
+                                                    ]?.year_of_death ?? ''
+                                                }
+                                                onChange={(e) =>
+                                                    setData(
+                                                        `family.guardians.${index}.year_of_death`,
+                                                        e.target.value.slice(
+                                                            0,
+                                                            4,
+                                                        ),
+                                                    )
+                                                }
+                                                placeholder="Enter Cause of death"
+                                            />
+                                            <InputError
+                                                message={
+                                                    errors[
+                                                        `family.guardians.${index}.year_of_death`
+                                                    ]
+                                                }
+                                            />
+                                        </div>
+                                    </>
+                                )}
                                 <InputError
                                     message={
                                         errors[

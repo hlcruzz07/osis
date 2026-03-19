@@ -29,15 +29,6 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
-    civilStatusArr,
-    equityIndicatorArr,
-    financerArr,
-    religionArr,
-    schoolType,
-    sexualOrientArr,
-    suffixArr,
-} from '@/lib/dropdowns';
-import {
     capitalizeString,
     cn,
     fetchBrgyByCityId,
@@ -47,6 +38,7 @@ import {
     fetchProvinceByRegionId,
     fetchRegionsByIslandId,
 } from '@/lib/utils';
+import { DropdownProps } from '@/types/dropdowns';
 import {
     Asterisk,
     Building2,
@@ -66,16 +58,18 @@ type StudentInfoProps = {
     data: StudentUseFormProps;
     setData: (key: string, value: any) => void;
     errors: Record<string, string>;
-    setModalOpen?: () => void;
-    onCancel?: () => void;
+    dropdowns: DropdownProps[];
 };
 export default function EducationInfo({
     data,
     setData,
     errors,
-    setModalOpen,
-    onCancel,
+    dropdowns,
 }: StudentInfoProps) {
+    const schoolTypeArr = dropdowns.find(
+        (item) => item.title === 'School Type',
+    )?.dropdowns;
+
     return (
         <>
             <Heading
@@ -137,7 +131,7 @@ export default function EducationInfo({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    {schoolType.map((item, index) => (
+                                    {schoolTypeArr?.map((item, index) => (
                                         <SelectItem key={index} value={item}>
                                             {item}
                                         </SelectItem>
@@ -302,7 +296,7 @@ export default function EducationInfo({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    {schoolType.map((item, index) => (
+                                    {schoolTypeArr?.map((item, index) => (
                                         <SelectItem key={index} value={item}>
                                             {item}
                                         </SelectItem>
@@ -470,7 +464,7 @@ export default function EducationInfo({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    {schoolType.map((item, index) => (
+                                    {schoolTypeArr?.map((item, index) => (
                                         <SelectItem key={index} value={item}>
                                             {item}
                                         </SelectItem>
@@ -672,14 +666,16 @@ export default function EducationInfo({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            {schoolType.map((item, index) => (
-                                                <SelectItem
-                                                    key={index}
-                                                    value={item}
-                                                >
-                                                    {item}
-                                                </SelectItem>
-                                            ))}
+                                            {schoolTypeArr?.map(
+                                                (item, index) => (
+                                                    <SelectItem
+                                                        key={index}
+                                                        value={item}
+                                                    >
+                                                        {item}
+                                                    </SelectItem>
+                                                ),
+                                            )}
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>

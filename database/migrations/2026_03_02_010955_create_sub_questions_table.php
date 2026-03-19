@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('sub_questions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('question_id');
-            $table->string('sub_question');
+            $table->text('sub_question');
             $table->enum('answer_type', ['text', 'number', 'date', 'select']);
             $table->boolean('is_deleted')->default(false);
 

@@ -16,6 +16,7 @@ class SubQuestion extends Model
 
     protected $casts =
         [
+            'sub_question' => 'encrypted',
             'is_required' => 'boolean',
             'is_deleted' => 'boolean',
         ];

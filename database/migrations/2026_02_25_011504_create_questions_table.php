@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->string('question');
+            $table->text('question');
             $table->enum('answer_type', ['text', 'number', 'date', 'select']);
             $table->boolean('is_deleted')->default(false);
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

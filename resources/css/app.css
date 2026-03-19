@@ -74,7 +74,7 @@ input[type='number'] {
 
 :root {
     --main-color: #2ca87f;
-    --secondary-color: #3b82f6;
+    --secondary-color: #16a34a;
     --main-color-dark: #14532d;
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
@@ -196,4 +196,10 @@ input[type='number'] {
     .table td[data-label='Action'] div {
         justify-content: flex-end;
     }
+}
+
+table th,
+table td {
+    padding: 0.8rem;
+    font-size: small;
 }

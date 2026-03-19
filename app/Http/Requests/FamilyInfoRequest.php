@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Repositories\EntityDropdownRepo;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,7 +23,16 @@ class FamilyInfoRequest extends FormRequest
      */
     public function rules(): array
     {
+        $entityRepo = new EntityDropdownRepo();
+
+        $validHouseMonthlyIncome = $entityRepo->getDropdownsByTitle("Household Monthly Income");
+        $validSuffixes = $entityRepo->getDropdownsByTitle("Suffix");
+        $validReligion = $entityRepo->getDropdownsByTitle("Religion");
+        $validEducationalAttainment = $entityRepo->getDropdownsByTitle("Educational Attainment");
+        $validLifeStatus = $entityRepo->getDropdownsByTitle("Life Status");
+
         $has_siblings = count($this->input('family.siblings', [])) > 0;
+
 
         return [
 
@@ -32,15 +42,7 @@ class FamilyInfoRequest extends FormRequest
 
             'student.house_monthly_income' => [
                 'required',
-                Rule::in([
-                    'Less than Php 10,957',
-                    'Php 10,958 - Php 21,193',
-                    'Php 21,194 - Php 43,823',
-                    'Php 43,824 - Php 76,668',
-                    'Php 76,669 - Php 131,483',
-                    'Php 131,484 - Php 219,319',
-                    'Php 219,140 and above',
-                ])
+                Rule::in($validHouseMonthlyIncome)
             ],
 
             'student.ordinal_position' => 'required|max:50',
@@ -69,13 +71,13 @@ class FamilyInfoRequest extends FormRequest
             ],
 
             'family.siblings.*.mname' => 'nullable|max:50',
-            'family.siblings.*.suffix' => ['nullable', Rule::in(['Jr', 'Sr', 'I', 'II', 'III', 'IV', 'V'])],
+            'family.siblings.*.suffix' => ['nullable', Rule::in($validSuffixes)],
 
             // Guardians Inputs
             'family.guardians.*.fname' => 'required|string|max:50',
             'family.guardians.*.mname' => 'nullable|string|max:50',
             'family.guardians.*.lname' => 'required|string|max:50',
-            'family.guardians.*.suffix' => ['nullable', Rule::in(['Jr', 'Sr', 'I', 'II', 'III', 'IV', 'V'])],
+            'family.guardians.*.suffix' => ['nullable', Rule::in($validSuffixes)],
 
             'family.guardians.*.birthdate' => 'required|date',
             'family.guardians.*.birthplace' => 'nullable|string|max:150',
@@ -85,57 +87,19 @@ class FamilyInfoRequest extends FormRequest
                 'numeric',
                 'starts_with:9',
                 'digits:10',
-                'unique:guardians,mobile_num'
             ],
 
             'family.guardians.*.religion' => [
                 'required',
-                Rule::in([
-                    'Roman Catholic',
-                    'Baptist',
-                    'Methodist',
-                    'Pentecostal',
-                    'Evangelical',
-                    'Seventh-day Adventist',
-                    'Lutheran',
-                    'Presbyterian',
-                    'United Church Of Christ In the Philippines (UCCP)',
-                    'Iglesia Ni Cristo',
-                    'Sunni Islam',
-                    'Shia Islam',
-                    'Aglipayan Church (Philippine Independent Church)',
-                    "Jehovah's Witnesses",
-                    'Church Of Jesus Christ Of Latter-day Saints (Mormons)',
-                    'Judaism',
-                    'Mahayana Buddhism',
-                    'Theravada Buddhism',
-                    'Vaishnavism (Hinduism)',
-                    'Shaivism (Hinduism)',
-                    'Lumad Spirituality',
-                    'Cordillera Indigenous Religions',
-                    'Anito / Ancestor Worship',
-                    'Shamanistic Practices',
-                    'Agnostic',
-                    'Atheist',
-                    'Humanist',
-                    'Secular',
-                ])
+                Rule::in($validReligion)
             ],
             'family.guardians.*.citizenship' => 'required|string|max:50',
             'family.guardians.*.highest_educ_attainment' => [
                 'required',
-                Rule::in([
-                    'No Formal Education',
-                    'Elementary Graduate',
-                    'High School Graduate',
-                    'Vocational',
-                    'College Level',
-                    'College Graduate',
-                    'Post Graduate',
-                ]),
+                Rule::in($validEducationalAttainment),
                 'string'
             ],
-            'family.guardians.*.life_status' => 'required|string|in:Living,Deceased',
+            'family.guardians.*.life_status' => ['required', 'string', Rule::in($validLifeStatus)],
             'family.guardians.*.is_contact_person' => 'boolean',
             'family.guardians' => [
                 function ($attribute, $value, $fail) {
@@ -198,8 +162,6 @@ class FamilyInfoRequest extends FormRequest
                 'Mobile number must start with 9.',
             'family.guardians.*.mobile_num.digits' =>
                 'Mobile number must be exactly 10 digits.',
-            'family.guardians.*.mobile_num.unique' =>
-                'Mobile number is already taken.',
 
             'family.guardians.*.religion.required' => 'Religion is required.',
             'family.guardians.*.religion.in' => 'Selected religion is invalid.',
@@ -232,4 +194,6 @@ class FamilyInfoRequest extends FormRequest
                 'ZIP code must be exactly 4 digits.',
         ];
     }
+
+
 }

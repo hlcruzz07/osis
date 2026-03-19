@@ -15,6 +15,7 @@ class StudentAnswer extends Model
         'answer_boolean',
     ];
 
+
     public function student()
     {
         return $this->belongsTo(Student::class, 'student_id');

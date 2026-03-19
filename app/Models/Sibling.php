@@ -13,7 +13,12 @@ class Sibling extends Model
         'lname',
         'suffix',
         'is_attending_college',
-        'is_employed'
+        'is_employed',
+
+        'fname_hash',
+        'mname_hash',
+        'lname_hash',
+        'suffix_hash',
     ];
 
     protected $cast = [

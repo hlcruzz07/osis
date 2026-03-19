@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Repositories\EntityDropdownRepo;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,6 +23,9 @@ class EducationInfoRequest extends FormRequest
      */
     public function rules(): array
     {
+        $entity = new EntityDropdownRepo();
+
+        $validSchoolType = $entity->getDropdownsByTitle("School Type");
         $isTransferee = $this->input('student.student_type') === 'Transferee';
         $hasCollege = !empty(array_filter((array) $this->input('education.college')));
 
@@ -30,14 +34,14 @@ class EducationInfoRequest extends FormRequest
             'education.elementary.education_level' => 'required|in:Elementary',
             'education.elementary.school_name' => 'required|max:150',
             'education.elementary.school_address' => 'required|max:250',
-            'education.elementary.school_type' => 'required|in:Public,Private',
+            'education.elementary.school_type' => ['required', Rule::in($validSchoolType)],
             'education.elementary.year_graduated' => 'required',
             'education.elementary.general_average' => 'required|numeric|max:100|min:75',
 
             'education.junior_high.education_level' => 'required|in:Junior Highschool',
             'education.junior_high.school_name' => 'required|max:150',
             'education.junior_high.school_address' => 'required|max:250',
-            'education.junior_high.school_type' => 'required|in:Public,Private',
+            'education.junior_high.school_type' => ['required', Rule::in($validSchoolType)],
             'education.junior_high.year_graduated' => 'required',
             'education.junior_high.general_average' => 'required|numeric|max:100|min:75',
 
@@ -45,7 +49,7 @@ class EducationInfoRequest extends FormRequest
             'education.senior_high.school_name' => 'required|max:150',
             'education.senior_high.school_address' => 'required|max:250',
             'education.senior_high.strand' => 'required|max:100',
-            'education.senior_high.school_type' => 'required|in:Public,Private',
+            'education.senior_high.school_type' => ['required', Rule::in($validSchoolType)],
             'education.senior_high.year_graduated' => 'required',
             'education.senior_high.general_average' => 'required|numeric|max:100|min:75',
 
@@ -93,8 +97,6 @@ class EducationInfoRequest extends FormRequest
     public function messages(): array
     {
         return [
-
-
             'education.elementary.education_level.required' => 'Elementary education level is required.',
             'education.elementary.education_level.in' => 'Elementary education level must be Elementary.',
 
