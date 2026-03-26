@@ -21,7 +21,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            cd /public_html/subdomains/osis.testing
+            cd public_html/subdomains/osis.testing
 
             echo "📥 Pull latest code"
             git pull origin main
