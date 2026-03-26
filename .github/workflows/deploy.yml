@@ -122,4 +122,4 @@ jobs:
             echo "🔄 Restart queue (if running)"
             php artisan queue:restart || true
 
-            echo "✅ Deployment complete"
+            echo "✅ Deployment completed"
