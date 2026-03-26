@@ -104,6 +104,7 @@ jobs:
 
             echo "📦 Install dependencies"
             composer install --no-dev --optimize-autoloader
+            npm run build
 
             echo "🔗 Storage link"
             php artisan storage:link || true
