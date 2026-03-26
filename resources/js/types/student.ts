@@ -6,7 +6,7 @@ type Address = {
     province: string;
     city: string;
     brgy: string;
-    zip_code: number | null;
+    zip_code: string | null;
 };
 
 export type Student = {
@@ -41,6 +41,7 @@ export type Student = {
 
     family_size: string;
     nature_residence: string;
+    parent_martial_status: string;
     house_monthly_income: string;
     ordinal_position: string;
 
@@ -66,13 +67,13 @@ export type Student = {
         role: string;
         birthdate: string | null;
         birthplace: string | null;
-        mobile_num: number | null;
+        mobile_num: string | null;
         religion: string;
         citizenship: string | null;
         highest_educ_attainment: string;
         life_status: string;
         cause_of_death?: string | null;
-        year_of_death?: number | null;
+        year_of_death?: string | null;
         occupation: string | null;
         is_contact_person: boolean;
 

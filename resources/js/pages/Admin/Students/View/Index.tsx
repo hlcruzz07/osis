@@ -16,14 +16,16 @@ import {
     PersonStanding,
     SaveIcon,
     School2Icon,
+    User,
     Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import StudentTab from './Tabs/StudentTab';
+
 import { DropdownProps } from '@/types/dropdowns';
 import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner';
 import { useAppearance } from '@/hooks/use-appearance';
+import StudentTab from './Tabs/StudentTab';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -63,12 +65,8 @@ export default function Index() {
             <Head title="Students" />
 
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl border p-4">
+                <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto">
                     <div className="flex flex-col items-start justify-between lg:flex-row">
-                        <Heading
-                            title="Student Profile"
-                            description="View comprehensive information about this student, including personal details, educational background, family relationships, and submitted records."
-                        />
                         <Link href={students().url}>
                             <Button variant="outline">
                                 <ArrowLeft /> Back
@@ -76,19 +74,25 @@ export default function Index() {
                         </Link>
                     </div>
 
-                    <Tabs defaultValue="personal">
+                    <Tabs defaultValue="student">
                         <TabsList className="flex h-auto! w-full flex-col lg:flex-row">
                             <TabsTrigger
-                                value="personal"
+                                value="student"
                                 className="w-full py-2 sm:px-0 lg:px-5 lg:py-3"
                             >
-                                <ContactIcon /> Personal Details
+                                <ContactIcon /> Student Information
                             </TabsTrigger>
                             <TabsTrigger
-                                value="student_info"
+                                value="family"
                                 className="w-full py-2 sm:px-0 lg:px-5 lg:py-3"
                             >
-                                <GraduationCap /> Student Information
+                                <ContactIcon /> Family Information
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="education"
+                                className="w-full py-2 sm:px-0 lg:px-5 lg:py-3"
+                            >
+                                <GraduationCap /> Education Information
                             </TabsTrigger>
                             <TabsTrigger
                                 value="guardians"
@@ -103,14 +107,11 @@ export default function Index() {
                                 <PersonStanding /> Siblings
                             </TabsTrigger>
                         </TabsList>
-                        <TabsContent value="student_info">
+                        <TabsContent value="student">
                             <StudentTab
                                 dropdowns={dropdowns}
                                 studentData={student}
                             />
-                        </TabsContent>
-                        <TabsContent value="personal">
-                            Change your password here.
                         </TabsContent>
                     </Tabs>
                 </div>

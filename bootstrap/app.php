@@ -25,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'check.student.submitted' => CheckStudentSubmitted::class,
+            // 'check.student.submitted' => CheckStudentSubmitted::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

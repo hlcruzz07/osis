@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AdditionalInfoRequest;
 use App\Http\Requests\EducationInfoRequest;
 use App\Http\Requests\FamilyInfoRequest;
+use App\Http\Requests\StudentAddressInfo;
 use App\Http\Requests\StudentContactAddressInfo;
 use App\Http\Requests\StudentInfoRequest;
 use App\Http\Requests\StudentStoreRequest;
@@ -15,9 +16,10 @@ use App\Repositories\AnswerRepo;
 use App\Repositories\GuardianRepo;
 use App\Repositories\QuestionRepo;
 use App\Repositories\StudentRepo;
-use Arr;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class StudentController extends Controller
@@ -51,7 +53,7 @@ class StudentController extends Controller
         return back()->with('success', "Student's information validated");
     }
 
-    public function validateStudentContactAddress(StudentContactAddressInfo $request)
+    public function validateAddress(StudentAddressInfo $request)
     {
         return back()->with('success', "Student's address information validated");
     }
@@ -81,22 +83,12 @@ class StudentController extends Controller
 
             $data = $request->all();
 
-
-            $student_data =
-                Arr::except($data, [
-                    'education',
-                    'family',
-                    'answers',
-                    'is_agree',
-                    'student.address'
-                ])['student'];
-
-            $address_data = data_get($data, 'student.address');
-
-
-            $education_data = collect(data_get($data, 'education'))->filter()->values()->toArray();
-            $guardians_data = data_get($data, 'family.guardians');
-            $siblings_data = data_get($data, 'family.siblings') ?? null;
+            $student_data = data_get($data, 'student');
+            $address_data = data_get($data, 'address');
+            $educations_data = data_get($data, 'educations');
+            $family_data = data_get($data, 'family');
+            $guardians_data = data_get($data, 'guardians');
+            $siblings_data = data_get($data, 'siblings') ?? null;
             $answers_data = data_get($data, 'answers');
 
             $student_main_answers = collect($answers_data)
@@ -114,7 +106,8 @@ class StudentController extends Controller
                 'student' => $student_data,
                 'address' => $address_data,
                 'siblings' => $siblings_data,
-                'education' => $education_data,
+                'educations' => $educations_data,
+                'family' => $family_data,
                 'guardians' => $guardians_data,
                 'answers' => $student_main_answers,
                 'sub_answers' => $student_sub_answers,

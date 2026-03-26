@@ -124,6 +124,11 @@ class Student extends Model
         return $this->hasMany(Sibling::class, 'student_id');
     }
 
+    public function familyInfo()
+    {
+        return $this->hasOne(FamilyInfo::class, 'student_id');
+    }
+
     public function answers()
     {
         return $this->hasMany(StudentAnswer::class, 'student_id');

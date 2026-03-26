@@ -31,77 +31,76 @@ class FamilyInfoRequest extends FormRequest
         $validEducationalAttainment = $entityRepo->getDropdownsByTitle("Educational Attainment");
         $validLifeStatus = $entityRepo->getDropdownsByTitle("Life Status");
 
-        $has_siblings = count($this->input('family.siblings', [])) > 0;
-
+        $has_siblings = count($this->input('siblings', [])) > 0;
 
         return [
 
-            'student.family_size' => 'required|integer|min:1|max:25',
-            'student.parent_marital_status' => 'required|max:50',
-            'student.nature_residence' => 'required|max:50',
+            'family.family_size' => 'required|integer|min:1|max:25',
+            'family.parent_martial_status' => 'required|max:50',
+            'family.nature_residence' => 'required|max:50',
 
-            'student.house_monthly_income' => [
+            'family.house_monthly_income' => [
                 'required',
                 Rule::in($validHouseMonthlyIncome)
             ],
 
-            'student.ordinal_position' => 'required|max:50',
+            'family.ordinal_position' => 'required|max:50',
 
-            'family.siblings' => [
+            'siblings' => [
                 Rule::requiredIf($has_siblings),
                 'array',
             ],
 
-            'family.siblings.*.fname' => [
+            'siblings.*.fname' => [
                 Rule::requiredIf($has_siblings),
 
                 'max:150'
             ],
 
-            'family.siblings.*.lname' => [
+            'siblings.*.lname' => [
                 Rule::requiredIf($has_siblings),
 
                 'max:150'
             ],
 
-            'family.siblings.*.gender' => [
+            'siblings.*.gender' => [
                 Rule::requiredIf($has_siblings),
                 'string',
                 'in:Male,Female'
             ],
 
-            'family.siblings.*.mname' => 'nullable|max:50',
-            'family.siblings.*.suffix' => ['nullable', Rule::in($validSuffixes)],
+            'siblings.*.mname' => 'nullable|max:50',
+            'siblings.*.suffix' => ['nullable', Rule::in($validSuffixes)],
 
             // Guardians Inputs
-            'family.guardians.*.fname' => 'required|string|max:50',
-            'family.guardians.*.mname' => 'nullable|string|max:50',
-            'family.guardians.*.lname' => 'required|string|max:50',
-            'family.guardians.*.suffix' => ['nullable', Rule::in($validSuffixes)],
+            'guardians.*.fname' => 'required|string|max:50',
+            'guardians.*.mname' => 'nullable|string|max:50',
+            'guardians.*.lname' => 'required|string|max:50',
+            'guardians.*.suffix' => ['nullable', Rule::in($validSuffixes)],
 
-            'family.guardians.*.birthdate' => 'required|date',
-            'family.guardians.*.birthplace' => 'nullable|string|max:150',
-            'family.guardians.*.mobile_num' => [
+            'guardians.*.birthdate' => 'required|date',
+            'guardians.*.birthplace' => 'nullable|string|max:150',
+            'guardians.*.mobile_num' => [
                 'nullable',
-                'required_if:family.guardians.*.is_contact_person,true',
+                'required_if:guardians.*.is_contact_person,true',
                 'numeric',
                 'starts_with:9',
                 'digits:10',
             ],
 
-            'family.guardians.*.religion' => [
+            'guardians.*.religion' => [
                 'required',
                 Rule::in($validReligion)
             ],
-            'family.guardians.*.citizenship' => 'required|string|max:50',
-            'family.guardians.*.highest_educ_attainment' => [
+            'guardians.*.citizenship' => 'required|string|max:50',
+            'guardians.*.highest_educ_attainment' => [
                 'required',
                 Rule::in($validEducationalAttainment),
                 'string'
             ],
-            'family.guardians.*.life_status' => ['required', 'string', Rule::in($validLifeStatus)],
-            'family.guardians.*.is_contact_person' => 'boolean',
-            'family.guardians' => [
+            'guardians.*.life_status' => ['required', 'string', Rule::in($validLifeStatus)],
+            'guardians.*.is_contact_person' => 'boolean',
+            'guardians' => [
                 function ($attribute, $value, $fail) {
                     $count = collect($value)->where('is_contact_person', true)->count();
                     if ($count !== 1) {
@@ -109,16 +108,18 @@ class FamilyInfoRequest extends FormRequest
                     }
                 }
             ],
-            'family.guardians.*.occupation' => 'nullable|string|max:100',
+            'guardians.*.occupation' => 'nullable|string|max:100',
+            'guardians.*.cause_of_death' => 'nullable|required_if:guardians.*.life_status,Deceased|string|max:100',
+            'guardians.*.year_of_death' => 'nullable|required_if:guardians.*.life_status,Deceased|digits:4',
 
 
             // Address
-            'family.guardians.*.address.island' => ['required', Rule::in(['Luzon', 'Visayas', 'Mindanao'])],
-            'family.guardians.*.address.region' => 'required',
-            'family.guardians.*.address.province' => 'required',
-            'family.guardians.*.address.city' => 'required',
-            'family.guardians.*.address.brgy' => 'required',
-            'family.guardians.*.address.zip_code' => 'required|numeric|digits:4',
+            'guardians.*.address.island' => ['required', Rule::in(['Luzon', 'Visayas', 'Mindanao'])],
+            'guardians.*.address.region' => 'required',
+            'guardians.*.address.province' => 'required',
+            'guardians.*.address.city' => 'required',
+            'guardians.*.address.brgy' => 'required',
+            'guardians.*.address.zip_code' => 'required|numeric|digits:4',
 
         ];
     }
@@ -128,69 +129,76 @@ class FamilyInfoRequest extends FormRequest
         return [
 
             // Family Info
-            'student.family_size.required' => 'Family size is required.',
-            'student.family_size.integer' => 'Family size must be a valid number.',
-            'student.family_size.min' => 'Family size must be at least 1.',
-            'student.family_size.max' => 'Family maximum size is 25.',
+            'family.family_size.required' => 'Family size is required.',
+            'family.family_size.integer' => 'Family size must be a valid number.',
+            'family.family_size.min' => 'Family size must be at least 1.',
+            'family.family_size.max' => 'Family maximum size is 25.',
 
-            'student.parent_marital_status.required' => 'Parent marital status is required.',
-            'student.nature_residence.required' => 'Nature of residence is required.',
+            'family.parent_martial_status.required' => 'Parent marital status is required.',
+            'family.nature_residence.required' => 'Nature of residence is required.',
 
-            'student.house_monthly_income.required' => 'Please select your house monthly income.',
-            'student.house_monthly_income.in' => 'Selected monthly income is invalid.',
+            'family.house_monthly_income.required' => 'Please select your house monthly income.',
+            'family.house_monthly_income.in' => 'Selected monthly income is invalid.',
 
-            'student.ordinal_position.required' => 'Ordinal position is required.',
-            'family.siblings.required' => 'Please provide sibling information.',
-            'family.siblings.array' => 'Siblings must be a valid list.',
+            'family.ordinal_position.required' => 'Ordinal position is required.',
+            'siblings.required' => 'Please provide sibling information.',
+            'siblings.array' => 'Siblings must be a valid list.',
 
-            'family.siblings.*.fname.required' => 'Sibling first name is required.',
-            'family.siblings.*.lname.required' => 'Sibling last name is required.',
-            'family.siblings.*.gender.required' => 'Sibling gender is required.',
-            'family.siblings.*.gender.in' => 'Sibling gender must be Male or Female.',
+            'siblings.*.fname.required' => 'Sibling first name is required.',
+            'siblings.*.lname.required' => 'Sibling last name is required.',
+            'siblings.*.gender.required' => 'Sibling gender is required.',
+            'siblings.*.gender.in' => 'Sibling gender must be Male or Female.',
 
             // Guardians
-            'family.guardians.*.fname.required' => 'Guardian first name is required.',
-            'family.guardians.*.lname.required' => 'Guardian last name is required.',
-            'family.guardians.*.birthdate.required' => 'Guardian birthdate is required.',
-            'family.guardians.*.birthdate.date' => 'Guardian birthdate must be a valid date.',
+            'guardians.*.fname.required' => 'Guardian first name is required.',
+            'guardians.*.lname.required' => 'Guardian last name is required.',
+            'guardians.*.birthdate.required' => 'Guardian birthdate is required.',
+            'guardians.*.birthdate.date' => 'Guardian birthdate must be a valid date.',
 
-            'family.guardians.*.mobile_num.required_if' =>
+            'guardians.*.mobile_num.required_if' =>
                 'Mobile number is required for the selected contact person.',
-            'family.guardians.*.mobile_num.numeric' =>
+            'guardians.*.mobile_num.numeric' =>
                 'Mobile number must contain only numbers.',
-            'family.guardians.*.mobile_num.starts_with' =>
+            'guardians.*.mobile_num.starts_with' =>
                 'Mobile number must start with 9.',
-            'family.guardians.*.mobile_num.digits' =>
+            'guardians.*.mobile_num.digits' =>
                 'Mobile number must be exactly 10 digits.',
 
-            'family.guardians.*.religion.required' => 'Religion is required.',
-            'family.guardians.*.religion.in' => 'Selected religion is invalid.',
+            'guardians.*.religion.required' => 'Religion is required.',
+            'guardians.*.religion.in' => 'Selected religion is invalid.',
 
-            'family.guardians.*.citizenship.required' => 'Citizenship is required.',
+            'guardians.*.citizenship.required' => 'Citizenship is required.',
 
-            'family.guardians.*.highest_educ_attainment.required' =>
+            'guardians.*.highest_educ_attainment.required' =>
                 'Highest educational attainment is required.',
-            'family.guardians.*.highest_educ_attainment.in' =>
+            'guardians.*.highest_educ_attainment.in' =>
                 'Selected educational attainment is invalid.',
 
-            'family.guardians.*.life_status.required' =>
+            'guardians.*.life_status.required' =>
                 'Life status is required.',
-            'family.guardians.*.life_status.in' =>
+            'guardians.*.life_status.in' =>
                 'Life status must be either Living or Deceased.',
 
-            'family.guardians.*.address.island.required' =>
+            'guardians.*.cause_of_death.required_if' => 'The cause of death is required when the guardian is marked as deceased.',
+            'guardians.*.cause_of_death.string' => 'The cause of death must be a valid text.',
+            'guardians.*.cause_of_death.max' => 'The cause of death may not exceed 100 characters.',
+
+            'guardians.*.year_of_death.required_if' => 'The year of death is required when the guardian is marked as deceased.',
+            'guardians.*.year_of_death.digits' => 'The year of death must be exactly 4 digits.',
+
+            'guardians.*.address.island.required' =>
                 'Island is required.',
-            'family.guardians.*.address.region.required' =>
+            'guardians.*.address.region.required' =>
                 'Region is required.',
-            'family.guardians.*.address.province.required' =>
+            'guardians.*.address.province.required' =>
                 'Province is required.',
-            'family.guardians.*.address.city.required' =>
+            'guardians.*.address.city.required' =>
                 'City is required.',
-            'family.guardians.*.address.brgy.required' =>
+            'guardians.*.address.brgy.required' =>
                 'Barangay is required.',
-            'family.guardians.*.address.zip_code.required' =>
+            'guardians.*.address.zip_code.required' =>
                 'ZIP code is required.',
-            'family.guardians.*.address.zip_code.digits' =>
+            'guardians.*.address.zip_code.digits' =>
                 'ZIP code must be exactly 4 digits.',
         ];
     }

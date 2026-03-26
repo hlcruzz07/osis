@@ -45,7 +45,7 @@ type StudentInfoProps = {
     setModalOpen?: () => void;
     onCancel?: () => void;
 };
-export default function ContactAddressInfo({
+export default function AddressInfo({
     data,
     setData,
     errors,
@@ -65,25 +65,25 @@ export default function ContactAddressInfo({
 
     // Reset Address
     const resetForIsland = () => {
-        setData('student.address.region', '');
-        setData('student.address.province', '');
-        setData('student.address.city', '');
-        setData('student.address.brgy', '');
+        setData('address.region', '');
+        setData('address.province', '');
+        setData('address.city', '');
+        setData('address.brgy', '');
     };
 
     const resetForRegion = () => {
-        setData('student.address.province', '');
-        setData('student.address.city', '');
-        setData('student.address.brgy', '');
+        setData('address.province', '');
+        setData('address.city', '');
+        setData('address.brgy', '');
     };
 
     const resetForProvince = () => {
-        setData('student.address.city', '');
-        setData('student.address.brgy', '');
+        setData('address.city', '');
+        setData('address.brgy', '');
     };
 
     const resetForCity = () => {
-        setData('student.address.brgy', '');
+        setData('address.brgy', '');
     };
 
     useEffect(() => {
@@ -93,58 +93,9 @@ export default function ContactAddressInfo({
     return (
         <>
             <Heading
-                title="Contact & Address"
-                description="Provide your complete contact information and current address, including email address, mobile number, island group, region, province, city/municipality, barangay, and zip code. These details will be used for official communication and record-keeping."
+                title="Address Information"
+                description="Provide your complete current address information, including island group, region, province, city/municipality, barangay, and zip code. These details will be used for official communication and record-keeping."
             />
-            <TwoColumnInput>
-                <div className="flex flex-col gap-3">
-                    <LabelExample
-                        title="Email"
-                        isRequired={false}
-                        example="johndoe@gmail.com"
-                    />
-                    <div className="relative flex items-center">
-                        <MailIcon size={15} className="absolute start-3" />
-                        <Input
-                            type="text"
-                            name="student.email"
-                            value={data.student.email ?? ''}
-                            onChange={(e) =>
-                                setData('student.email', e.target.value)
-                            }
-                            className="py-2 ps-9"
-                            placeholder="Enter Email Address"
-                            maxLength={50}
-                        />
-                    </div>
-                    <InputError message={errors['student.email']} />
-                </div>
-                <div className="flex flex-col gap-3">
-                    <LabelExample
-                        title="Mobile Number"
-                        isRequired={false}
-                        example="+639123456789"
-                    />
-                    <div className="relative flex items-center">
-                        <span className="absolute start-3 text-sm">+63</span>
-                        <Input
-                            type="number"
-                            name="student.mobile_num"
-                            value={data.student.mobile_num ?? ''}
-                            onChange={(e) => {
-                                const value = e.target.value.slice(0, 10);
-                                setData(
-                                    'student.mobile_num',
-                                    value ? value : null,
-                                );
-                            }}
-                            className="py-2 ps-11"
-                            placeholder="Enter Mobile Number"
-                        />
-                    </div>
-                    <InputError message={errors['student.mobile_num']} />
-                </div>
-            </TwoColumnInput>
 
             <TwoColumnInput>
                 <div className="flex flex-col gap-3">
@@ -153,10 +104,10 @@ export default function ContactAddressInfo({
                         <Asterisk color="red" size={12} />
                     </Label>
                     <Select
-                        value={data.student.address.island}
-                        name="student.address.island"
+                        value={data.address.island}
+                        name="address.island"
                         onValueChange={(value) => {
-                            setData('student.address.island', value);
+                            setData('address.island', value);
 
                             const selectedIsland = islandGroup.find(
                                 (i) => i.island_name === value,
@@ -164,7 +115,7 @@ export default function ContactAddressInfo({
 
                             if (selectedIsland && selectedIsland.island_id) {
                                 fetchRegionsByIslandId(
-                                    selectedIsland.island_id,
+                                    Number(selectedIsland.island_id),
                                 ).then(setRegionArr);
                             }
 
@@ -189,7 +140,7 @@ export default function ContactAddressInfo({
                         </SelectContent>
                     </Select>
 
-                    <InputError message={errors['student.address.island']} />
+                    <InputError message={errors['address.island']} />
                 </div>
                 <div className="flex flex-col gap-3">
                     <Label>
@@ -197,10 +148,10 @@ export default function ContactAddressInfo({
                         <Asterisk color="red" size={12} />
                     </Label>
                     <Select
-                        value={data.student.address.region}
-                        name="student.address.region"
+                        value={data.address.region}
+                        name="address.region"
                         onValueChange={(value) => {
-                            setData('student.address.region', value);
+                            setData('address.region', value);
 
                             const selectedRegion = regionArr.find(
                                 (r) =>
@@ -210,13 +161,13 @@ export default function ContactAddressInfo({
 
                             if (selectedRegion) {
                                 fetchProvinceByRegionId(
-                                    selectedRegion.region_id,
+                                    Number(selectedRegion.region_id),
                                 ).then(setProvinceArr);
                             }
 
                             resetForRegion();
                         }}
-                        disabled={!data.student.address.island}
+                        disabled={!data.address.island}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Choose an option" />
@@ -236,7 +187,7 @@ export default function ContactAddressInfo({
                         </SelectContent>
                     </Select>
 
-                    <InputError message={errors['student.address.region']} />
+                    <InputError message={errors['address.region']} />
                 </div>
             </TwoColumnInput>
 
@@ -247,10 +198,10 @@ export default function ContactAddressInfo({
                         <Asterisk color="red" size={12} />
                     </Label>
                     <Select
-                        value={data.student.address.province}
-                        name="student.address.province"
+                        value={data.address.province}
+                        name="address.province"
                         onValueChange={(value) => {
-                            setData('student.address.province', value);
+                            setData('address.province', value);
                             resetForProvince();
 
                             const selectedProvince = provinceArr.find(
@@ -259,11 +210,11 @@ export default function ContactAddressInfo({
 
                             if (selectedProvince) {
                                 fetchCitiesByProvinceId(
-                                    selectedProvince.province_id,
+                                    Number(selectedProvince.province_id),
                                 ).then(setCitiesArr);
                             }
                         }}
-                        disabled={!data.student.address.region}
+                        disabled={!data.address.region}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Choose a province" />
@@ -282,7 +233,7 @@ export default function ContactAddressInfo({
                         </SelectContent>
                     </Select>
 
-                    <InputError message={errors['student.address.province']} />
+                    <InputError message={errors['address.province']} />
                 </div>
                 <div className="flex flex-col gap-3">
                     <Label>
@@ -295,7 +246,7 @@ export default function ContactAddressInfo({
                     >
                         <PopoverTrigger
                             asChild
-                            disabled={!data.student.address.province}
+                            disabled={!data.address.province}
                         >
                             <Button
                                 variant="outline"
@@ -303,9 +254,8 @@ export default function ContactAddressInfo({
                                 aria-expanded={cityPopover}
                                 className="justify-between"
                             >
-                                {citiesArr.length > 0 &&
-                                data.student.address.city
-                                    ? data.student.address.city
+                                {citiesArr.length > 0 && data.address.city
+                                    ? data.address.city
                                     : 'Choose an option'}
                                 <ChevronsUpDown className="opacity-50" />
                             </Button>
@@ -330,11 +280,13 @@ export default function ContactAddressInfo({
                                                 data-id={item.municipality_id}
                                                 onSelect={() => {
                                                     setData(
-                                                        'student.address.city',
+                                                        'address.city',
                                                         item.municipality_name,
                                                     );
                                                     fetchBrgyByCityId(
-                                                        item.municipality_id,
+                                                        Number(
+                                                            item.municipality_id,
+                                                        ),
                                                     ).then(setBrgyArr);
                                                     setCityPopover(false);
                                                     resetForCity();
@@ -346,8 +298,7 @@ export default function ContactAddressInfo({
                                                     className={cn(
                                                         'ml-auto',
                                                         item.municipality_name ===
-                                                            data.student.address
-                                                                .city
+                                                            data.address.city
                                                             ? 'opacity-100'
                                                             : 'opacity-0',
                                                     )}
@@ -360,7 +311,7 @@ export default function ContactAddressInfo({
                         </PopoverContent>
                     </Popover>
 
-                    <InputError message={errors['student.address.city']} />
+                    <InputError message={errors['address.city']} />
                 </div>
             </TwoColumnInput>
 
@@ -374,18 +325,15 @@ export default function ContactAddressInfo({
                         open={brgyPopover}
                         onOpenChange={(open) => setBrgyPopover(open)}
                     >
-                        <PopoverTrigger
-                            asChild
-                            disabled={!data.student.address.city}
-                        >
+                        <PopoverTrigger asChild disabled={!data.address.city}>
                             <Button
                                 variant="outline"
                                 role="combobox"
                                 aria-expanded={brgyPopover}
                                 className="justify-between"
                             >
-                                {brgyArr.length > 0 && data.student.address.brgy
-                                    ? data.student.address.brgy
+                                {brgyArr.length > 0 && data.address.brgy
+                                    ? data.address.brgy
                                     : 'Choose an option'}
                                 <ChevronsUpDown className="opacity-50" />
                             </Button>
@@ -409,7 +357,7 @@ export default function ContactAddressInfo({
                                                 value={item.barangay_name}
                                                 onSelect={() => {
                                                     setData(
-                                                        'student.address.brgy',
+                                                        'address.brgy',
                                                         item.barangay_name,
                                                     );
                                                     setBrgyPopover(false);
@@ -421,8 +369,7 @@ export default function ContactAddressInfo({
                                                     className={cn(
                                                         'ml-auto',
                                                         item.barangay_name ===
-                                                            data.student.address
-                                                                .brgy
+                                                            data.address.brgy
                                                             ? 'opacity-100'
                                                             : 'opacity-0',
                                                     )}
@@ -435,7 +382,7 @@ export default function ContactAddressInfo({
                         </PopoverContent>
                     </Popover>
 
-                    <InputError message={errors['student.address.brgy']} />
+                    <InputError message={errors['address.brgy']} />
                 </div>
                 <div className="flex flex-col gap-3">
                     <Label>
@@ -444,19 +391,16 @@ export default function ContactAddressInfo({
                     </Label>
                     <Input
                         type="number"
-                        name="student.address.zip_code"
-                        value={data.student.address.zip_code ?? ''}
+                        name="address.zip_code"
+                        value={data.address.zip_code ?? ''}
                         onChange={(e) => {
                             const value = e.target.value.slice(0, 4);
-                            setData(
-                                'student.address.zip_code',
-                                value ? value : null,
-                            );
+                            setData('address.zip_code', value ? value : null);
                         }}
                         placeholder="Enter Zip Code"
                     />
 
-                    <InputError message={errors['student.address.zip_code']} />
+                    <InputError message={errors['address.zip_code']} />
                 </div>
             </TwoColumnInput>
         </>

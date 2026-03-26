@@ -37,19 +37,22 @@ class StoreStudentSubmission implements ShouldQueue
 
             $studentRepo->storeStudentAddress($this->data['address'], $student_id);
 
-            if (!empty($this->data['siblings'])) {
+            $studentRepo->storeStudentEducations($this->data['educations'], $student_id);
+
+            $studentRepo->storeFamilyInfo($this->data['family'], $student_id);
+
+            if (!empty($this->data['siblings'] && count($this->data['siblings']) > 0)) {
                 $studentRepo->storeSiblings($this->data['siblings'], $student_id);
             }
-
-            $studentRepo->storeStudentEducation($this->data['education'], $student_id);
 
             $guardianRepo->store($this->data['guardians'], $student_id);
 
             $answerRepo->storeAnswers($this->data['answers'], $student_id);
 
-            if (!empty($this->data['sub_answers'])) {
+            if (!empty($this->data['sub_answers'] && count($this->data['sub_answers']) > 0)) {
                 $answerRepo->storeSubAnswers($this->data['sub_answers'], $student_id);
             }
+
         });
     }
 }

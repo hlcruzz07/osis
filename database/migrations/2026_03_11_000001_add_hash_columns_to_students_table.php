@@ -37,10 +37,6 @@ return new class extends Migration {
             $table->text('sexual_orient_hash')->nullable();
             $table->text('height_hash')->nullable();
             $table->text('weight_hash')->nullable();
-            $table->text('family_size_hash')->nullable();
-            $table->text('nature_residence_hash')->nullable();
-            $table->text('house_monthly_income_hash')->nullable();
-            $table->text('ordinal_position_hash')->nullable();
         });
     }
 

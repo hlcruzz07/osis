@@ -21,7 +21,7 @@ class Sibling extends Model
         'suffix_hash',
     ];
 
-    protected $cast = [
+    protected $casts = [
         'fname' => 'encrypted',
         'mname' => 'encrypted',
         'lname' => 'encrypted',

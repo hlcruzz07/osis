@@ -44,6 +44,7 @@ import {
     Check,
     ChevronsUpDown,
     GraduationCap,
+    MailIcon,
     PhilippinePeso,
     RulerIcon,
     WeightIcon,
@@ -54,8 +55,6 @@ type StudentInfoProps = {
     data: StudentUseFormProps;
     setData: (key: string, value: any) => void;
     errors: Record<string, string>;
-    setModalOpen?: () => void;
-    onCancel?: () => void;
     academic_year_and_semester: {
         id: number;
         academic_year: string;
@@ -67,8 +66,6 @@ export default function StudentInfo({
     data,
     setData,
     errors,
-    setModalOpen,
-    onCancel,
     academic_year_and_semester,
     dropdowns,
 }: StudentInfoProps) {
@@ -114,14 +111,12 @@ export default function StudentInfo({
         (item) => item.title === 'Year Levels',
     )?.dropdowns;
 
-    const [citizenArr, setCitizenArr] = useState<string[]>([]);
+    const citizenArr = dropdowns.find(
+        (item) => item.title === 'Citizenship',
+    )?.dropdowns;
 
     const [religionPopover, setReligionPopover] = useState(false);
     const [citizenshipPopover, setCitizenshipPopover] = useState(false);
-
-    useEffect(() => {
-        fetchCitizenship().then(setCitizenArr);
-    }, []);
 
     const [selectedFinancer, setSelectedFinancer] = useState<string | null>(
         null,
@@ -132,13 +127,14 @@ export default function StudentInfo({
     );
 
     const initCollegeData = () => {
-        setData('education.college', {
+        setData('educations.3', {
             education_level: 'College',
             school_name: '',
             school_address: '',
             school_type: '',
             year_graduated: '',
-            general_average: null,
+            general_average: '',
+            strand: null,
             course: null,
             academic_year: null,
             scholarship_program: null,
@@ -371,6 +367,56 @@ export default function StudentInfo({
 
             <TwoColumnInput>
                 <div className="flex flex-col gap-3">
+                    <LabelExample
+                        title="Email"
+                        isRequired={false}
+                        example="johndoe@gmail.com"
+                    />
+                    <div className="relative flex items-center">
+                        <MailIcon size={15} className="absolute start-3" />
+                        <Input
+                            type="text"
+                            name="student.email"
+                            value={data.student.email ?? ''}
+                            onChange={(e) =>
+                                setData('student.email', e.target.value)
+                            }
+                            className="py-2 ps-9"
+                            placeholder="Enter Email Address"
+                            maxLength={50}
+                        />
+                    </div>
+                    <InputError message={errors['student.email']} />
+                </div>
+                <div className="flex flex-col gap-3">
+                    <LabelExample
+                        title="Mobile Number"
+                        isRequired={false}
+                        example="+639123456789"
+                    />
+                    <div className="relative flex items-center">
+                        <span className="absolute start-3 text-sm">+63</span>
+                        <Input
+                            type="number"
+                            name="student.mobile_num"
+                            value={data.student.mobile_num ?? ''}
+                            onChange={(e) => {
+                                const value = e.target.value.slice(0, 10);
+                                setData(
+                                    'student.mobile_num',
+                                    value ? value : null,
+                                );
+                            }}
+                            className="py-2 ps-11"
+                            placeholder="Enter Mobile Number"
+                        />
+                    </div>
+                    <InputError message={errors['student.mobile_num']} />
+                </div>
+            </TwoColumnInput>
+
+            <TwoColumnInput>
+                <div className="flex flex-col gap-3">
                     <Label>
                         First Name
                         <Asterisk color="red" size={12} />
@@ -559,6 +605,7 @@ export default function StudentInfo({
                                 role="combobox"
                                 aria-expanded={religionPopover}
                                 className="justify-between"
+                                name="student.religion"
                             >
                                 {data.student.religion
                                     ? data.student.religion
@@ -628,6 +675,7 @@ export default function StudentInfo({
                                 role="combobox"
                                 aria-expanded={citizenshipPopover}
                                 className="justify-between"
+                                name="student.citizenship"
                             >
                                 {data.student.citizenship
                                     ? data.student.citizenship
@@ -648,7 +696,7 @@ export default function StudentInfo({
                                     </CommandEmpty>
 
                                     <CommandGroup>
-                                        {citizenArr.map((item, index) => (
+                                        {citizenArr?.map((item, index) => (
                                             <CommandItem
                                                 key={index}
                                                 value={item}
@@ -696,6 +744,7 @@ export default function StudentInfo({
                         onValueChange={(value) =>
                             setData('student.civil_status', value)
                         }
+                        name="student.civil_status"
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Choose an option" />
@@ -727,6 +776,7 @@ export default function StudentInfo({
                             }
                             setData('student.sexual_orient', '');
                         }}
+                        name="student.sexual_orient"
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Choose an option" />
@@ -752,6 +802,7 @@ export default function StudentInfo({
                                     capitalizeString(e.target.value),
                                 )
                             }
+                            name="student.sexual_orient"
                             placeholder="Please specify your sex orientation"
                         />
                     )}
@@ -770,6 +821,7 @@ export default function StudentInfo({
                     <Input
                         type="text"
                         inputMode="numeric"
+                        name="student.weekly_allowance"
                         pattern="[0-9]*"
                         maxLength={5}
                         value={data.student.weekly_allowance ?? ''}
@@ -801,6 +853,7 @@ export default function StudentInfo({
                             }
                             setData('student.financer', '');
                         }}
+                        name="student.financer"
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Choose an option" />
@@ -826,6 +879,7 @@ export default function StudentInfo({
                                     capitalizeString(e.target.value),
                                 )
                             }
+                            name="student.financer"
                             placeholder="Please specify your financer"
                         />
                     )}
@@ -848,6 +902,7 @@ export default function StudentInfo({
                                 capitalizeString(e.target.value),
                             )
                         }
+                        name="student.last_attended_school"
                         placeholder="Enter Last school attended"
                     />
                     <InputError

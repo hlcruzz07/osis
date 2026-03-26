@@ -16,87 +16,64 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { schoolType } from '@/lib/dropdowns';
-import { capitalizeString, handleErrors } from '@/lib/utils';
-import { updateStudentInfo } from '@/routes';
+import {
+    capitalizeString,
+    cn,
+    fetchBrgyByCityId,
+    fetchCitiesByProvinceId,
+    fetchCitizenship,
+    fetchIslandGroup,
+    fetchProvinceByRegionId,
+    fetchRegionsByIslandId,
+    handleErrors,
+} from '@/lib/utils';
+import { updatePersonalInfo, updateStudentInfo } from '@/routes';
 import { DropdownProps } from '@/types/dropdowns';
 import { EducationProps } from '@/types/education';
 import { Student } from '@/types/student';
-import { useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import {
     Asterisk,
     BanIcon,
     Calendar1Icon,
+    Check,
+    ChevronsUpDown,
     GraduationCap,
+    MailIcon,
     PencilIcon,
+    PhilippinePeso,
+    RulerIcon,
     SaveIcon,
     School,
+    WeightIcon,
 } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 import Index from '../Index';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command';
+import { toast } from 'sonner';
+import { Spinner } from '@/components/ui/spinner';
 
 type PageProps = {
     studentData: Student;
     dropdowns: DropdownProps[];
 };
 
-type FormProps = {
-    year_level: string;
-    campus: string;
-    date_admitted: string;
-    student_type: string;
-    course: string;
-    lrn: string | null;
-    equity_indicator: string;
-    educations: EducationProps[];
-};
+type StudentForm = Omit<StudentProps, 'academic_year' | 'semester'>;
+
 export default function StudentTab({ studentData, dropdowns }: PageProps) {
-    const { data, setData, processing, errors, put } = useForm<FormProps>({
-        year_level: studentData?.year_level || '',
-        campus: studentData?.campus || '',
-        date_admitted: studentData?.date_admitted || '',
-        student_type: studentData?.student_type || '',
-        course: studentData?.course || '',
-        lrn: studentData?.lrn || null,
-        equity_indicator: studentData?.equity_indicator || '',
-
-        educations: studentData.educations.map(
-            ({
-                id,
-                school_name,
-                education_level,
-                year_graduated,
-                school_address,
-                school_type,
-                general_average,
-                strand,
-                course,
-                academic_year,
-                scholarship_program,
-                scholarship_address,
-                scholarship_mobile_num,
-            }) => ({
-                id,
-                school_name,
-                education_level,
-                year_graduated,
-                school_address,
-                school_type,
-                general_average,
-                strand,
-                course,
-                academic_year,
-                scholarship_program,
-                scholarship_address,
-                scholarship_mobile_num,
-            }),
-        ),
-    });
-
-    const campusArr = dropdowns.find(
-        (item) => item.title === 'Campuses',
-    )?.dropdowns;
-
     const coursesArr = dropdowns.find(
         (item) => item.title === 'Courses',
     )?.dropdowns;
@@ -105,29 +82,221 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
         (item) => item.title === 'Equity Indicator',
     )?.dropdowns;
 
-    const studentTypeArr = dropdowns.find(
-        (item) => item.title === 'Student Type',
-    )?.dropdowns;
-
     const yearLevelsArr = dropdowns.find(
         (item) => item.title === 'Year Levels',
     )?.dropdowns;
 
-    const schoolTypeArr = dropdowns.find(
-        (item) => item.title === 'School Type',
+    const citizenArr = dropdowns.find(
+        (item) => item.title === 'Citizenship',
     )?.dropdowns;
 
-    const [isEditMode, setIsEditMode] = useState(false);
+    const campusArr = dropdowns.find(
+        (item) => item.title === 'Campuses',
+    )?.dropdowns;
 
-    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    const studentTypeArr = dropdowns.find(
+        (item) => item.title === 'Student Type',
+    )?.dropdowns;
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+
+    useEffect(() => {
+        fetchIslandGroup().then(setIslandGroup);
+    }, []);
+    const [islandGroup, setIslandGroup] = useState<IslandGroupProps[]>([]);
+    const [regionArr, setRegionArr] = useState<RegionProps[]>([]);
+    const [provinceArr, setProvinceArr] = useState<ProvinceProps[]>([]);
+    const [citiesArr, setCitiesArr] = useState<CitiesProps[]>([]);
+    const [brgyArr, setBrgyArr] = useState<BrgyProps[]>([]);
+
+    // Address Popovers
+    const [cityPopover, setCityPopover] = useState(false);
+    const [brgyPopover, setBrgyPopover] = useState(false);
+
+    // Reset Address
+    const resetForIsland = () => {
+        address.setData('region', '');
+        address.setData('province', '');
+        address.setData('city', '');
+        address.setData('brgy', '');
+    };
+
+    const resetForRegion = () => {
+        address.setData('province', '');
+        address.setData('city', '');
+        address.setData('brgy', '');
+    };
+
+    const resetForProvince = () => {
+        address.setData('city', '');
+        address.setData('brgy', '');
+    };
+
+    const resetForCity = () => {
+        address.setData('brgy', '');
+    };
+
+    const personal = useForm<StudentForm>({
+        // Student Info
+        lrn: studentData.lrn,
+        year_level: studentData.year_level,
+        campus: studentData.campus,
+        course: studentData.course,
+        date_admitted: studentData.date_admitted,
+        student_type: studentData.student_type,
+        equity_indicator: studentData.equity_indicator,
+        // Personal Info
+        fname: studentData.fname,
+        mname: studentData.mname || null,
+        lname: studentData.lname,
+        suffix: studentData.suffix || null,
+
+        birthdate: studentData.birthdate,
+        birthplace: studentData.birthplace,
+
+        // School & Finance Info
+        weekly_allowance: studentData.weekly_allowance ?? null,
+        financer: studentData.financer || '',
+        last_attended_school: studentData.last_attended_school || '',
+
+        // Contact Info
+        email: studentData.email || null,
+        mobile_num: studentData.mobile_num || null,
+
+        // Demographics
+        religion: studentData.religion || '',
+        citizenship: studentData.citizenship || null,
+        civil_status: studentData.civil_status || '',
+        sexual_orient: studentData.sexual_orient || '',
+
+        // Physical Info
+        height: studentData.height ?? null,
+        weight: studentData.weight ?? null,
+    });
+
+    const address = useForm<AddressProps>({
+        island: studentData.address.island,
+        region: studentData.address.region,
+        province: studentData.address.province,
+        city: studentData.address.city,
+        brgy: studentData.address.brgy,
+        zip_code: studentData.address.zip_code,
+    });
+    useEffect(() => {
+        const loadInitialAddressData = async () => {
+            if (
+                !initialLoadComplete &&
+                islandGroup.length > 0 &&
+                address.data.island
+            ) {
+                try {
+                    setIsLoading(true);
+                    // Load regions
+                    const selectedIsland = islandGroup.find(
+                        (i) => i.island_name === address.data.island,
+                    );
+                    if (selectedIsland?.island_id) {
+                        const regions = await fetchRegionsByIslandId(
+                            Number(selectedIsland.island_id),
+                        );
+                        setRegionArr(regions);
+
+                        // Load provinces if region exists
+                        if (address.data.region) {
+                            const selectedRegion = regions.find(
+                                (r) =>
+                                    `${r.region_name} - ${r.region_description}` ===
+                                    address.data.region,
+                            );
+                            if (selectedRegion?.region_id) {
+                                const provinces = await fetchProvinceByRegionId(
+                                    Number(selectedRegion.region_id),
+                                );
+                                setProvinceArr(provinces);
+
+                                // Load cities if province exists
+                                if (address.data.province) {
+                                    const selectedProvince = provinces.find(
+                                        (p) =>
+                                            p.province_name ===
+                                            address.data.province,
+                                    );
+                                    if (selectedProvince?.province_id) {
+                                        const cities =
+                                            await fetchCitiesByProvinceId(
+                                                Number(
+                                                    selectedProvince.province_id,
+                                                ),
+                                            );
+                                        setCitiesArr(cities);
+
+                                        // Load barangays if city exists
+                                        if (address.data.city) {
+                                            const selectedCity = cities.find(
+                                                (c) =>
+                                                    c.municipality_name ===
+                                                    address.data.city,
+                                            );
+                                            if (selectedCity?.municipality_id) {
+                                                const brgys =
+                                                    await fetchBrgyByCityId(
+                                                        Number(
+                                                            selectedCity.municipality_id,
+                                                        ),
+                                                    );
+                                                setBrgyArr(brgys);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading address data:', error);
+                } finally {
+                    setIsLoading(false);
+                    setInitialLoadComplete(true);
+                }
+            }
+        };
+
+        loadInitialAddressData();
+    }, [address.data.island, islandGroup, initialLoadComplete]);
+
+    const civilStatusArr = dropdowns.find(
+        (item) => item.title === 'Civil Status',
+    )?.dropdowns;
+
+    const financerArr = dropdowns.find(
+        (item) => item.title === 'Financer',
+    )?.dropdowns;
+
+    const religionArr = dropdowns.find(
+        (item) => item.title === 'Religion',
+    )?.dropdowns;
+
+    const sexualOrientArr = dropdowns.find(
+        (item) => item.title === 'Sexual Orientation',
+    )?.dropdowns;
+
+    const suffixArr = dropdowns.find(
+        (item) => item.title === 'Suffix',
+    )?.dropdowns;
+
+    const [isEditModePersonal, setIsEditModePersonal] = useState(false);
+    const [isEditModeAddress, setIsEditModeAddress] = useState(false);
+
+    const handlePersonalSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (processing) return;
+        if (personal.processing) return;
 
-        put(updateStudentInfo(studentData.id).url, {
+        personal.put(updatePersonalInfo(studentData.id).url, {
             preserveScroll: true,
             onSuccess: () => {
-                setIsEditMode(false);
+                setIsEditModePersonal(false);
             },
             onError: (err) => {
                 handleErrors(err);
@@ -136,16 +305,67 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
         });
     };
 
-    const schoolColors = ['green', 'blue', 'purple', 'orange'];
+    const [religionPopover, setReligionPopover] = useState(false);
+    const [citizenshipPopover, setCitizenshipPopover] = useState(false);
 
-    console.log(data);
+    // Initialize selected values from data
+    const [selectedFinancer, setSelectedFinancer] = useState<string | null>(
+        personal.data.financer && !financerArr?.includes(personal.data.financer)
+            ? 'Others'
+            : personal.data.financer || null,
+    );
+
+    const [selectedSexOrient, setSelectedOrient] = useState<string | null>(
+        personal.data.sexual_orient &&
+            !sexualOrientArr?.includes(personal.data.sexual_orient)
+            ? 'Others'
+            : personal.data.sexual_orient || null,
+    );
+
     return (
         <>
-            <Heading
-                title="Student Information"
-                description="Manage and update the student's academic details, enrollment information, and related records."
-            />
-            <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
+            <Head title="Student Information" />
+            <form
+                className="relative mt-3 space-y-5 rounded-md border p-5"
+                onSubmit={handlePersonalSubmit}
+            >
+                <div className="flex flex-col items-start justify-between lg:flex-row lg:gap-10">
+                    <Heading
+                        title="Student Information"
+                        description="Manage and update the student's academic details, enrollment information, and related records."
+                    />
+                    <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
+                        {isEditModePersonal ? (
+                            <>
+                                <Button
+                                    onClick={() => setIsEditModePersonal(false)}
+                                    variant="outline"
+                                    type="button"
+                                    className="grow"
+                                    disabled={personal.processing}
+                                >
+                                    <BanIcon /> Cancel
+                                </Button>
+                                <Button
+                                    className="grow"
+                                    type="submit"
+                                    disabled={personal.processing}
+                                >
+                                    <SaveIcon /> Save Changes
+                                </Button>
+                            </>
+                        ) : (
+                            <Button
+                                className="grow"
+                                type="button"
+                                onClick={() => setIsEditModePersonal(true)}
+                                disabled={personal.processing}
+                            >
+                                <PencilIcon /> Edit
+                            </Button>
+                        )}
+                    </div>
+                </div>
                 <TwoColumnInput>
                     <div className="flex flex-col gap-3">
                         <Label>Semester</Label>
@@ -189,12 +409,12 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                             Year Level <Asterisk color="red" size={12} />
                         </Label>
                         <Select
-                            value={data.year_level}
+                            value={personal.data.year_level}
+                            disabled={!isEditModePersonal}
                             onValueChange={(value) => {
-                                setData('year_level', value);
+                                personal.setData('year_level', value);
                             }}
                             name="year_level"
-                            disabled={!isEditMode}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Choose an option" />
@@ -209,7 +429,7 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
-                        <InputError message={errors.year_level} />
+                        <InputError message={personal.errors.year_level} />
                     </div>
                     <div className="flex flex-col gap-3">
                         <Label>
@@ -217,12 +437,12 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                             <Asterisk color="red" size={12} />
                         </Label>
                         <Select
-                            value={data.campus}
+                            value={personal.data.campus}
                             name="campus"
                             onValueChange={(value) => {
-                                setData('campus', value);
+                                personal.setData('campus', value);
                             }}
-                            disabled={!isEditMode}
+                            disabled={!isEditModePersonal}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Choose an option" />
@@ -237,7 +457,7 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
-                        <InputError message={errors.campus} />
+                        <InputError message={personal.errors.campus} />
                     </div>
                 </TwoColumnInput>
 
@@ -248,14 +468,17 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         </Label>
                         <Input
                             type="date"
-                            name="student.date_admitted"
-                            value={data.date_admitted}
+                            name="date_admitted"
+                            disabled={!isEditModePersonal}
+                            value={personal.data.date_admitted}
                             onChange={(e) => {
-                                setData('date_admitted', e.target.value);
+                                personal.setData(
+                                    'date_admitted',
+                                    e.target.value,
+                                );
                             }}
-                            disabled={!isEditMode}
                         />
-                        <InputError message={errors.date_admitted} />
+                        <InputError message={personal.errors.date_admitted} />
                     </div>
                     <div className="flex flex-col gap-3">
                         <Label>
@@ -263,12 +486,12 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                             <Asterisk color="red" size={12} />
                         </Label>
                         <Select
-                            value={data.student_type}
+                            value={personal.data.student_type}
                             name="student_type"
+                            disabled={!isEditModePersonal}
                             onValueChange={(value) => {
-                                setData('student_type', value);
+                                personal.setData('student_type', value);
                             }}
-                            disabled={!isEditMode}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Choose an option" />
@@ -283,7 +506,7 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
-                        <InputError message={errors.student_type} />
+                        <InputError message={personal.errors.student_type} />
                     </div>
                 </TwoColumnInput>
 
@@ -293,12 +516,12 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         <Asterisk color="red" size={12} />
                     </Label>
                     <Select
-                        value={data.course}
+                        value={personal.data.course}
                         name="course"
                         onValueChange={(value) => {
-                            setData('course', value);
+                            personal.setData('course', value);
                         }}
-                        disabled={!isEditMode}
+                        disabled={!isEditModePersonal}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Choose an option" />
@@ -313,7 +536,7 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <InputError message={errors.course} />
+                    <InputError message={personal.errors.course} />
                 </div>
 
                 <TwoColumnInput>
@@ -323,18 +546,18 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                             type="text"
                             name="lrn"
                             inputMode="numeric"
+                            disabled={!isEditModePersonal}
                             maxLength={12}
-                            value={data.lrn ?? ''}
-                            disabled={!isEditMode}
+                            value={personal.data.lrn ?? ''}
                             onChange={(e) =>
-                                setData(
+                                personal.setData(
                                     'lrn',
                                     e.target.value.replace(/\D/g, ''),
                                 )
                             }
                             placeholder="Enter 12-digit LRN"
                         />
-                        <InputError message={errors.lrn} />
+                        <InputError message={personal.errors.lrn} />
                     </div>
                     <div className="flex flex-col gap-3">
                         <Label>
@@ -342,12 +565,12 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                             <Asterisk color="red" size={12} />
                         </Label>
                         <Select
-                            value={data.equity_indicator}
+                            value={personal.data.equity_indicator}
                             name="equity_indicator"
                             onValueChange={(value) => {
-                                setData('equity_indicator', value);
+                                personal.setData('equity_indicator', value);
                             }}
-                            disabled={!isEditMode}
+                            disabled={!isEditModePersonal}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Choose an option" />
@@ -362,468 +585,974 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
-                        <InputError message={errors.equity_indicator} />
+                        <InputError
+                            message={personal.errors.equity_indicator}
+                        />
+                    </div>
+                </TwoColumnInput>
+                <TwoColumnInput>
+                    <div className="flex flex-col gap-3">
+                        <LabelExample
+                            title="Email"
+                            isRequired={false}
+                            example="johndoe@gmail.com"
+                        />
+                        <div className="relative flex items-center">
+                            <MailIcon size={15} className="absolute start-3" />
+                            <Input
+                                type="text"
+                                disabled={!isEditModePersonal}
+                                name="email"
+                                value={personal.data.email ?? ''}
+                                onChange={(e) =>
+                                    personal.setData('email', e.target.value)
+                                }
+                                className="py-2 ps-9"
+                                placeholder="Enter Email Address"
+                                maxLength={50}
+                            />
+                        </div>
+                        <InputError message={personal.errors['email']} />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <LabelExample
+                            title="Mobile Number"
+                            isRequired={false}
+                            example="+639123456789"
+                        />
+                        <div className="relative flex items-center">
+                            <span className="absolute start-3 text-sm">
+                                +63
+                            </span>
+                            <Input
+                                type="number"
+                                name="mobile_num"
+                                disabled={!isEditModePersonal}
+                                value={personal.data.mobile_num ?? ''}
+                                onChange={(e) => {
+                                    const value = e.target.value.slice(0, 10);
+                                    personal.setData(
+                                        'mobile_num',
+                                        value ? value : null,
+                                    );
+                                }}
+                                className="py-2 ps-11"
+                                placeholder="Enter Mobile Number"
+                            />
+                        </div>
+                        <InputError message={personal.errors['mobile_num']} />
+                    </div>
+                </TwoColumnInput>
+                <TwoColumnInput>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            First Name
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Input
+                            value={personal.data.fname}
+                            name="fname"
+                            disabled={!isEditModePersonal}
+                            onChange={(e) =>
+                                personal.setData(
+                                    'fname',
+                                    capitalizeString(e.target.value),
+                                )
+                            }
+                            maxLength={50}
+                            type="text"
+                            placeholder="Enter First Name"
+                        />
+                        <InputError message={personal.errors['fname']} />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <Label>Middle Name</Label>
+                        <Input
+                            type="text"
+                            name="mname"
+                            value={personal.data.mname ?? ''}
+                            disabled={!isEditModePersonal}
+                            onChange={(e) => {
+                                if (e.target.value === '') {
+                                    personal.setData('mname', null);
+                                    return;
+                                }
+                                personal.setData(
+                                    'mname',
+                                    capitalizeString(e.target.value),
+                                );
+                            }}
+                            maxLength={50}
+                            placeholder="Enter Middle Name"
+                        />
+                        <InputError message={personal.errors['mname']} />
                     </div>
                 </TwoColumnInput>
 
-                {data.educations.length > 0 && (
-                    <Heading
-                        title="Educational Background"
-                        description="A summary of academic history, including schools attended and qualifications earned."
-                    />
-                )}
-                <div className="grid gap-5 xl:grid-cols-2">
-                    {data.educations?.map((educ, index) => (
-                        <div
-                            key={index}
-                            className={`space-y-5 rounded-md p-5 shadow-sm shadow-${schoolColors[index]}-500 lg:p-8`}
+                <TwoColumnInput>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            Last Name
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Input
+                            type="text"
+                            name="lname"
+                            value={personal.data.lname}
+                            disabled={!isEditModePersonal}
+                            onChange={(e) =>
+                                personal.setData(
+                                    'lname',
+                                    capitalizeString(e.target.value),
+                                )
+                            }
+                            maxLength={50}
+                            placeholder="Enter Last Name"
+                        />
+                        <InputError message={personal.errors['lname']} />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <Label>Suffix</Label>
+                        <Select
+                            value={personal.data.suffix ?? ''}
+                            disabled={!isEditModePersonal}
+                            name="suffix"
+                            onValueChange={(value) => {
+                                if (value === 'None') {
+                                    personal.setData('suffix', null);
+                                    return;
+                                }
+                                personal.setData('suffix', value);
+                            }}
                         >
-                            <HeadingSmall
-                                title={`${educ.education_level} Information`}
-                                description="Enter your college details including year graduated and general average."
+                            <SelectTrigger>
+                                <SelectValue placeholder="Choose an option" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {suffixArr?.map((item, index) => (
+                                        <SelectItem key={index} value={item}>
+                                            {item}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        <InputError message={personal.errors['suffix']} />
+                    </div>
+                </TwoColumnInput>
+
+                <TwoColumnInput>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            Birthdate
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Input
+                            type="date"
+                            name="birthdate"
+                            value={personal.data.birthdate}
+                            disabled={!isEditModePersonal}
+                            onChange={(e) =>
+                                personal.setData('birthdate', e.target.value)
+                            }
+                        />
+                        <InputError message={personal.errors['birthdate']} />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            Birthplace
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Input
+                            type="text"
+                            name="birthplace"
+                            value={personal.data.birthplace}
+                            disabled={!isEditModePersonal}
+                            maxLength={100}
+                            onChange={(e) =>
+                                personal.setData(
+                                    'birthplace',
+                                    capitalizeString(e.target.value),
+                                )
+                            }
+                            placeholder="Enter Birthplace"
+                        />
+                        <InputError message={personal.errors['birthplace']} />
+                    </div>
+                </TwoColumnInput>
+
+                <TwoColumnInput>
+                    <div className="flex flex-col gap-3">
+                        <LabelExample
+                            title="Height"
+                            isRequired
+                            example="165cm"
+                        />
+                        <div className="relative flex items-center">
+                            <RulerIcon size={15} className="absolute start-3" />
+                            <Input
+                                type="number"
+                                name="height"
+                                value={personal.data.height ?? ''}
+                                disabled={!isEditModePersonal}
+                                onChange={(e) => {
+                                    const value = e.target.value.slice(0, 3);
+                                    personal.setData(
+                                        'height',
+                                        value ? value : null,
+                                    );
+                                }}
+                                className="py-2 ps-9"
+                                placeholder="Enter Height"
                             />
-                            <TwoColumnInput>
-                                <div className="flex flex-col gap-3">
-                                    <Label>
-                                        School Name
-                                        <Asterisk color="red" size={12} />
-                                    </Label>
-                                    <div className="relative flex items-center">
-                                        <School
-                                            size={15}
-                                            className="absolute start-3"
-                                        />
-                                        <Input
-                                            type="text"
-                                            maxLength={150}
-                                            name={
-                                                data.educations[index]
-                                                    .school_name
-                                            }
-                                            disabled={!isEditMode}
-                                            value={
-                                                data.educations[index]
-                                                    .school_name
-                                            }
-                                            onChange={(e) =>
-                                                setData(
-                                                    `educations.${index}.school_name`,
-                                                    capitalizeString(
-                                                        e.target.value,
-                                                    ),
-                                                )
-                                            }
-                                            className="py-2 ps-9"
-                                            placeholder="Enter School Name"
-                                        />
-                                    </div>
-                                    <InputError
-                                        message={
-                                            errors[
-                                                `educations.${index}.school_name`
-                                            ]
-                                        }
+                            <span className="absolute end-3 text-sm">cm</span>
+                        </div>
+                        <InputError message={personal.errors['height']} />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <LabelExample
+                            title="Weight"
+                            isRequired
+                            example="60kg"
+                        />
+                        <div className="relative flex items-center">
+                            <WeightIcon
+                                size={15}
+                                className="absolute start-3"
+                            />
+                            <Input
+                                type="number"
+                                name="weight"
+                                value={personal.data.weight ?? ''}
+                                disabled={!isEditModePersonal}
+                                onChange={(e) => {
+                                    const value = e.target.value.slice(0, 3);
+                                    personal.setData(
+                                        'weight',
+                                        value ? value : null,
+                                    );
+                                }}
+                                className="py-2 ps-9"
+                                placeholder="Enter Weight"
+                            />
+                            <span className="absolute end-3 text-sm">kg</span>
+                        </div>
+                        <InputError message={personal.errors['weight']} />
+                    </div>
+                </TwoColumnInput>
+
+                <TwoColumnInput>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            Religion
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Popover
+                            open={religionPopover}
+                            onOpenChange={(open) => setReligionPopover(open)}
+                        >
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={religionPopover}
+                                    disabled={!isEditModePersonal}
+                                    className="justify-between"
+                                >
+                                    {personal.data.religion
+                                        ? personal.data.religion
+                                        : 'Choose an option'}
+                                    <ChevronsUpDown className="opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+
+                            <PopoverContent className="p-0" align="start">
+                                <Command>
+                                    <CommandInput
+                                        placeholder="Search religion..."
+                                        className="h-9"
                                     />
-                                </div>
-                                <div className="flex flex-col gap-3">
-                                    <Label>
-                                        School Type
-                                        <Asterisk color="red" size={12} />
-                                    </Label>
-                                    <Select
-                                        name={
-                                            data.educations[index].school_type
-                                        }
-                                        value={
-                                            data.educations[index].school_type
-                                        }
-                                        disabled={!isEditMode}
-                                        onValueChange={(value) =>
-                                            setData(
-                                                `educations.${index}.school_type`,
-                                                value,
-                                            )
-                                        }
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Choose an option" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                {schoolTypeArr?.map(
-                                                    (item, index) => (
-                                                        <SelectItem
-                                                            key={index}
-                                                            value={item}
-                                                        >
-                                                            {item}
-                                                        </SelectItem>
-                                                    ),
-                                                )}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError
-                                        message={
-                                            errors[
-                                                `educations.${index}.school_type`
-                                            ]
-                                        }
-                                    />
-                                </div>
-                            </TwoColumnInput>
+                                    <CommandList>
+                                        <CommandEmpty>
+                                            No religion found.
+                                        </CommandEmpty>
 
-                            {educ.education_level === 'Senior Highschool' && (
-                                <div className="flex flex-col gap-3">
-                                    <LabelExample
-                                        title="Strand"
-                                        isRequired
-                                        example="STEM, ABM, HUMSS"
-                                    />
-                                    <Input
-                                        value={
-                                            data.educations[index].strand ?? ''
-                                        }
-                                        name={
-                                            data.educations[index].strand ?? ''
-                                        }
-                                        onChange={(e) =>
-                                            setData(
-                                                `educations.${index}.strand`,
-                                                e.target.value.toUpperCase(),
-                                            )
-                                        }
-                                        className="py-2"
-                                        placeholder="Enter Strand"
-                                    />
-
-                                    <InputError
-                                        message={
-                                            errors[`educations.${index}.strand`]
-                                        }
-                                    />
-                                </div>
-                            )}
-
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    School Address
-                                    <Asterisk color="red" size={12} />
-                                </Label>
-                                <Textarea
-                                    value={
-                                        data.educations[index].school_address
-                                    }
-                                    maxLength={250}
-                                    disabled={!isEditMode}
-                                    onChange={(e) =>
-                                        setData(
-                                            `educations.${index}.school_address`,
-                                            capitalizeString(e.target.value),
-                                        )
-                                    }
-                                    placeholder="Enter School Address"
-                                />
-
-                                <InputError
-                                    message={
-                                        errors[
-                                            `educations.${index}.school_address`
-                                        ]
-                                    }
-                                />
-                            </div>
-
-                            <TwoColumnInput>
-                                <div className="flex flex-col gap-3">
-                                    <LabelExample
-                                        title="Year Graduated"
-                                        isRequired
-                                        example="2020"
-                                    />
-                                    <div className="relative flex items-center">
-                                        <Input
-                                            type="number"
-                                            value={
-                                                data.educations[index]
-                                                    .year_graduated
-                                            }
-                                            disabled={!isEditMode}
-                                            onChange={(e) =>
-                                                setData(
-                                                    `educations.${index}.year_graduated`,
-                                                    e.target.value.slice(0, 4),
-                                                )
-                                            }
-                                            className="py-2"
-                                            placeholder="Enter Year Graduated"
-                                        />
-                                    </div>
-                                    <InputError
-                                        message={
-                                            errors[
-                                                `educations.${index}.year_graduated`
-                                            ]
-                                        }
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-3">
-                                    <LabelExample
-                                        title="General Average"
-                                        isRequired
-                                        example="85.80"
-                                    />
-                                    <div className="relative flex items-center">
-                                        <Input
-                                            type="number"
-                                            placeholder="Enter General Average"
-                                            disabled={!isEditMode}
-                                            value={
-                                                data.educations[index]
-                                                    .general_average ?? ''
-                                            }
-                                            onChange={(e) => {
-                                                const value = e.target.value;
-
-                                                // Allow empty
-                                                if (value === '') {
-                                                    setData(
-                                                        `educations.${index}.general_average`,
-                                                        null,
-                                                    );
-                                                    return;
-                                                }
-
-                                                setData(
-                                                    `educations.${index}.general_average`,
-                                                    value,
-                                                );
-                                            }}
-                                            className="py-2"
-                                        />
-                                    </div>
-                                    <InputError
-                                        message={
-                                            errors[
-                                                `educations.${index}.general_average`
-                                            ]
-                                        }
-                                    />
-                                </div>
-                            </TwoColumnInput>
-
-                            {studentData.student_type === 'Transferee' && (
-                                <>
-                                    <TwoColumnInput>
-                                        <div className="flex flex-col gap-3">
-                                            <Label>Course</Label>
-                                            <div className="relative flex items-center">
-                                                <Input
-                                                    type="text"
-                                                    maxLength={150}
-                                                    value={
-                                                        data.educations[index]
-                                                            .course ?? ''
-                                                    }
-                                                    disabled={!isEditMode}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            `educations.${index}.course`,
-                                                            capitalizeString(
-                                                                e.target.value,
-                                                            ),
-                                                        )
-                                                    }
-                                                    className="py-2"
-                                                    placeholder="Enter Course"
-                                                />
-                                            </div>
-                                            <InputError
-                                                message={
-                                                    errors[
-                                                        `educations.${index}.course`
-                                                    ]
-                                                }
-                                            />
-                                        </div>
-                                        <div className="flex flex-col gap-3">
-                                            <LabelExample
-                                                title="Academic Year"
-                                                isRequired={false}
-                                                example="2024 - 2025"
-                                            />
-                                            <Input
-                                                type="text"
-                                                maxLength={150}
-                                                value={
-                                                    data.educations[index]
-                                                        .academic_year ?? ''
-                                                }
-                                                disabled={!isEditMode}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        `educations.${index}.academic_year`,
-                                                        capitalizeString(
-                                                            e.target.value,
-                                                        ),
-                                                    )
-                                                }
-                                                className="py-2"
-                                                placeholder="Enter Academic Year"
-                                            />
-                                            <InputError
-                                                message={
-                                                    errors[
-                                                        `educations.${index}.academic_year`
-                                                    ]
-                                                }
-                                            />
-                                        </div>
-                                    </TwoColumnInput>
-
-                                    <TwoColumnInput>
-                                        <div className="flex flex-col gap-3">
-                                            <Label>Scholarship Program</Label>
-                                            <div className="relative flex items-center">
-                                                <Input
-                                                    type="text"
-                                                    maxLength={150}
-                                                    value={
-                                                        data.educations[index]
-                                                            .scholarship_program ??
-                                                        ''
-                                                    }
-                                                    disabled={!isEditMode}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            `educations.${index}.scholarship_program`,
-                                                            capitalizeString(
-                                                                e.target.value,
-                                                            ),
-                                                        )
-                                                    }
-                                                    className="py-2"
-                                                    placeholder="Enter Scholarship Program"
-                                                />
-                                            </div>
-                                            <InputError
-                                                message={
-                                                    errors[
-                                                        `educations.${index}.scholarship_program`
-                                                    ]
-                                                }
-                                            />
-                                        </div>
-                                        <div className="flex flex-col gap-3">
-                                            <Label>
-                                                Scholarship Mobile Number
-                                            </Label>
-
-                                            <div className="relative flex items-center">
-                                                <span className="absolute start-3 text-sm">
-                                                    +63
-                                                </span>
-                                                <Input
-                                                    type="number"
-                                                    value={
-                                                        data.educations[index]
-                                                            .scholarship_mobile_num ??
-                                                        ''
-                                                    }
-                                                    disabled={!isEditMode}
-                                                    onChange={(e) => {
-                                                        const value =
-                                                            e.target.value.slice(
-                                                                0,
-                                                                10,
-                                                            );
-                                                        setData(
-                                                            `educations.${index}.scholarship_mobile_num`,
-                                                            value
-                                                                ? value
-                                                                : null,
+                                        <CommandGroup>
+                                            {religionArr?.map((item, index) => (
+                                                <CommandItem
+                                                    key={index}
+                                                    value={item}
+                                                    onSelect={() => {
+                                                        personal.setData(
+                                                            'religion',
+                                                            item,
+                                                        );
+                                                        setReligionPopover(
+                                                            false,
                                                         );
                                                     }}
-                                                    className="py-2 ps-11"
-                                                    placeholder="Enter Scholarship Mobile Number"
-                                                />
-                                            </div>
-                                            <InputError
-                                                message={
-                                                    errors[
-                                                        `educations.${index}.scholarship_mobile_num`
-                                                    ]
-                                                }
-                                            />
-                                        </div>
-                                    </TwoColumnInput>
+                                                >
+                                                    {item}
 
-                                    <div className="flex flex-col gap-3">
-                                        <Label>Scholarship Office Addres</Label>
-                                        <Textarea
-                                            maxLength={150}
-                                            value={
-                                                data.educations[index]
-                                                    .scholarship_address ?? ''
-                                            }
-                                            disabled={!isEditMode}
-                                            onChange={(e) =>
-                                                setData(
-                                                    `educations.${index}.scholarship_address`,
-                                                    capitalizeString(
-                                                        e.target.value,
-                                                    ),
-                                                )
-                                            }
-                                            className="py-2"
-                                            placeholder="Enter Scholarship Office Address"
-                                        />
-                                        <InputError
-                                            message={
-                                                errors[
-                                                    `educations.${index}.scholarship_address`
-                                                ]
-                                            }
-                                        />
-                                    </div>
-                                </>
-                            )}
-                            <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                        </div>
-                    ))}
-                </div>
+                                                    <Check
+                                                        className={cn(
+                                                            'ml-auto',
+                                                            item ===
+                                                                personal.data
+                                                                    .religion
+                                                                ? 'opacity-100'
+                                                                : 'opacity-0',
+                                                        )}
+                                                    />
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
 
-                <div className="ml-auto flex w-full items-center gap-3 sm:w-max">
-                    {isEditMode ? (
-                        <>
-                            <Button
-                                onClick={() => setIsEditMode(false)}
-                                variant="outline"
-                                type="button"
-                                className="grow"
-                                disabled={processing}
-                            >
-                                <BanIcon /> Cancel
-                            </Button>
-                            <Button
-                                className="grow"
-                                type="submit"
-                                disabled={processing}
-                            >
-                                <SaveIcon /> Save Changes
-                            </Button>
-                        </>
-                    ) : (
-                        <Button
-                            className="grow"
-                            type="button"
-                            onClick={() => setIsEditMode(true)}
-                            disabled={processing}
+                        <InputError message={personal.errors['religion']} />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            Citizenship
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Popover
+                            open={citizenshipPopover}
+                            onOpenChange={(open) => setCitizenshipPopover(open)}
                         >
-                            <PencilIcon /> Edit Information
-                        </Button>
-                    )}
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={citizenshipPopover}
+                                    disabled={!isEditModePersonal}
+                                    className="justify-between"
+                                >
+                                    {personal.data.citizenship
+                                        ? personal.data.citizenship
+                                        : 'Choose an option'}
+                                    <ChevronsUpDown className="opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+
+                            <PopoverContent className="p-0" align="start">
+                                <Command>
+                                    <CommandInput
+                                        placeholder="Search citizenship..."
+                                        className="h-9"
+                                    />
+                                    <CommandList>
+                                        <CommandEmpty>
+                                            No citizenship found.
+                                        </CommandEmpty>
+
+                                        <CommandGroup>
+                                            {citizenArr?.map((item, index) => (
+                                                <CommandItem
+                                                    key={index}
+                                                    value={item}
+                                                    onSelect={() => {
+                                                        personal.setData(
+                                                            'citizenship',
+                                                            item,
+                                                        );
+                                                        setCitizenshipPopover(
+                                                            false,
+                                                        );
+                                                    }}
+                                                >
+                                                    {item}
+
+                                                    <Check
+                                                        className={cn(
+                                                            'ml-auto',
+                                                            item ===
+                                                                personal.data
+                                                                    .citizenship
+                                                                ? 'opacity-100'
+                                                                : 'opacity-0',
+                                                        )}
+                                                    />
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+                        <InputError message={personal.errors['citizenship']} />
+                    </div>
+                </TwoColumnInput>
+
+                <TwoColumnInput>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            Civil Status
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Select
+                            value={personal.data.civil_status}
+                            disabled={!isEditModePersonal}
+                            onValueChange={(value) =>
+                                personal.setData('civil_status', value)
+                            }
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Choose an option" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {civilStatusArr?.map((item, index) => (
+                                        <SelectItem key={index} value={item}>
+                                            {item}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        <InputError message={personal.errors['civil_status']} />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            Sex Orientation
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Select
+                            value={selectedSexOrient || ''}
+                            disabled={!isEditModePersonal}
+                            onValueChange={(value) => {
+                                setSelectedOrient(value);
+                                if (value !== 'Others') {
+                                    personal.setData('sexual_orient', value);
+                                    return;
+                                }
+                                personal.setData('sexual_orient', '');
+                            }}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Choose an option" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {sexualOrientArr?.map((item, index) => (
+                                        <SelectItem key={index} value={item}>
+                                            {item}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+
+                        {selectedSexOrient === 'Others' && (
+                            <Input
+                                value={personal.data.sexual_orient}
+                                maxLength={25}
+                                onChange={(e) =>
+                                    personal.setData(
+                                        'sexual_orient',
+                                        capitalizeString(e.target.value),
+                                    )
+                                }
+                                placeholder="Please specify your sex orientation"
+                            />
+                        )}
+                        <InputError
+                            message={personal.errors['sexual_orient']}
+                        />
+                    </div>
+                </TwoColumnInput>
+
+                <div className="flex flex-col gap-3">
+                    <LabelExample
+                        title="Weekly Allowance"
+                        isRequired={true}
+                        example="₱1500, ₱2000, ₱5000, etc."
+                    />
+                    <div className="relative flex items-center">
+                        <PhilippinePeso
+                            size={15}
+                            className="absolute start-3"
+                        />
+                        <Input
+                            type="text"
+                            inputMode="numeric"
+                            disabled={!isEditModePersonal}
+                            pattern="[0-9]*"
+                            maxLength={5}
+                            value={personal.data.weekly_allowance ?? ''}
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '');
+                                personal.setData('weekly_allowance', value);
+                            }}
+                            className="py-2 ps-8"
+                            placeholder="Enter Weekly Allowance"
+                        />
+                    </div>
+                    <InputError message={personal.errors['weekly_allowance']} />
                 </div>
+
+                <TwoColumnInput>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            Who finances your education?
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Select
+                            value={selectedFinancer || ''}
+                            disabled={!isEditModePersonal}
+                            onValueChange={(value) => {
+                                setSelectedFinancer(value);
+
+                                if (value !== 'Others') {
+                                    personal.setData('financer', value);
+                                    return;
+                                }
+                                personal.setData('financer', '');
+                            }}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Choose an option" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {financerArr?.map((item, index) => (
+                                        <SelectItem key={index} value={item}>
+                                            {item}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                        {selectedFinancer === 'Others' && (
+                            <Input
+                                type="text"
+                                value={personal.data.financer}
+                                maxLength={50}
+                                onChange={(e) =>
+                                    personal.setData(
+                                        'financer',
+                                        capitalizeString(e.target.value),
+                                    )
+                                }
+                                placeholder="Please specify your financer"
+                            />
+                        )}
+
+                        <InputError message={personal.errors['financer']} />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <LabelExample
+                            title="Last school attended"
+                            isRequired
+                            example="University of St. Lasalle - Liceo"
+                        />
+                        <Input
+                            type="text"
+                            value={personal.data.last_attended_school}
+                            disabled={!isEditModePersonal}
+                            maxLength={100}
+                            onChange={(e) =>
+                                personal.setData(
+                                    'last_attended_school',
+                                    capitalizeString(e.target.value),
+                                )
+                            }
+                            placeholder="Enter Last school attended"
+                        />
+                        <InputError
+                            message={personal.errors['last_attended_school']}
+                        />
+                    </div>
+                </TwoColumnInput>
+            </form>
+
+            <form className="relative mt-3 space-y-5 rounded-md border p-5">
+                {isLoading && (
+                    <div className="absolute top-0 left-0 z-20 flex h-full w-full items-center justify-center rounded-md bg-black/60">
+                        <div className="flex flex-col items-center">
+                            <Spinner
+                                className="size-15"
+                                color="var(--main-color)"
+                            />
+                            <h1>Loading Data...</h1>
+                        </div>
+                    </div>
+                )}
+                <div className="flex flex-col items-start justify-between lg:flex-row lg:gap-10">
+                    <Heading
+                        title="Contact & Address"
+                        description="This section displays your contact information and current address, including your email address, mobile number, island group, region, province, city/municipality, barangay, and zip code. These details are used for official communication and record-keeping."
+                    />
+                    <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
+                        {isEditModeAddress ? (
+                            <>
+                                <Button
+                                    onClick={() => setIsEditModeAddress(false)}
+                                    variant="outline"
+                                    type="button"
+                                    className="grow"
+                                    disabled={address.processing}
+                                >
+                                    <BanIcon /> Cancel
+                                </Button>
+                                <Button
+                                    className="grow"
+                                    type="submit"
+                                    disabled={address.processing}
+                                >
+                                    <SaveIcon /> Save Changes
+                                </Button>
+                            </>
+                        ) : (
+                            <Button
+                                className="grow"
+                                type="button"
+                                onClick={() => setIsEditModeAddress(true)}
+                                disabled={address.processing}
+                            >
+                                <PencilIcon /> Edit
+                            </Button>
+                        )}
+                    </div>
+                </div>
+
+                <TwoColumnInput>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            Island Group
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Select
+                            value={address.data.island}
+                            name={address.data.island}
+                            disabled={!isEditModeAddress}
+                            onValueChange={(value) => {
+                                address.setData('island', value);
+
+                                const selectedIsland = islandGroup.find(
+                                    (i) => i.island_name === value,
+                                );
+
+                                if (
+                                    selectedIsland &&
+                                    selectedIsland.island_id
+                                ) {
+                                    fetchRegionsByIslandId(
+                                        Number(selectedIsland.island_id),
+                                    ).then(setRegionArr);
+                                }
+
+                                resetForIsland();
+                            }}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Choose an option" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {islandGroup.map((item, index) => (
+                                        <SelectItem
+                                            key={index}
+                                            value={item.island_name}
+                                            data-id={item.island_id}
+                                        >
+                                            {item.island_name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+
+                        <InputError message={address.errors['island']} />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            Region
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Select
+                            value={address.data.region}
+                            name={address.data.region}
+                            onValueChange={(value) => {
+                                address.setData('region', value);
+
+                                const selectedRegion = regionArr.find(
+                                    (r) =>
+                                        `${r.region_name} - ${r.region_description}` ===
+                                        value,
+                                );
+
+                                if (selectedRegion) {
+                                    fetchProvinceByRegionId(
+                                        Number(selectedRegion.region_id),
+                                    ).then(setProvinceArr);
+                                }
+
+                                resetForRegion();
+                            }}
+                            disabled={
+                                !address.data.island || !isEditModeAddress
+                            }
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Choose an option" />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                                <SelectGroup>
+                                    {regionArr.map((item, index) => (
+                                        <SelectItem
+                                            key={index}
+                                            value={`${item.region_name} - ${item.region_description}`}
+                                        >
+                                            {`${item.region_name} - ${item.region_description}`}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+
+                        <InputError message={address.errors['region']} />
+                    </div>
+                </TwoColumnInput>
+
+                <TwoColumnInput>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            Province
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Select
+                            value={address.data.province}
+                            name={address.data.province}
+                            onValueChange={(value) => {
+                                address.setData('province', value);
+                                resetForProvince();
+
+                                const selectedProvince = provinceArr.find(
+                                    (p) => p.province_name === value,
+                                );
+
+                                if (selectedProvince) {
+                                    fetchCitiesByProvinceId(
+                                        Number(selectedProvince.province_id),
+                                    ).then(setCitiesArr);
+                                }
+                            }}
+                            disabled={
+                                !address.data.region || !isEditModeAddress
+                            }
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Choose a province" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {provinceArr.map((item) => (
+                                        <SelectItem
+                                            key={item.province_id}
+                                            value={item.province_name}
+                                        >
+                                            {item.province_name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+
+                        <InputError message={address.errors['province']} />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            City / Municipality
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Popover
+                            open={cityPopover}
+                            onOpenChange={(open) => setCityPopover(open)}
+                        >
+                            <PopoverTrigger
+                                asChild
+                                disabled={!address.data.province}
+                            >
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    name={address.data.city}
+                                    aria-expanded={cityPopover}
+                                    disabled={
+                                        !address.data.province ||
+                                        !isEditModeAddress
+                                    }
+                                    className="justify-between"
+                                >
+                                    {citiesArr.length > 0 && address.data.city
+                                        ? address.data.city
+                                        : 'Choose an option'}
+                                    <ChevronsUpDown className="opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+
+                            <PopoverContent className="p-0" align="start">
+                                <Command>
+                                    <CommandInput
+                                        placeholder="Search city / municipality..."
+                                        className="h-9"
+                                    />
+                                    <CommandList>
+                                        <CommandEmpty>
+                                            No city / municipality found.
+                                        </CommandEmpty>
+
+                                        <CommandGroup>
+                                            {citiesArr.map((item, index) => (
+                                                <CommandItem
+                                                    key={index}
+                                                    value={
+                                                        item.municipality_name
+                                                    }
+                                                    data-id={
+                                                        item.municipality_id
+                                                    }
+                                                    onSelect={() => {
+                                                        address.setData(
+                                                            'city',
+                                                            item.municipality_name,
+                                                        );
+                                                        fetchBrgyByCityId(
+                                                            Number(
+                                                                item.municipality_id,
+                                                            ),
+                                                        ).then(setBrgyArr);
+                                                        setCityPopover(false);
+                                                        resetForCity();
+                                                    }}
+                                                >
+                                                    {item.municipality_name}
+
+                                                    <Check
+                                                        className={cn(
+                                                            'ml-auto',
+                                                            item.municipality_name ===
+                                                                address.data
+                                                                    .city
+                                                                ? 'opacity-100'
+                                                                : 'opacity-0',
+                                                        )}
+                                                    />
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+
+                        <InputError message={address.errors['city']} />
+                    </div>
+                </TwoColumnInput>
+
+                <TwoColumnInput>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            Barangay
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Popover
+                            open={brgyPopover}
+                            onOpenChange={(open) => setBrgyPopover(open)}
+                        >
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={brgyPopover}
+                                    disabled={
+                                        !address.data.city || !isEditModeAddress
+                                    }
+                                    name={address.data.brgy}
+                                    className="justify-between"
+                                >
+                                    {brgyArr.length > 0 && address.data.brgy
+                                        ? address.data.brgy
+                                        : 'Choose an option'}
+                                    <ChevronsUpDown className="opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+
+                            <PopoverContent className="p-0" align="start">
+                                <Command>
+                                    <CommandInput
+                                        placeholder="Search barangay..."
+                                        className="h-9"
+                                    />
+                                    <CommandList>
+                                        <CommandEmpty>
+                                            No barangay found.
+                                        </CommandEmpty>
+
+                                        <CommandGroup>
+                                            {brgyArr.map((item, index) => (
+                                                <CommandItem
+                                                    key={index}
+                                                    value={item.barangay_name}
+                                                    onSelect={() => {
+                                                        address.setData(
+                                                            'brgy',
+                                                            item.barangay_name,
+                                                        );
+                                                        setBrgyPopover(false);
+                                                    }}
+                                                >
+                                                    {item.barangay_name}
+
+                                                    <Check
+                                                        className={cn(
+                                                            'ml-auto',
+                                                            item.barangay_name ===
+                                                                address.data
+                                                                    .brgy
+                                                                ? 'opacity-100'
+                                                                : 'opacity-0',
+                                                        )}
+                                                    />
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+
+                        <InputError message={address.errors['brgy']} />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <Label>
+                            Zip Code
+                            <Asterisk color="red" size={12} />
+                        </Label>
+                        <Input
+                            type="number"
+                            name={address.data.zip_code ?? 'zipcode'}
+                            value={address.data.zip_code ?? ''}
+                            disabled={!isEditModeAddress}
+                            onChange={(e) => {
+                                const value = e.target.value.slice(0, 4);
+                                address.setData(
+                                    'zip_code',
+                                    value ? value : null,
+                                );
+                            }}
+                            placeholder="Enter Zip Code"
+                        />
+
+                        <InputError message={address.errors['zip_code']} />
+                    </div>
+                </TwoColumnInput>
             </form>
         </>
     );

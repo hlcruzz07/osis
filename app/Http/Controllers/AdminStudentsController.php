@@ -70,9 +70,21 @@ class AdminStudentsController extends Controller
     public function updateStudentInfo(Request $request, int $id)
     {
         try {
+            dd($request->all());
             $this->studentRepo->updateStudentInfoById($id, $request->all());
 
             return back()->with('success', 'Student Information updated!');
+        } catch (Exception $e) {
+            return back()->with('error', 'Something went wrong, please try again.' . $e->getMessage());
+        }
+    }
+
+    public function updatePersonalInfo(Request $request, int $id)
+    {
+        try {
+            $this->studentRepo->updatePersonalInfoById($id, $request->all());
+
+            return back()->with('success', 'Personal Details updated!');
         } catch (Exception $e) {
             return back()->with('error', 'Something went wrong, please try again.' . $e->getMessage());
         }

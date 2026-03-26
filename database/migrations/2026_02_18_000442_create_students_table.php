@@ -40,10 +40,6 @@ return new class extends Migration {
             $table->text('height');
             $table->text('weight');
 
-            $table->text('family_size');
-            $table->text('nature_residence');
-            $table->text('house_monthly_income');
-            $table->text('ordinal_position');
             $table->timestamps();
         });
     }

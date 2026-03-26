@@ -5,35 +5,24 @@ type FlashMessages = {
     warning?: string | null;
 };
 
-type IslandGroupProps = {
-    island_id: number | null;
-    island_name: string;
+type StudentUseFormProps = {
+    student: StudentProps;
+    address: AddressProps;
+    educations: EducationLevelProps[];
+    family: FamilyProps;
+    answers: AnswersProps[];
+    siblings: {
+        fname: string;
+        mname: string | null;
+        lname: string;
+        suffix: string | null;
+        gender: string;
+        is_attending_college: boolean;
+        is_employed: boolean;
+    }[];
+    guardians: GuardiansProps[];
+    is_agree: boolean;
 };
-
-type RegionProps = {
-    island_name: string;
-    region_name: string;
-    region_description: string;
-    region_id: number;
-};
-
-type ProvinceProps = {
-    province_id: number;
-    region_id: number;
-    province_name: string;
-};
-
-type CitiesProps = {
-    province_id: number;
-    municipality_id: number;
-    municipality_name: string;
-};
-
-type BrgyProps = {
-    municipality_id: number;
-    barangay_name: string;
-};
-
 type StudentProps = {
     academic_year: string;
     semester: string;
@@ -54,7 +43,7 @@ type StudentProps = {
     birthdate: string;
     birthplace: string;
 
-    weekly_allowance: number | null;
+    weekly_allowance: string | null;
     financer: string;
     last_attended_school: string;
 
@@ -65,109 +54,68 @@ type StudentProps = {
     citizenship: string | null;
     civil_status: string;
     sexual_orient: string;
+    height: string | null;
+    weight: string | null;
+};
 
-    height: number | null;
-    weight: number | null;
-
-    family_size: number | null;
-    parent_marital_status: string;
-    nature_residence: string;
-    house_monthly_income: string;
-    ordinal_position: string;
-    address: AddressProps;
+type BrgyProps = {
+    municipality_id: string;
+    barangay_name: string;
 };
 
 type AddressProps = {
+    student_id?: number;
+    guardian_id?: number;
     island: string;
     region: string;
     province: string;
     city: string;
     brgy: string;
-    zip_code: number | null;
+    zip_code: string | null;
 };
 
 type EducationLevelProps = {
-    elementary: {
-        education_level: string;
-        school_name: string;
-        school_address: string;
-        school_type: string;
-        year_graduated: string;
-        general_average: number | null;
-    };
-
-    junior_high: {
-        education_level: string;
-        school_name: string;
-        school_address: string;
-        school_type: string;
-        year_graduated: string;
-        general_average: number | null;
-    };
-    senior_high: {
-        education_level: string;
-        school_name: string;
-        school_address: string;
-        school_type: string;
-        year_graduated: string;
-        strand: string;
-        general_average: number | null;
-    };
-
-    college?: {
-        education_level: string;
-        school_name: string;
-        school_address: string;
-        school_type: string;
-        year_graduated: string;
-        general_average: number | null;
-        course: string | null;
-        academic_year: string | null;
-        scholarship_program: string | null;
-        scholarship_address: string | null;
-        scholarship_mobile_num: number | null;
-    };
+    education_level: string;
+    school_name: string;
+    school_address: string;
+    school_type: string;
+    year_graduated: string;
+    general_average: string | null;
+    strand: string | null;
+    course: string | null;
+    academic_year: string | null;
+    scholarship_program: string | null;
+    scholarship_address: string | null;
+    scholarship_mobile_num: string | null;
 };
 
 type GuardiansProps = {
     student_id?: number;
-
     fname: string;
     mname: string | null;
     lname: string;
     suffix: string | null;
     role: string;
-
     birthdate: string | null;
     birthplace: string | null;
-    mobile_num: number | null;
-
+    mobile_num: string | null;
     religion: string;
     citizenship: string | null;
     highest_educ_attainment: string;
     life_status: string;
-
-    cause_of_death?: string | null;
-    year_of_death?: number | null;
-
+    cause_of_death: string | null;
+    year_of_death: string | null;
     occupation: string | null;
     is_contact_person: boolean;
-
-    address?: AddressProps;
+    address: AddressProps;
 };
 
 type FamilyProps = {
-    siblings?: {
-        fname: string;
-        mname: string | null;
-        lname: string;
-        suffix: string | null;
-        gender: string;
-        is_attending_college: boolean;
-        is_employed: boolean;
-    }[];
-
-    guardians: GuardiansProps[];
+    family_size: string | null;
+    parent_martial_status: string;
+    nature_residence: string;
+    house_monthly_income: string;
+    ordinal_position: string;
 };
 
 type QuestionsProps = {
@@ -184,14 +132,6 @@ type AnswersProps = {
     sub_question_id: number | null;
     answer_type: any;
     answer: string | null;
-};
-
-type StudentUseFormProps = {
-    student: StudentProps;
-    education: EducationLevelProps;
-    family: FamilyProps;
-    answers: AnswersProps[];
-    is_agree: boolean;
 };
 
 type QuestionProps = {
@@ -211,4 +151,28 @@ type SubQuestionProps = {
     sub_question: string;
     answer_type: any;
     is_required: boolean;
+};
+
+type IslandGroupProps = {
+    island_id: string | null;
+    island_name: string;
+};
+
+type RegionProps = {
+    island_name: string;
+    region_name: string;
+    region_description: string;
+    region_id: string;
+};
+
+type ProvinceProps = {
+    province_id: string;
+    region_id: string;
+    province_name: string;
+};
+
+type CitiesProps = {
+    province_id: string;
+    municipality_id: string;
+    municipality_name: string;
 };

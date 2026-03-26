@@ -4,20 +4,19 @@ namespace App\Repositories;
 
 use App\Models\Address;
 use App\Models\Education;
+use App\Models\FamilyInfo;
 use App\Models\Guardian;
 use App\Models\Sibling;
 use App\Models\Student;
-use DB;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class StudentRepo
 {
     /**
      * Create a new class instance.
      */
-    public function __construct(protected Student $model, protected Address $address, protected Sibling $sibling, protected GuardianRepo $guardianRepo, protected Education $education, protected AnswerRepo $answerRepo)
+    public function __construct(protected Student $model, protected Address $address, protected Sibling $sibling, protected GuardianRepo $guardianRepo, protected Education $education, protected AnswerRepo $answerRepo, protected FamilyInfo $familyInfo)
     {
     }
 
@@ -28,76 +27,95 @@ class StudentRepo
             ->findOrFail($id);
     }
 
-    public function updateStudentInfoById(int $id, array $data)
-    {
-        DB::transaction(function () use ($id, $data) {
-            $student = $this->model->findOrFail($id);
-            $student->update([
-                'year_level' => $data['year_level'],
-                'campus' => $data['campus'],
-                'date_admitted' => $data['date_admitted'],
-                'student_type' => $data['student_type'],
-                'course' => $data['course'],
-                'lrn' => $data['lrn'] ?? null,
-                'equity_indicator' => $data['equity_indicator'],
+    // public function updateStudentInfoById(int $id, array $data)
+    // {
+    //     DB::transaction(function () use ($id, $data) {
+    //         $student = $this->model->findOrFail($id);
+    //         $student->update([
+    //             'year_level' => $data['year_level'],
+    //             'campus' => $data['campus'],
+    //             'date_admitted' => $data['date_admitted'],
+    //             'student_type' => $data['student_type'],
+    //             'course' => $data['course'],
+    //             'lrn' => $data['lrn'] ?? null,
+    //             'equity_indicator' => $data['equity_indicator'],
 
-                'year_level_hash' => $this->hashValue($data['year_level']),
-                'campus_hash' => $this->hashValue($data['campus']),
-                'date_admitted_hash' => $this->hashValue($data['date_admitted']),
-                'student_type_hash' => $this->hashValue($data['student_type']),
-                'course_hash' => $this->hashValue($data['course']),
-                'lrn_hash' => $this->hashValue($data['lrn']),
-                'equity_indicator_hash' => $this->hashValue($data['equity_indicator']),
-            ]);
+    //             'year_level_hash' => $this->hashValue($data['year_level']),
+    //             'campus_hash' => $this->hashValue($data['campus']),
+    //             'date_admitted_hash' => $this->hashValue($data['date_admitted']),
+    //             'student_type_hash' => $this->hashValue($data['student_type']),
+    //             'course_hash' => $this->hashValue($data['course']),
+    //             'lrn_hash' => $this->hashValue($data['lrn']),
+    //             'equity_indicator_hash' => $this->hashValue($data['equity_indicator']),
+    //         ]);
 
-            $this->updateEducations($data['educations']);
+    //         $this->updateEducations($id, $data['educations']);
 
-            return $student;
-        });
+    //         return $student;
+    //     });
+    // }
 
 
-    }
+    // public function updatePersonalInfoById(int $id, array $data)
+    // {
+    //     DB::transaction(function () use ($id, $data) {
+    //         $student = $this->model->findOrFail($id);
+    //         $student->update([
+    //             'year_level' => $data['year_level'],
+    //             'campus' => $data['campus'],
+    //             'date_admitted' => $data['date_admitted'],
+    //             'student_type' => $data['student_type'],
+    //             'course' => $data['course'],
+    //             'lrn' => $data['lrn'] ?? null,
+    //             'equity_indicator' => $data['equity_indicator'],
 
-    public function updateEducations(array $data)
-    {
-        foreach ($data as $item) {
+    //             'year_level_hash' => $this->hashValue($data['year_level']),
+    //             'campus_hash' => $this->hashValue($data['campus']),
+    //             'date_admitted_hash' => $this->hashValue($data['date_admitted']),
+    //             'student_type_hash' => $this->hashValue($data['student_type']),
+    //             'course_hash' => $this->hashValue($data['course']),
+    //             'lrn_hash' => $this->hashValue($data['lrn']),
+    //             'equity_indicator_hash' => $this->hashValue($data['equity_indicator']),
+    //         ]);
 
-            $education = $this->education
-                ->where('id', $item['id'])
-                ->firstOrFail();
+    //         $this->updateEducations($id, $data['educations']);
 
-            $education->update([
-                'education_level' => $item['education_level'],
-                'school_name' => $item['school_name'],
-                'school_address' => $item['school_address'],
-                'school_type' => $item['school_type'],
-                'year_graduated' => $item['year_graduated'],
-                'strand' => $item['strand'] ?? null,
-                'general_average' => $item['general_average'],
-                'course' => $item['course'] ?? null,
-                'academic_year' => $item['academic_year'] ?? null,
-                'scholarship_program' => $item['scholarship_program'] ?? null,
-                'scholarship_address' => $item['scholarship_address'] ?? null,
-                'scholarship_mobile_num' => $item['scholarship_mobile_num'] ?? null,
+    //         return $student;
+    //     });
+    // }
 
-                // hashes
-                'education_level_hash' => $this->hashValue($item['education_level']),
-                'school_name_hash' => $this->hashValue($item['school_name']),
-                'school_address_hash' => $this->hashValue($item['school_address']),
-                'school_type_hash' => $this->hashValue($item['school_type']),
-                'year_graduated_hash' => $this->hashValue($item['year_graduated']),
-                'strand_hash' => $this->hashValue($item['strand'] ?? null),
-                'general_average_hash' => $this->hashValue($item['general_average']),
-                'course_hash' => $this->hashValue($item['course'] ?? null),
-                'academic_year_hash' => $this->hashValue($item['academic_year'] ?? null),
-                'scholarship_program_hash' => $this->hashValue($item['scholarship_program'] ?? null),
-                'scholarship_address_hash' => $this->hashValue($item['scholarship_address'] ?? null),
-                'scholarship_mobile_num_hash' => $this->hashValue($item['scholarship_mobile_num'] ?? null),
-            ]);
-        }
+    // public function updateEducations(int $id, array $data)
+    // {
+    //     DB::transaction(function () use ($id, $data) {
+    //         $data_with_hashes = array_merge($data, [
+    //             'fname_hash' => $this->hashValue($data['fname'] ?? null),
+    //             'mname_hash' => $this->hashValue($data['mname'] ?? null),
+    //             'lname_hash' => $this->hashValue($data['lname'] ?? null),
+    //             'suffix_hash' => $this->hashValue($data['suffix'] ?? null),
+    //             'birthdate_hash' => $this->hashValue($data['birthdate'] ?? null),
+    //             'birthplace_hash' => $this->hashValue($data['birthplace'] ?? null),
+    //             'weekly_allowance_hash' => $this->hashValue($data['weekly_allowance'] ?? null),
+    //             'financer_hash' => $this->hashValue($data['financer'] ?? null),
+    //             'last_attended_school_hash' => $this->hashValue($data['last_attended_school'] ?? null),
+    //             'email_hash' => $this->hashValue($data['email'] ?? null),
+    //             'mobile_num_hash' => $this->hashValue($data['mobile_num'] ?? null),
+    //             'religion_hash' => $this->hashValue($data['religion'] ?? null),
+    //             'citizenship_hash' => $this->hashValue($data['citizenship'] ?? null),
+    //             'civil_status_hash' => $this->hashValue($data['civil_status'] ?? null),
+    //             'sexual_orient_hash' => $this->hashValue($data['sexual_orient'] ?? null),
+    //             'height_hash' => $this->hashValue($data['height'] ?? null),
+    //             'weight_hash' => $this->hashValue($data['weight'] ?? null),
+    //         ]);
 
-        return true;
-    }
+    //         $student = $this->model->findOrFail($id);
+    //         $student->update($data_with_hashes);
+
+    //         $address = $this->address->where('student_id', $id);
+    //         $address->update($data['address']);
+
+    //         return true;
+    //     });
+    // }
 
     public function paginate(array $filters)
     {
@@ -186,40 +204,6 @@ class StudentRepo
         return $this->model->findOrFail($id);
     }
 
-    public function store(array $data)
-    {
-        $student_data =
-            Arr::except($data, [
-                'education',
-                'family',
-                'answers',
-                'is_agree',
-                'student.address'
-            ])['student'];
-
-        $address_data = data_get($data, 'student.address');
-        $education_data = collect(data_get($data, 'education'))->filter()->values()->toArray();
-        $guardians_data = data_get($data, 'family.guardians');
-        $siblings_data = data_get($data, 'family.siblings');
-        $answers_data = data_get($data, 'answers');
-
-        $student_main_answers = collect($answers_data)->filter(function ($item) {
-            return is_null($item['sub_question_id']);
-        })->values()->toArray();
-
-        $student_sub_answers = collect($answers_data)->filter(function ($item) {
-            return !is_null($item['sub_question_id']) && !is_null($item['answer']);
-        })->values()->toArray();
-
-        $student_id = $this->storeStudent($student_data);
-        $this->storeStudentAddress($address_data, $student_id);
-        $this->storeSiblings($siblings_data, $student_id);
-        $this->storeStudentEducation($education_data, $student_id);
-        $this->guardianRepo->store($guardians_data, $student_id);
-        $this->answerRepo->storeAnswers($student_main_answers, $student_id);
-        $this->answerRepo->storeSubAnswers($student_sub_answers, $student_id);
-
-    }
 
     public function storeStudent(array $data)
     {
@@ -251,10 +235,6 @@ class StudentRepo
             'sexual_orient_hash' => $this->hashValue($data['sexual_orient'] ?? null),
             'height_hash' => $this->hashValue($data['height'] ?? null),
             'weight_hash' => $this->hashValue($data['weight'] ?? null),
-            'family_size_hash' => $this->hashValue($data['family_size'] ?? null),
-            'nature_residence_hash' => $this->hashValue($data['nature_residence'] ?? null),
-            'house_monthly_income_hash' => $this->hashValue($data['house_monthly_income'] ?? null),
-            'ordinal_position_hash' => $this->hashValue($data['ordinal_position'] ?? null),
         ]);
 
         $student = $this->model->create($data_with_hashes);
@@ -272,13 +252,69 @@ class StudentRepo
             'province' => $data['province'],
             'city' => $data['city'],
             'brgy' => $data['brgy'],
-            'zip_code' => $data['zip_code'],
+            'zip_code' => $data['zip_code'] ?? null,
+
             'island_hash' => $this->hashValue($data['island'] ?? null),
             'region_hash' => $this->hashValue($data['region'] ?? null),
             'province_hash' => $this->hashValue($data['province'] ?? null),
             'city_hash' => $this->hashValue($data['city'] ?? null),
             'brgy_hash' => $this->hashValue($data['brgy'] ?? null),
             'zip_code_hash' => $this->hashValue($data['zip_code'] ?? null),
+        ]);
+    }
+
+    public function storeStudentEducations(array $data, int $id)
+    {
+
+        foreach ($data as $item) {
+
+            $this->education->create([
+                'student_id' => $id,
+                'education_level' => $item['education_level'],
+                'school_name' => $item['school_name'],
+                'school_address' => $item['school_address'],
+                'school_type' => $item['school_type'],
+                'year_graduated' => $item['year_graduated'],
+                'general_average' => $item['general_average'],
+                'strand' => $item['strand'] ?? null,
+                'course' => $item['course'] ?? null,
+                'academic_year' => $item['academic_year'] ?? null,
+                'scholarship_program' => $item['scholarship_program'] ?? null,
+                'scholarship_address' => $item['scholarship_address'] ?? null,
+                'scholarship_mobile_num' => $item['scholarship_mobile_num'] ?? null,
+
+                'education_level_hash' => $this->hashValue($item['education_level'] ?? null),
+                'school_name_hash' => $this->hashValue($item['school_name'] ?? null),
+                'school_address_hash' => $this->hashValue($item['school_address'] ?? null),
+                'school_type_hash' => $this->hashValue($item['school_type'] ?? null),
+                'year_graduated_hash' => $this->hashValue($item['year_graduated'] ?? null),
+                'general_average_hash' => $this->hashValue($item['general_average'] ?? null),
+                'strand_hash' => $this->hashValue($item['strand'] ?? null),
+                'course_hash' => $this->hashValue($item['course'] ?? null),
+                'academic_year_hash' => $this->hashValue($item['academic_year'] ?? null),
+                'scholarship_program_hash' => $this->hashValue($item['scholarship_program'] ?? null),
+                'scholarship_address_hash' => $this->hashValue($item['scholarship_address'] ?? null),
+                'scholarship_mobile_num_hash' => $this->hashValue($item['scholarship_mobile_num'] ?? null),
+            ]);
+        }
+
+    }
+
+    public function storeFamilyInfo(array $data, int $id)
+    {
+        $this->familyInfo->create([
+            'student_id' => $id,
+            'family_size' => $data['family_size'],
+            'parent_martial_status' => $data['parent_martial_status'],
+            'nature_residence' => $data['nature_residence'],
+            'house_monthly_income' => $data['house_monthly_income'],
+            'ordinal_position' => $data['ordinal_position'],
+
+            'family_size_hash' => $this->hashValue($data['family_size'] ?? null),
+            'parent_martial_status_hash' => $this->hashValue($data['parent_martial_status'] ?? null),
+            'nature_residence_hash' => $this->hashValue($data['nature_residence'] ?? null),
+            'house_monthly_income_hash' => $this->hashValue($data['house_monthly_income'] ?? null),
+            'ordinal_position_hash' => $this->hashValue($data['ordinal_position'] ?? null),
         ]);
     }
 
@@ -305,40 +341,7 @@ class StudentRepo
 
 
 
-    public function storeStudentEducation(array $data, int $id)
-    {
 
-        foreach ($data as $item) {
-
-            $this->education->create([
-                'student_id' => $id,
-                'education_level' => $item['education_level'],
-                'school_name' => $item['school_name'],
-                'school_address' => $item['school_address'],
-                'school_type' => $item['school_type'],
-                'year_graduated' => $item['year_graduated'],
-                'general_average' => $item['general_average'],
-                'strand' => $item['strand'] ?? null,
-                'course' => $item['course'] ?? null,
-                'academic_year' => $item['academic_year'] ?? null,
-                'scholarship_program' => $item['scholarship_program'] ?? null,
-                'scholarship_address' => $item['scholarship_address'] ?? null,
-                'scholarship_mobile_num' => $item['scholarship_mobile_num'] ?? null,
-                'education_level_hash' => $this->hashValue($item['education_level'] ?? null),
-                'school_name_hash' => $this->hashValue($item['school_name'] ?? null),
-                'school_address_hash' => $this->hashValue($item['school_address'] ?? null),
-                'school_type_hash' => $this->hashValue($item['school_type'] ?? null),
-                'year_graduated_hash' => $this->hashValue($item['year_graduated'] ?? null),
-                'general_average_hash' => $this->hashValue($item['general_average'] ?? null),
-                'course_hash' => $this->hashValue($item['course'] ?? null),
-                'academic_year_hash' => $this->hashValue($item['academic_year'] ?? null),
-                'scholarship_program_hash' => $this->hashValue($item['scholarship_program'] ?? null),
-                'scholarship_address_hash' => $this->hashValue($item['scholarship_address'] ?? null),
-                'scholarship_mobile_num_hash' => $this->hashValue($item['scholarship_mobile_num'] ?? null),
-            ]);
-        }
-
-    }
 
 
 

@@ -4,7 +4,7 @@ import StudentInfo from './Inputs/StudentInfo';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import ContactAddressInfo from './Inputs/ContactAddressInfo';
+import ContactAddressInfo from './Inputs/AddressInfo';
 import EducationInfo from './Inputs/EducationInfo';
 import FamilyInfo from './Inputs/FamilyInfo';
 import { toast, Toaster, ToasterProps } from 'sonner';
@@ -15,20 +15,20 @@ import { Button } from '@/components/ui/button';
 import { useAppearance } from '@/hooks/use-appearance';
 import {
     validateAdditionalInfo,
+    validateAddress,
     validateEducation,
     validateFamily,
-    validateStudentContactAddress,
     validateStudentInfo,
 } from '@/routes';
 import DataPrivacyInfo from './Inputs/DataPrivacyInfo';
 import { SendIcon, StepForwardIcon } from 'lucide-react';
 import { CancelAlertModal } from './Modal/CancelAlertModal';
-import { clear } from 'console';
 import { ConfirmAlertModal } from './Modal/ConfirmAlertModal';
 import { Spinner } from '@/components/ui/spinner';
 import { FinishAlertModal } from './Modal/FinishAlertModal';
-import Maintenance from './Maintenance/Maintenance';
+
 import { DropdownProps } from '@/types/dropdowns';
+import AddressInfo from './Inputs/AddressInfo';
 
 type PageProps = {
     questions: QuestionProps[];
@@ -37,20 +37,19 @@ type PageProps = {
         academic_year: string;
         semester: string;
     };
-    student: StudentProps;
     dropdowns: DropdownProps[];
 };
 
 export default function Index() {
-    const { questions, academic_year_and_semester, student, dropdowns } =
+    const { questions, academic_year_and_semester, dropdowns } =
         usePage<PageProps>().props;
 
-    const { data, setData, errors, processing, post, clearErrors, reset } =
+    const { data, setData, errors, processing, post } =
         useForm<StudentUseFormProps>({
             student: {
                 academic_year: '',
                 semester: '',
-                lrn: null as string | null,
+                lrn: null,
                 year_level: '',
                 campus: '',
                 course: '',
@@ -60,76 +59,53 @@ export default function Index() {
                 equity_indicator: '',
 
                 fname: '',
-                mname: null as string | null,
+                mname: null,
                 lname: '',
-                suffix: null as string | null,
+                suffix: null,
 
                 birthdate: '',
                 birthplace: '',
 
-                weekly_allowance: null as number | null,
+                weekly_allowance: '',
                 financer: '',
                 last_attended_school: '',
 
-                email: null as string | null,
-                mobile_num: null as string | null,
+                email: null,
+                mobile_num: null,
 
                 religion: '',
                 citizenship: '',
                 civil_status: '',
                 sexual_orient: '',
+                height: '',
+                weight: '',
+            },
 
-                height: null as number | null,
-                weight: null as number | null,
+            address: {
+                island: '',
+                region: '',
+                province: '',
+                city: '',
+                brgy: '',
+                zip_code: null,
+            },
 
-                family_size: null as number | null,
-                parent_marital_status: '',
+            educations: [],
+
+            family: {
+                family_size: '',
+                parent_martial_status: '',
                 nature_residence: '',
                 house_monthly_income: '',
                 ordinal_position: '',
-                address: {
-                    island: '',
-                    region: '',
-                    province: '',
-                    city: '',
-                    brgy: '',
-                    zip_code: null as number | null,
-                },
             },
 
-            education: {
-                elementary: {
-                    education_level: 'Elementary',
-                    school_name: '',
-                    school_address: '',
-                    school_type: '',
-                    year_graduated: '',
-                    general_average: null as number | null,
-                },
-                junior_high: {
-                    education_level: 'Junior Highschool',
-                    school_name: '',
-                    school_address: '',
-                    school_type: '',
-                    year_graduated: '',
-                    general_average: null as number | null,
-                },
-                senior_high: {
-                    education_level: 'Senior Highschool',
-                    school_name: '',
-                    school_address: '',
-                    school_type: '',
-                    year_graduated: '',
-                    strand: '',
-                    general_average: null as number | null,
-                },
-            },
+            siblings: [],
 
-            family: {
-                guardians: [],
-            },
+            guardians: [],
 
             answers: [],
+
             is_agree: false,
         });
 
@@ -139,15 +115,63 @@ export default function Index() {
             academic_year_and_semester.academic_year,
         );
         setData('student.semester', academic_year_and_semester.semester);
+
+        const guardians = Array.from({ length: 2 }, (_, i) => ({
+            fname: '',
+            mname: null,
+            lname: '',
+            suffix: null,
+            role: i === 0 ? 'Father' : 'Mother',
+            birthdate: '',
+            birthplace: null,
+            mobile_num: null,
+            religion: '',
+            citizenship: null,
+            highest_educ_attainment: '',
+            cause_of_death: null,
+            year_of_death: null,
+            life_status: '',
+            occupation: null,
+            is_contact_person: false,
+            address: {
+                island: '',
+                region: '',
+                province: '',
+                city: '',
+                brgy: '',
+                zip_code: null,
+            },
+        }));
+        setData('guardians', guardians);
+
+        const educations = Array.from({ length: 3 }, (_, i) => ({
+            education_level:
+                i === 0
+                    ? 'Elementary'
+                    : i === 1
+                      ? 'Junior High School'
+                      : 'Senior High School',
+            school_name: '',
+            school_address: '',
+            school_type: '',
+            year_graduated: '',
+            general_average: '',
+            strand: null,
+            course: null,
+            academic_year: null,
+            scholarship_program: null,
+            scholarship_address: null,
+            scholarship_mobile_num: null,
+        }));
+        setData('educations', educations);
     }, []);
 
-    const [step, setStep] = useState(4);
+    const [step, setStep] = useState(1);
     const { appearance } = useAppearance();
     const formRef = useRef<HTMLFormElement>(null);
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
         if (processing) return;
 
         if (step === 1) {
@@ -158,6 +182,7 @@ export default function Index() {
                 },
                 onError: (err) => {
                     handleErrors(err);
+
                     console.error('Error submitting step 1', err);
                 },
             });
@@ -166,7 +191,7 @@ export default function Index() {
         }
 
         if (step === 2) {
-            post(validateStudentContactAddress().url, {
+            post(validateAddress().url, {
                 preserveScroll: true,
 
                 onSuccess: () => {
@@ -174,6 +199,7 @@ export default function Index() {
                 },
                 onError: (err) => {
                     handleErrors(err);
+
                     console.error('Error submitting step 2', err);
                 },
             });
@@ -189,6 +215,7 @@ export default function Index() {
                 },
                 onError: (err) => {
                     handleErrors(err);
+
                     console.error('Error submitting step 3', err);
                 },
             });
@@ -199,11 +226,12 @@ export default function Index() {
         if (step === 4) {
             post(validateFamily().url, {
                 preserveScroll: true,
-                onSuccess: (succ) => {
+                onSuccess: () => {
                     setStep((prev) => prev + 1);
                 },
                 onError: (err) => {
                     handleErrors(err);
+
                     console.error('Error submitting step 4', err);
                 },
             });
@@ -219,6 +247,7 @@ export default function Index() {
                 },
                 onError: (err) => {
                     handleErrors(err);
+
                     console.error('Error submitting step 5', err);
                 },
             });
@@ -234,6 +263,7 @@ export default function Index() {
                 },
                 onError: (err) => {
                     handleErrors(err);
+
                     console.error('Error submitting student form store', err);
                 },
             });
@@ -254,49 +284,6 @@ export default function Index() {
         if (flash.warning) toast.warning(flash.warning);
     }, [flash]);
 
-    const initFatherData = () => {
-        setData(`family.guardians.0`, {
-            fname: '',
-            mname: null,
-            lname: '',
-            suffix: null,
-            role: 'Father',
-            birthdate: '',
-            birthplace: null,
-            mobile_num: null,
-            religion: '',
-            citizenship: null,
-            highest_educ_attainment: '',
-            life_status: '',
-            occupation: null,
-            is_contact_person: false,
-        });
-    };
-
-    const initMotherData = () => {
-        setData(`family.guardians.1`, {
-            fname: '',
-            mname: null,
-            lname: '',
-            suffix: null,
-            role: 'Mother',
-            birthdate: '',
-            birthplace: null,
-            mobile_num: null,
-            religion: '',
-            citizenship: null,
-            highest_educ_attainment: '',
-            life_status: '',
-            occupation: null,
-            is_contact_person: false,
-        });
-    };
-
-    useEffect(() => {
-        initFatherData();
-        initMotherData();
-    }, []);
-
     const [openCancelModal, setOpenCancelModal] = useState(false);
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
 
@@ -308,7 +295,7 @@ export default function Index() {
 
             <Toaster
                 closeButton
-                position="top-left"
+                position="top-center"
                 richColors
                 theme={appearance}
             />
@@ -386,7 +373,7 @@ export default function Index() {
                 )}
 
                 {step === 2 && (
-                    <ContactAddressInfo
+                    <AddressInfo
                         data={data}
                         setData={setData}
                         errors={errors}

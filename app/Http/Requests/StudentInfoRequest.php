@@ -18,10 +18,6 @@ class StudentInfoRequest extends FormRequest
         return true;
     }
 
-    public function __construct()
-    {
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -43,14 +39,14 @@ class StudentInfoRequest extends FormRequest
         return [
             'student.academic_year' => 'required',
             'student.semester' => 'required',
-            'student.lrn' => 'nullable|string|max:12',
+            'student.lrn' => 'nullable|digits:12',
             'student.year_level' => ['required', Rule::in($validYearLevels)],
             'student.campus' => ['required', Rule::in($validCampuses)],
             'student.course' => [
                 'required',
                 Rule::in($validCourses),
             ],
-            'student.date_admitted' => 'required|date',
+            'student.date_admitted' => 'required|date|before_or_equal:today',
             'student.student_type' => [
                 'required',
                 Rule::in($validStudentType)
@@ -64,7 +60,7 @@ class StudentInfoRequest extends FormRequest
             'student.mname' => 'nullable|max:50',
             'student.lname' => 'required|max:50',
             'student.suffix' => ['nullable', Rule::in($validSuffixes)],
-            'student.birthdate' => 'required|date',
+            'student.birthdate' => 'required|date|before_or_equal:today',
             'student.birthplace' => 'required|max:100',
             'student.weekly_allowance' => 'required|numeric|min:0',
             'student.financer' => 'required|max:50',
@@ -81,6 +77,8 @@ class StudentInfoRequest extends FormRequest
             'student.sexual_orient' => 'required|max:25',
             'student.height' => 'required|numeric|min:30|digits_between:2,3',
             'student.weight' => 'required|numeric|min:30|digits_between:2,3',
+            'student.email' => 'nullable|email|max:50',
+            'student.mobile_num' => 'nullable|numeric|starts_with:9|digits:10',
         ];
 
 
@@ -92,7 +90,7 @@ class StudentInfoRequest extends FormRequest
 
             // LRN
 
-            'student.lrn.max' => 'LRN must not exceed 12 characters.',
+            'student.lrn.digits' => 'LRN should be exactly 12 digits.',
 
             // Year & Campus
             'student.year_level.required' => 'Year level is required.',
@@ -107,6 +105,7 @@ class StudentInfoRequest extends FormRequest
             // Admission
             'student.date_admitted.required' => 'Date admitted is required.',
             'student.date_admitted.date' => 'Date admitted must be a valid date.',
+            'student.date_admitted.before_or_equal' => 'The date admitted cannot be in the future.',
 
             'student.student_type.required' => 'Student type is required.',
             'student.student_type.in' => 'Selected student type is invalid.',
@@ -128,6 +127,7 @@ class StudentInfoRequest extends FormRequest
             // Birth Info
             'student.birthdate.required' => 'Birth date is required.',
             'student.birthdate.date' => 'Birth date must be a valid date.',
+            'student.birthdate.before_or_equal' => 'The date of birth cannot be in the future.',
 
             'student.birthplace.required' => 'Birth place is required.',
             'student.birthplace.max' => 'Birth place must not exceed 100 characters.',
@@ -167,6 +167,14 @@ class StudentInfoRequest extends FormRequest
             'student.weight.min' => 'Weight must be at least 30 kg.',
             'student.weight.digits_between' => 'Weight must be between 2 and 3 digits.',
 
+            'student.email.email' => 'Please enter a valid email address.',
+            'student.email.max' => 'Email must not exceed 50 characters.',
+
+            // Mobile number
+            'student.mobile_num.numeric' => 'Mobile number must contain numbers only.',
+            'student.mobile_num.starts_with' => 'Mobile number should always starts with 9.',
+            'student.mobile_num.digits' => 'Mobile number must be exactly 10 digits.',
+
         ];
     }
 
@@ -201,6 +209,39 @@ class StudentInfoRequest extends FormRequest
                     'student.fname',
                     'A student with the same first, middle, and last name has already submitted the form.'
                 );
+            }
+
+            $email = $this->input('student.email');
+            $mobile_num = $this->input('student.mobile_num');
+
+            if (empty($email) && empty($mobile_num)) {
+                return;
+            }
+
+            if (!empty($email)) {
+                $emailHash = hash('sha256', trim($email));
+
+                $exists = Student::where('email_hash', $emailHash)->exists();
+
+                if ($exists) {
+                    $validator->errors()->add(
+                        'student.email',
+                        'This email is already taken.'
+                    );
+                }
+            }
+
+            if (!empty($mobile_num)) {
+                $mobileNumHash = hash('sha256', trim($mobile_num));
+
+                $exists = Student::where('mobile_num_hash', $mobileNumHash)->exists();
+
+                if ($exists) {
+                    $validator->errors()->add(
+                        'student.mobile_num',
+                        'This mobile number is already taken.'
+                    );
+                }
             }
         });
     }

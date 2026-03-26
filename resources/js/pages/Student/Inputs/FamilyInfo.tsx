@@ -81,17 +81,6 @@ export default function FamilyInfo({
     errors,
     dropdowns,
 }: StudentInfoProps) {
-    //     import {
-    //     educAttainmentArr,
-    //     familyRoleArr,
-    //     houseMonthlyIncomeArr,
-    //     lifeStatusArr,
-    //     natureOfResidenceArr,
-    //     parentsMaritalStatusArr,
-    //     religionArr,
-    //     suffixArr,
-    // } from '@/lib/dropdowns';
-
     const educAttainmentArr = dropdowns.find(
         (item) => item.title === 'Educational Attainment',
     )?.dropdowns;
@@ -126,10 +115,10 @@ export default function FamilyInfo({
 
     const [siblingCount, setSiblingCount] = useState<number>(0);
     const [selectedMartialStatus, setSelectedMaritalStatus] = useState(
-        data.student.parent_marital_status ?? '',
+        data.family.parent_martial_status ?? '',
     );
     const [selectedNatureOfResidence, setSelectedNatureOfResidence] = useState(
-        data.student.nature_residence ?? '',
+        data.family.nature_residence ?? '',
     );
 
     const siblingsCountArr = Array.from({ length: siblingCount }, (_, i) => i);
@@ -140,6 +129,20 @@ export default function FamilyInfo({
         'Father',
         'Mother',
     ]);
+
+    useEffect(() => {
+        const newSiblings = Array.from({ length: siblingCount }, () => ({
+            fname: '',
+            mname: null,
+            lname: '',
+            suffix: null,
+            gender: '',
+            is_attending_college: false,
+            is_employed: false,
+        }));
+
+        setData('siblings', newSiblings);
+    }, [siblingCount]);
 
     // Add state for address dropdowns per guardian
     const [guardianRegions, setGuardianRegions] = useState<{
@@ -172,21 +175,17 @@ export default function FamilyInfo({
         }
         setSelectedGuardians((prev) => [...prev, selectedGuardian]);
         setSelectedGuardian('');
-        setData(
-            `family.guardians.${data.family.guardians.length}.role`,
-            selectedGuardian,
-        );
+        setData(`guardians.${data.guardians.length}.role`, selectedGuardian);
 
         toast.success(`${selectedGuardian} added.`);
     };
 
     useEffect(() => {
-        setData(`family.guardians.${0}.role`, 'Father');
-        setData(`family.guardians.${1}.role`, 'Mother');
+        setData(`guardians.${0}.role`, 'Father');
+        setData(`guardians.${1}.role`, 'Mother');
     }, []);
 
     useEffect(() => {
-        // Whenever siblingCount changes, update family.siblings array
         const siblingsArray = Array.from({ length: siblingCount }, () => ({
             fname: '',
             mname: null,
@@ -196,7 +195,7 @@ export default function FamilyInfo({
             is_employed: false,
         }));
 
-        setData('family.siblings', siblingsArray);
+        setData('siblings', siblingsArray);
     }, [siblingCount]);
 
     const deleteMember = (memberToDelete: string) => {
@@ -208,19 +207,15 @@ export default function FamilyInfo({
             prev.filter((member) => member !== memberToDelete),
         );
         setData(
-            'family.guardians',
-            data.family.guardians.filter(
-                (member) => member.role !== memberToDelete,
-            ),
+            'guardians',
+            data.guardians.filter((member) => member.role !== memberToDelete),
         );
 
         toast.success(`${memberToDelete} removed.`);
     };
 
     const isSelectedAsContactPerson = (role: string): boolean => {
-        const selected = data.family.guardians?.find(
-            (m) => m?.is_contact_person,
-        );
+        const selected = data.guardians?.find((m) => m?.is_contact_person);
 
         if (!selected) return false;
         return selected.role !== role;
@@ -228,10 +223,10 @@ export default function FamilyInfo({
 
     // Reset functions for address
     const resetForIsland = (guardianIndex: number) => {
-        setData(`family.guardians.${guardianIndex}.address.region`, '');
-        setData(`family.guardians.${guardianIndex}.address.province`, '');
-        setData(`family.guardians.${guardianIndex}.address.city`, '');
-        setData(`family.guardians.${guardianIndex}.address.brgy`, '');
+        setData(`guardians.${guardianIndex}.address.region`, '');
+        setData(`guardians.${guardianIndex}.address.province`, '');
+        setData(`guardians.${guardianIndex}.address.city`, '');
+        setData(`guardians.${guardianIndex}.address.brgy`, '');
 
         // Clear dependent dropdowns for this guardian
         setGuardianRegions((prev) => ({ ...prev, [guardianIndex]: [] }));
@@ -241,9 +236,9 @@ export default function FamilyInfo({
     };
 
     const resetForRegion = (guardianIndex: number) => {
-        setData(`family.guardians.${guardianIndex}.address.province`, '');
-        setData(`family.guardians.${guardianIndex}.address.city`, '');
-        setData(`family.guardians.${guardianIndex}.address.brgy`, '');
+        setData(`guardians.${guardianIndex}.address.province`, '');
+        setData(`guardians.${guardianIndex}.address.city`, '');
+        setData(`guardians.${guardianIndex}.address.brgy`, '');
 
         // Clear dependent dropdowns for this guardian
         setGuardianProvinces((prev) => ({ ...prev, [guardianIndex]: [] }));
@@ -252,8 +247,8 @@ export default function FamilyInfo({
     };
 
     const resetForProvince = (guardianIndex: number) => {
-        setData(`family.guardians.${guardianIndex}.address.city`, '');
-        setData(`family.guardians.${guardianIndex}.address.brgy`, '');
+        setData(`guardians.${guardianIndex}.address.city`, '');
+        setData(`guardians.${guardianIndex}.address.brgy`, '');
 
         // Clear dependent dropdowns for this guardian
         setGuardianCities((prev) => ({ ...prev, [guardianIndex]: [] }));
@@ -261,7 +256,7 @@ export default function FamilyInfo({
     };
 
     const resetForCity = (guardianIndex: number) => {
-        setData(`family.guardians.${guardianIndex}.address.brgy`, '');
+        setData(`guardians.${guardianIndex}.address.brgy`, '');
         setGuardianBrgys((prev) => ({ ...prev, [guardianIndex]: [] }));
     };
 
@@ -271,7 +266,7 @@ export default function FamilyInfo({
         islandName: string,
         islandId: number,
     ) => {
-        setData(`family.guardians.${guardianIndex}.address.island`, islandName);
+        setData(`guardians.${guardianIndex}.address.island`, islandName);
         resetForIsland(guardianIndex);
 
         fetchRegionsByIslandId(islandId).then((regions) => {
@@ -287,10 +282,7 @@ export default function FamilyInfo({
         regionValue: string,
         regionId: number,
     ) => {
-        setData(
-            `family.guardians.${guardianIndex}.address.region`,
-            regionValue,
-        );
+        setData(`guardians.${guardianIndex}.address.region`, regionValue);
         resetForRegion(guardianIndex);
 
         fetchProvinceByRegionId(regionId).then((provinces) => {
@@ -306,10 +298,7 @@ export default function FamilyInfo({
         provinceName: string,
         provinceId: number,
     ) => {
-        setData(
-            `family.guardians.${guardianIndex}.address.province`,
-            provinceName,
-        );
+        setData(`guardians.${guardianIndex}.address.province`, provinceName);
         resetForProvince(guardianIndex);
 
         fetchCitiesByProvinceId(provinceId).then((cities) => {
@@ -322,7 +311,7 @@ export default function FamilyInfo({
         cityName: string,
         municipalityId: number,
     ) => {
-        setData(`family.guardians.${guardianIndex}.address.city`, cityName);
+        setData(`guardians.${guardianIndex}.address.city`, cityName);
         resetForCity(guardianIndex);
 
         fetchBrgyByCityId(municipalityId).then((brgys) => {
@@ -333,131 +322,75 @@ export default function FamilyInfo({
     const [isUsingAddress, setIsUsingAddress] = useState(false);
 
     const useStudentAddress = async (index: number) => {
+        setIsUsingAddress(true);
+        toast.loading('Using student address...', { id: 'copy-address' });
+
         try {
-            setIsUsingAddress(true);
+            const studentAddress = data.address;
 
-            setData(`family.guardians.${index}.address`, undefined);
-
-            toast.loading('Using student address...', { id: 'copy-address' });
-
+            // 1. Fetch all data levels first
             const island = islandGroup.find(
-                (i) => i.island_name === data.student.address.island,
+                (i) => i.island_name === studentAddress.island,
             );
-            if (!island) {
-                toast.error(
-                    `${data.student.address.island} island not found in the data`,
-                    {
-                        id: 'copy-address',
-                    },
-                );
-                return;
-            }
+            if (!island) throw new Error('Island not found.');
 
-            const regions = await fetchRegionsByIslandId(island.island_id ?? 0);
-            setGuardianRegions((prev) => ({ ...prev, [index]: regions }));
-
+            const regions = await fetchRegionsByIslandId(
+                Number(island.island_id),
+            );
             const region = regions.find(
                 (r) =>
                     `${r.region_name} - ${r.region_description}` ===
-                    data.student.address.region,
-            );
-            if (!region) {
-                toast.error(
-                    `${data.student.address.region} not found in the data`,
-                    {
-                        id: 'copy-address',
-                    },
-                );
-                return;
-            }
-
-            setData(
-                `family.guardians.${index}.address.island`,
-                data.student.address.island,
-            );
-            setData(
-                `family.guardians.${index}.address.region`,
-                `${region.region_name} - ${region.region_description}`,
+                    studentAddress.region,
             );
 
-            const provinces = await fetchProvinceByRegionId(region.region_id);
-            setGuardianProvinces((prev) => ({ ...prev, [index]: provinces }));
-
+            const provinces = await fetchProvinceByRegionId(
+                Number(region?.region_id),
+            );
             const province = provinces.find(
-                (p) => p.province_name === data.student.address.province,
-            );
-            if (!province) {
-                toast.error(
-                    `${data.student.address.province} not found in the data`,
-                    {
-                        id: 'copy-address',
-                    },
-                );
-                return;
-            }
-
-            // Set province value
-            setData(
-                `family.guardians.${index}.address.province`,
-                data.student.address.province,
+                (p) => p.province_name === studentAddress.province,
             );
 
-            // Fetch cities/municipalities for the province
-            const cities = await fetchCitiesByProvinceId(province.province_id);
-            setGuardianCities((prev) => ({ ...prev, [index]: cities }));
-
-            // Find the city from student address
+            const cities = await fetchCitiesByProvinceId(
+                Number(province?.province_id),
+            );
             const city = cities.find(
-                (c) => c.municipality_name === data.student.address.city,
+                (c) => c.municipality_name === studentAddress.city,
             );
-            if (!city) {
-                toast.error(
-                    `${data.student.address.city} not found in the data`,
-                    {
-                        id: 'copy-address',
-                    },
-                );
-                return;
-            }
 
-            // Set city value - use setTimeout to ensure cities are in state first
-            setTimeout(() => {
-                setData(
-                    `family.guardians.${index}.address.city`,
-                    data.student.address.city,
-                );
-            }, 100);
+            const brgys = await fetchBrgyByCityId(
+                Number(city?.municipality_id),
+            );
 
-            // Fetch barangays for the city
-            const brgys = await fetchBrgyByCityId(city.municipality_id);
+            // 2. UPDATE ALL LISTS AT ONCE
+            // This populates the <select> options so the form acknowledges the values exist
+            setGuardianRegions((prev) => ({ ...prev, [index]: regions }));
+            setGuardianProvinces((prev) => ({ ...prev, [index]: provinces }));
+            setGuardianCities((prev) => ({ ...prev, [index]: cities }));
             setGuardianBrgys((prev) => ({ ...prev, [index]: brgys }));
 
-            // Set zip code
-            setData(
-                `family.guardians.${index}.address.zip_code`,
-                data.student.address.zip_code,
-            );
-
-            // Set barangay after a delay to ensure city and brgys are loaded
+            // 3. THE FIX: Wrap setData in a timeout
+            // This ensures the state updates above "stick" before we try to select an option
             setTimeout(() => {
-                setData(
-                    `family.guardians.${index}.address.brgy`,
-                    data.student.address.brgy,
-                );
-
-                setIsUsingAddress(false);
+                setData(`guardians.${index}.address`, {
+                    island: studentAddress.island,
+                    region: studentAddress.region,
+                    province: studentAddress.province,
+                    city: studentAddress.city,
+                    brgy: studentAddress.brgy,
+                    zip_code: studentAddress.zip_code,
+                });
 
                 toast.success('Student address used successfully', {
                     id: 'copy-address',
                 });
-            }, 200);
+                setIsUsingAddress(false);
+            }, 100); // 100ms is usually enough for React to re-render the select options
         } catch (error) {
             console.error('Error copying address:', error);
             toast.error('Failed to copy address', { id: 'copy-address' });
             setIsUsingAddress(false);
         }
     };
-
     return (
         <>
             <Heading
@@ -474,14 +407,17 @@ export default function FamilyInfo({
                     />
                     <Input
                         type="number"
-                        name="student.family_size"
-                        value={data.student.family_size ?? ''}
+                        name="family.family_size"
+                        value={data.family.family_size ?? ''}
                         onChange={(e) =>
-                            setData('student.family_size', e.target.value)
+                            setData(
+                                'family.family_size',
+                                e.target.value.slice(0, 3),
+                            )
                         }
                         placeholder="Enter family size"
                     />
-                    <InputError message={errors['student.family_size']} />
+                    <InputError message={errors['family.family_size']} />
                 </div>
                 <div className="flex flex-col gap-3">
                     <Label>
@@ -490,15 +426,15 @@ export default function FamilyInfo({
                     </Label>
                     <Select
                         value={selectedMartialStatus ?? ''}
-                        name="student.parent_marital_status"
+                        name="family.parent_martial_status"
                         onValueChange={(value) => {
                             setSelectedMaritalStatus(value);
                             if (value !== 'Others') {
-                                setData('student.parent_marital_status', value);
+                                setData('family.parent_martial_status', value);
                                 return;
                             }
 
-                            setData('student.parent_marital_status', '');
+                            setData('family.parent_martial_status', '');
                         }}
                     >
                         <SelectTrigger>
@@ -517,11 +453,11 @@ export default function FamilyInfo({
 
                     {selectedMartialStatus === 'Others' && (
                         <Input
-                            value={data.student.parent_marital_status ?? ''}
-                            name="student.parent_marital_status"
+                            value={data.family.parent_martial_status ?? ''}
+                            name="family.parent_martial_status"
                             onChange={(e) =>
                                 setData(
-                                    'student.parent_marital_status',
+                                    'family.parent_martial_status',
                                     capitalizeString(e.target.value),
                                 )
                             }
@@ -529,7 +465,7 @@ export default function FamilyInfo({
                         />
                     )}
                     <InputError
-                        message={errors['student.parent_marital_status']}
+                        message={errors['family.parent_martial_status']}
                     />
                 </div>
             </TwoColumnInput>
@@ -541,10 +477,10 @@ export default function FamilyInfo({
                         <Asterisk size={12} color="red" />
                     </Label>
                     <Select
-                        value={data.student.house_monthly_income}
-                        name="student.house_monthly_income"
+                        value={data.family.house_monthly_income}
+                        name="family.house_monthly_income"
                         onValueChange={(value) => {
-                            setData('student.house_monthly_income', value);
+                            setData('family.house_monthly_income', value);
                         }}
                     >
                         <SelectTrigger>
@@ -561,7 +497,7 @@ export default function FamilyInfo({
                         </SelectContent>
                     </Select>
                     <InputError
-                        message={errors['student.house_monthly_income']}
+                        message={errors['family.house_monthly_income']}
                     />
                 </div>
                 <div className="flex flex-col gap-3">
@@ -571,18 +507,18 @@ export default function FamilyInfo({
                         example="Eldest, 2nd Child"
                     />
                     <Input
-                        value={data.student.ordinal_position}
-                        name="student.ordinal_position"
+                        value={data.family.ordinal_position}
+                        name="family.ordinal_position"
                         onChange={(e) =>
                             setData(
-                                'student.ordinal_position',
+                                'family.ordinal_position',
                                 capitalizeString(e.target.value),
                             )
                         }
                         placeholder="Enter ordinal position among siblings"
                     />
 
-                    <InputError message={errors['student.ordinal_position']} />
+                    <InputError message={errors['family.ordinal_position']} />
                 </div>
             </TwoColumnInput>
 
@@ -594,15 +530,15 @@ export default function FamilyInfo({
                     </Label>
                     <Select
                         value={selectedNatureOfResidence ?? ''}
-                        name="student.nature_residence"
+                        name="family.nature_residence"
                         onValueChange={(value) => {
                             setSelectedNatureOfResidence(value);
                             if (value !== 'Others') {
-                                setData('student.nature_residence', value);
+                                setData('family.nature_residence', value);
                                 return;
                             }
 
-                            setData('student.nature_residence', '');
+                            setData('family.nature_residence', '');
                         }}
                     >
                         <SelectTrigger>
@@ -621,18 +557,18 @@ export default function FamilyInfo({
 
                     {selectedNatureOfResidence === 'Others' && (
                         <Input
-                            value={data.student.nature_residence ?? ''}
-                            name="student.nature_residence"
+                            value={data.family.nature_residence ?? ''}
+                            name="family.nature_residence"
                             onChange={(e) =>
                                 setData(
-                                    'student.nature_residence',
+                                    'family.nature_residence',
                                     capitalizeString(e.target.value),
                                 )
                             }
                             placeholder="Please specify nature of residence"
                         />
                     )}
-                    <InputError message={errors['student.nature_residence']} />
+                    <InputError message={errors['family.nature_residence']} />
                 </div>
                 <div className="flex flex-col gap-3">
                     <LabelExample
@@ -684,12 +620,10 @@ export default function FamilyInfo({
                                 Gender <Asterisk size={12} color="red" />
                             </Label>
                             <Select
-                                value={data.family.siblings?.[index]?.gender}
+                                value={data.siblings?.[index]?.gender}
+                                name={`siblings.${index}.gender`}
                                 onValueChange={(value) =>
-                                    setData(
-                                        `family.siblings.${index}.gender`,
-                                        value,
-                                    )
+                                    setData(`siblings.${index}.gender`, value)
                                 }
                             >
                                 <SelectTrigger>
@@ -711,9 +645,7 @@ export default function FamilyInfo({
                                 </SelectContent>
                             </Select>
                             <InputError
-                                message={
-                                    errors[`family.siblings.${index}.gender`]
-                                }
+                                message={errors[`siblings.${index}.gender`]}
                             />
                         </div>
 
@@ -725,51 +657,41 @@ export default function FamilyInfo({
                                 </Label>
                                 <Input
                                     type="text"
-                                    value={
-                                        data.family.siblings?.[index]?.fname ??
-                                        ''
-                                    }
+                                    value={data.siblings?.[index]?.fname ?? ''}
                                     onChange={(e) =>
                                         setData(
-                                            `family.siblings.${index}.fname`,
+                                            `siblings.${index}.fname`,
                                             capitalizeString(e.target.value),
                                         )
                                     }
                                     placeholder="Enter Sibling First Name"
                                 />
                                 <InputError
-                                    message={
-                                        errors[`family.siblings.${index}.fname`]
-                                    }
+                                    message={errors[`siblings.${index}.fname`]}
                                 />
                             </div>
                             <div className="flex flex-col gap-3">
                                 <Label>Middle Name</Label>
                                 <Input
                                     type="text"
-                                    value={
-                                        data.family.siblings?.[index]?.mname ??
-                                        ''
-                                    }
+                                    value={data.siblings?.[index]?.mname ?? ''}
                                     onChange={(e) => {
                                         if (e.target.value === '') {
                                             setData(
-                                                `family.siblings.${index}.mname`,
+                                                `siblings.${index}.mname`,
                                                 null,
                                             );
                                             return;
                                         }
                                         setData(
-                                            `family.siblings.${index}.mname`,
+                                            `siblings.${index}.mname`,
                                             capitalizeString(e.target.value),
                                         );
                                     }}
                                     placeholder="Enter Sibling Middle Name"
                                 />
                                 <InputError
-                                    message={
-                                        errors[`family.siblings.${index}.mname`]
-                                    }
+                                    message={errors[`siblings.${index}.mname`]}
                                 />
                             </div>
                         </TwoColumnInput>
@@ -780,43 +702,36 @@ export default function FamilyInfo({
                                 </Label>
                                 <Input
                                     type="text"
-                                    value={
-                                        data.family.siblings?.[index]?.lname ??
-                                        ''
-                                    }
+                                    value={data.siblings?.[index]?.lname ?? ''}
                                     onChange={(e) =>
                                         setData(
-                                            `family.siblings.${index}.lname`,
+                                            `siblings.${index}.lname`,
                                             capitalizeString(e.target.value),
                                         )
                                     }
                                     placeholder="Enter Sibling Last Name"
                                 />
                                 <InputError
-                                    message={
-                                        errors[`family.siblings.${index}.lname`]
-                                    }
+                                    message={errors[`siblings.${index}.lname`]}
                                 />
                             </div>
-                            {data.family.siblings?.[index]?.gender ===
-                                'Male' && (
+                            {data.siblings?.[index]?.gender === 'Male' && (
                                 <div className="flex flex-col gap-3">
                                     <Label>Suffix</Label>
                                     <Select
                                         value={
-                                            data.family.siblings?.[index]
-                                                ?.suffix ?? ''
+                                            data.siblings?.[index]?.suffix ?? ''
                                         }
                                         onValueChange={(value) => {
                                             if (value === 'None') {
                                                 setData(
-                                                    `family.siblings.${index}.suffix`,
+                                                    `siblings.${index}.suffix`,
                                                     null,
                                                 );
                                                 return;
                                             }
                                             setData(
-                                                `family.siblings.${index}.suffix`,
+                                                `siblings.${index}.suffix`,
                                                 value,
                                             );
                                         }}
@@ -841,28 +756,26 @@ export default function FamilyInfo({
                                     </Select>
                                     <InputError
                                         message={
-                                            errors[
-                                                `family.siblings.${index}.suffix`
-                                            ]
+                                            errors[`siblings.${index}.suffix`]
                                         }
                                     />
                                 </div>
                             )}
                         </TwoColumnInput>
 
-                        {data.family.siblings?.[index]?.gender && (
+                        {data.siblings?.[index]?.gender && (
                             <TwoColumnInput>
                                 <FieldLabel>
                                     <Field orientation="horizontal">
                                         <Checkbox
                                             checked={
-                                                data.family.siblings?.[index]
+                                                data.siblings?.[index]
                                                     ?.is_attending_college ??
                                                 false
                                             }
                                             onCheckedChange={(checked) => {
                                                 setData(
-                                                    `family.siblings.${index}.is_attending_college`,
+                                                    `siblings.${index}.is_attending_college`,
                                                     checked,
                                                 );
                                             }}
@@ -870,7 +783,7 @@ export default function FamilyInfo({
                                         <FieldContent>
                                             <FieldTitle>
                                                 Is{' '}
-                                                {data.family.siblings?.[index]
+                                                {data.siblings?.[index]
                                                     ?.gender === 'Male'
                                                     ? 'he'
                                                     : 'she'}{' '}
@@ -884,12 +797,12 @@ export default function FamilyInfo({
                                     <Field orientation="horizontal">
                                         <Checkbox
                                             checked={
-                                                data.family.siblings?.[index]
+                                                data.siblings?.[index]
                                                     ?.is_employed ?? false
                                             }
                                             onCheckedChange={(checked) => {
                                                 setData(
-                                                    `family.siblings.${index}.is_employed`,
+                                                    `siblings.${index}.is_employed`,
                                                     checked,
                                                 );
                                             }}
@@ -897,7 +810,7 @@ export default function FamilyInfo({
                                         <FieldContent>
                                             <FieldTitle>
                                                 Is{' '}
-                                                {data.family.siblings?.[index]
+                                                {data.siblings?.[index]
                                                     ?.gender === 'Male'
                                                     ? 'he'
                                                     : 'she'}{' '}
@@ -911,12 +824,12 @@ export default function FamilyInfo({
                     </div>
                 ))}
 
-            <InputError message={errors['family.siblings']} />
+            <InputError message={errors['siblings']} />
 
             <div className="flex flex-col gap-3">
                 <HeadingSmall
                     title="Add Guardians"
-                    description="Provide details of individuals who are legally responsible for or authorized to act on behalf of the student."
+                    description="Provide details of individuals who are legally responsible for or authorized to act on behalf of the "
                 />
                 <div className="flex items-start justify-between gap-3">
                     <Select
@@ -987,48 +900,34 @@ export default function FamilyInfo({
                                 </Label>
                                 <Input
                                     type="text"
-                                    value={
-                                        data.family.guardians?.[index]?.fname ??
-                                        ''
-                                    }
+                                    value={data.guardians?.[index]?.fname ?? ''}
                                     onChange={(e) =>
                                         setData(
-                                            `family.guardians.${index}.fname`,
+                                            `guardians.${index}.fname`,
                                             capitalizeString(e.target.value),
                                         )
                                     }
                                     placeholder="Enter First Name"
                                 />
                                 <InputError
-                                    message={
-                                        errors[
-                                            `family.guardians.${index}.fname`
-                                        ]
-                                    }
+                                    message={errors[`guardians.${index}.fname`]}
                                 />
                             </div>
                             <div className="flex flex-col gap-3">
                                 <Label>Middle Name</Label>
                                 <Input
                                     type="text"
-                                    value={
-                                        data.family.guardians?.[index]?.mname ??
-                                        ''
-                                    }
+                                    value={data.guardians?.[index]?.mname ?? ''}
                                     onChange={(e) =>
                                         setData(
-                                            `family.guardians.${index}.mname`,
+                                            `guardians.${index}.mname`,
                                             capitalizeString(e.target.value),
                                         )
                                     }
                                     placeholder="Enter Middle Name"
                                 />
                                 <InputError
-                                    message={
-                                        errors[
-                                            `family.guardians.${index}.mname`
-                                        ]
-                                    }
+                                    message={errors[`guardians.${index}.mname`]}
                                 />
                             </div>
                         </TwoColumnInput>
@@ -1040,24 +939,17 @@ export default function FamilyInfo({
                                 </Label>
                                 <Input
                                     type="text"
-                                    value={
-                                        data.family.guardians?.[index]?.lname ??
-                                        ''
-                                    }
+                                    value={data.guardians?.[index]?.lname ?? ''}
                                     onChange={(e) =>
                                         setData(
-                                            `family.guardians.${index}.lname`,
+                                            `guardians.${index}.lname`,
                                             capitalizeString(e.target.value),
                                         )
                                     }
                                     placeholder="Enter Last Name"
                                 />
                                 <InputError
-                                    message={
-                                        errors[
-                                            `family.guardians.${index}.lname`
-                                        ]
-                                    }
+                                    message={errors[`guardians.${index}.lname`]}
                                 />
                             </div>
                             {[
@@ -1067,27 +959,25 @@ export default function FamilyInfo({
                                 'Cousin',
                                 'Uncle',
                                 'Friend',
-                            ].includes(
-                                data.family.guardians?.[index]?.role,
-                            ) && (
+                            ].includes(data.guardians?.[index]?.role) && (
                                 <div className="flex flex-col gap-3">
                                     <Label>Suffix</Label>
                                     <Select
                                         value={
-                                            data.family.guardians?.[index]
-                                                ?.suffix ?? ''
+                                            data.guardians?.[index]?.suffix ??
+                                            ''
                                         }
                                         onValueChange={(value) => {
                                             if (value === 'None') {
                                                 setData(
-                                                    `family.guardians.${index}.suffix`,
+                                                    `guardians.${index}.suffix`,
                                                     null,
                                                 );
                                                 return;
                                             }
 
                                             setData(
-                                                `family.guardians.${index}.suffix`,
+                                                `guardians.${index}.suffix`,
                                                 value,
                                             );
                                         }}
@@ -1113,9 +1003,7 @@ export default function FamilyInfo({
                                     </Select>
                                     <InputError
                                         message={
-                                            errors[
-                                                `family.guardians.${index}.suffix`
-                                            ]
+                                            errors[`guardians.${index}.suffix`]
                                         }
                                     />
                                 </div>
@@ -1131,12 +1019,11 @@ export default function FamilyInfo({
                                 <Input
                                     type="date"
                                     value={
-                                        data.family.guardians?.[index]
-                                            ?.birthdate ?? ''
+                                        data.guardians?.[index]?.birthdate ?? ''
                                     }
                                     onChange={(e) =>
                                         setData(
-                                            `family.guardians.${index}.birthdate`,
+                                            `guardians.${index}.birthdate`,
                                             e.target.value,
                                         )
                                     }
@@ -1144,9 +1031,7 @@ export default function FamilyInfo({
                                 />
                                 <InputError
                                     message={
-                                        errors[
-                                            `family.guardians.${index}.birthdate`
-                                        ]
+                                        errors[`guardians.${index}.birthdate`]
                                     }
                                 />
                             </div>
@@ -1155,12 +1040,12 @@ export default function FamilyInfo({
                                 <Input
                                     type="text"
                                     value={
-                                        data.family.guardians?.[index]
-                                            ?.birthplace ?? ''
+                                        data.guardians?.[index]?.birthplace ??
+                                        ''
                                     }
                                     onChange={(e) =>
                                         setData(
-                                            `family.guardians.${index}.birthplace`,
+                                            `guardians.${index}.birthplace`,
                                             capitalizeString(e.target.value),
                                         )
                                     }
@@ -1168,9 +1053,7 @@ export default function FamilyInfo({
                                 />
                                 <InputError
                                     message={
-                                        errors[
-                                            `family.guardians.${index}.birthplace`
-                                        ]
+                                        errors[`guardians.${index}.birthplace`]
                                     }
                                 />
                             </div>
@@ -1180,8 +1063,7 @@ export default function FamilyInfo({
                             <LabelExample
                                 title="Mobile Number"
                                 isRequired={
-                                    !!data.family.guardians[index]
-                                        ?.is_contact_person
+                                    !!data.guardians[index]?.is_contact_person
                                 }
                                 example="+639123456789"
                             />
@@ -1192,8 +1074,10 @@ export default function FamilyInfo({
                                 <Input
                                     type="number"
                                     value={
-                                        data.family.guardians[index]
-                                            ?.mobile_num ?? ''
+                                        data.guardians[index]?.mobile_num ?? ''
+                                    }
+                                    name={
+                                        data.guardians[index]?.mobile_num ?? ''
                                     }
                                     onChange={(e) => {
                                         const value = e.target.value.slice(
@@ -1201,7 +1085,7 @@ export default function FamilyInfo({
                                             10,
                                         );
                                         setData(
-                                            `family.guardians.${index}.mobile_num`,
+                                            `guardians.${index}.mobile_num`,
                                             value ? value : null,
                                         );
                                     }}
@@ -1211,9 +1095,7 @@ export default function FamilyInfo({
                             </div>
                             <InputError
                                 message={
-                                    errors[
-                                        `family.guardians.${index}.mobile_num`
-                                    ]
+                                    errors[`guardians.${index}.mobile_num`]
                                 }
                             />
                         </div>
@@ -1224,15 +1106,14 @@ export default function FamilyInfo({
                                     Religion <Asterisk size={12} color="red" />
                                 </Label>
                                 <Select
-                                    value={
-                                        data.family.guardians[index]?.religion
-                                    }
+                                    value={data.guardians[index]?.religion}
                                     onValueChange={(value) =>
                                         setData(
-                                            `family.guardians.${index}.religion`,
+                                            `guardians.${index}.religion`,
                                             value,
                                         )
                                     }
+                                    name={data.guardians[index]?.religion}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Choose an option" />
@@ -1252,9 +1133,7 @@ export default function FamilyInfo({
                                 </Select>
                                 <InputError
                                     message={
-                                        errors[
-                                            `family.guardians.${index}.religion`
-                                        ]
+                                        errors[`guardians.${index}.religion`]
                                     }
                                 />
                             </div>
@@ -1263,6 +1142,13 @@ export default function FamilyInfo({
                                     Citizenship{' '}
                                     <Asterisk size={12} color="red" />
                                 </Label>
+                                <Input
+                                    type="hidden"
+                                    name={
+                                        data.guardians?.[index]?.citizenship ??
+                                        ''
+                                    }
+                                />
                                 <Popover>
                                     <PopoverTrigger asChild>
                                         <Button
@@ -1270,7 +1156,7 @@ export default function FamilyInfo({
                                             role="combobox"
                                             className="w-full justify-between"
                                         >
-                                            {data.family.guardians?.[index]
+                                            {data.guardians?.[index]
                                                 ?.citizenship ??
                                                 'Choose an option'}
                                             <ChevronsUpDown className="opacity-50" />
@@ -1298,7 +1184,7 @@ export default function FamilyInfo({
                                                                 key={itemIndex}
                                                                 onSelect={() => {
                                                                     setData(
-                                                                        `family.guardians.${index}.citizenship`,
+                                                                        `guardians.${index}.citizenship`,
                                                                         item,
                                                                     );
                                                                 }}
@@ -1314,9 +1200,7 @@ export default function FamilyInfo({
                                 </Popover>
                                 <InputError
                                     message={
-                                        errors[
-                                            `family.guardians.${index}.citizenship`
-                                        ]
+                                        errors[`guardians.${index}.citizenship`]
                                     }
                                 />
                             </div>
@@ -1330,14 +1214,18 @@ export default function FamilyInfo({
                                 </Label>
                                 <Select
                                     value={
-                                        data.family.guardians[index]
+                                        data.guardians[index]
                                             ?.highest_educ_attainment
                                     }
                                     onValueChange={(value) =>
                                         setData(
-                                            `family.guardians.${index}.highest_educ_attainment`,
+                                            `guardians.${index}.highest_educ_attainment`,
                                             value,
                                         )
+                                    }
+                                    name={
+                                        data.guardians?.[index]
+                                            ?.highest_educ_attainment ?? ''
                                     }
                                 >
                                     <SelectTrigger>
@@ -1361,7 +1249,7 @@ export default function FamilyInfo({
                                 <InputError
                                     message={
                                         errors[
-                                            `family.guardians.${index}.highest_educ_attainment`
+                                            `guardians.${index}.highest_educ_attainment`
                                         ]
                                     }
                                 />
@@ -1372,26 +1260,27 @@ export default function FamilyInfo({
                                     <Asterisk size={12} color="red" />
                                 </Label>
                                 <Select
-                                    value={
-                                        data.family.guardians?.[index]
-                                            ?.life_status
-                                    }
+                                    value={data.guardians?.[index]?.life_status}
                                     onValueChange={(value) => {
                                         if (value === 'Deceased') {
                                             setData(
-                                                `family.guardians.${index}.is_contact_person`,
+                                                `guardians.${index}.is_contact_person`,
                                                 false,
                                             );
                                             setData(
-                                                `family.guardians.${index}.occupation`,
+                                                `guardians.${index}.occupation`,
                                                 null,
                                             );
                                         }
                                         setData(
-                                            `family.guardians.${index}.life_status`,
+                                            `guardians.${index}.life_status`,
                                             value,
                                         );
                                     }}
+                                    name={
+                                        data.guardians?.[index]?.life_status ??
+                                        ''
+                                    }
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Choose an option" />
@@ -1412,7 +1301,13 @@ export default function FamilyInfo({
                                     </SelectContent>
                                 </Select>
 
-                                {data.family.guardians[index].life_status ===
+                                <InputError
+                                    message={
+                                        errors[`guardians.${index}.life_status`]
+                                    }
+                                />
+
+                                {data.guardians[index]?.life_status ===
                                     'Deceased' && (
                                     <>
                                         <div className="flex flex-col gap-3">
@@ -1427,24 +1322,27 @@ export default function FamilyInfo({
                                                 type="text"
                                                 maxLength={100}
                                                 value={
-                                                    data.family.guardians?.[
-                                                        index
-                                                    ]?.cause_of_death ?? ''
+                                                    data.guardians?.[index]
+                                                        ?.cause_of_death ?? ''
                                                 }
                                                 onChange={(e) =>
                                                     setData(
-                                                        `family.guardians.${index}.cause_of_death`,
+                                                        `guardians.${index}.cause_of_death`,
                                                         capitalizeString(
                                                             e.target.value,
                                                         ),
                                                     )
+                                                }
+                                                name={
+                                                    data.guardians?.[index]
+                                                        ?.cause_of_death ?? ''
                                                 }
                                                 placeholder="Enter Cause of death"
                                             />
                                             <InputError
                                                 message={
                                                     errors[
-                                                        `family.guardians.${index}.cause_of_death`
+                                                        `guardians.${index}.cause_of_death`
                                                     ]
                                                 }
                                             />
@@ -1460,13 +1358,12 @@ export default function FamilyInfo({
                                                 type="number"
                                                 maxLength={100}
                                                 value={
-                                                    data.family.guardians?.[
-                                                        index
-                                                    ]?.year_of_death ?? ''
+                                                    data.guardians?.[index]
+                                                        ?.year_of_death ?? ''
                                                 }
                                                 onChange={(e) =>
                                                     setData(
-                                                        `family.guardians.${index}.year_of_death`,
+                                                        `guardians.${index}.year_of_death`,
                                                         e.target.value.slice(
                                                             0,
                                                             4,
@@ -1474,24 +1371,21 @@ export default function FamilyInfo({
                                                     )
                                                 }
                                                 placeholder="Enter Cause of death"
+                                                name={
+                                                    data.guardians?.[index]
+                                                        ?.year_of_death ?? ''
+                                                }
                                             />
                                             <InputError
                                                 message={
                                                     errors[
-                                                        `family.guardians.${index}.year_of_death`
+                                                        `guardians.${index}.year_of_death`
                                                     ]
                                                 }
                                             />
                                         </div>
                                     </>
                                 )}
-                                <InputError
-                                    message={
-                                        errors[
-                                            `family.guardians.${index}.highest_educ_attainment`
-                                        ]
-                                    }
-                                />
                             </div>
                         </TwoColumnInput>
 
@@ -1501,26 +1395,24 @@ export default function FamilyInfo({
                                 type="text"
                                 maxLength={100}
                                 disabled={
-                                    data.family.guardians?.[index]
-                                        ?.life_status === 'Deceased'
+                                    data.guardians?.[index]?.life_status ===
+                                    'Deceased'
                                 }
                                 value={
-                                    data.family.guardians?.[index]
-                                        ?.occupation ?? ''
+                                    data.guardians?.[index]?.occupation ?? ''
                                 }
                                 onChange={(e) =>
                                     setData(
-                                        `family.guardians.${index}.occupation`,
+                                        `guardians.${index}.occupation`,
                                         capitalizeString(e.target.value),
                                     )
                                 }
                                 placeholder="Enter Occupation"
+                                name={data.guardians?.[index]?.occupation ?? ''}
                             />
                             <InputError
                                 message={
-                                    errors[
-                                        `family.guardians.${index}.occupation`
-                                    ]
+                                    errors[`guardians.${index}.occupation`]
                                 }
                             />
                         </div>
@@ -1529,8 +1421,8 @@ export default function FamilyInfo({
                             <FieldLabel
                                 className={`${
                                     isSelectedAsContactPerson(member) ||
-                                    data.family.guardians?.[index]
-                                        ?.life_status === 'Deceased'
+                                    data.guardians?.[index]?.life_status ===
+                                        'Deceased'
                                         ? 'cursor-not-allowed opacity-50'
                                         : 'cursor-pointer'
                                 }`}
@@ -1539,30 +1431,27 @@ export default function FamilyInfo({
                                     <Checkbox
                                         disabled={
                                             isSelectedAsContactPerson(member) ||
-                                            data.family.guardians?.[index]
+                                            data.guardians?.[index]
                                                 ?.life_status === 'Deceased'
                                         }
                                         checked={
-                                            data.family.guardians?.[index]
+                                            data.guardians?.[index]
                                                 ?.is_contact_person ?? false
                                         }
                                         onCheckedChange={(checked) => {
                                             if (checked) {
                                                 const updated = (
-                                                    data.family.guardians ?? []
+                                                    data.guardians ?? []
                                                 ).map((m, i) => ({
                                                     ...m,
                                                     is_contact_person:
                                                         i === index,
                                                 }));
 
-                                                setData(
-                                                    'family.guardians',
-                                                    updated,
-                                                );
+                                                setData('guardians', updated);
                                             } else {
                                                 setData(
-                                                    `family.guardians.${index}.is_contact_person`,
+                                                    `guardians.${index}.is_contact_person`,
                                                     false,
                                                 );
                                             }
@@ -1573,7 +1462,7 @@ export default function FamilyInfo({
                                             Is he/she your contact person?
                                         </FieldTitle>
                                         <InputError
-                                            message={errors['family.guardians']}
+                                            message={errors['guardians']}
                                         />
                                     </FieldContent>
                                 </Field>
@@ -1581,7 +1470,7 @@ export default function FamilyInfo({
                             <InputError
                                 message={
                                     errors[
-                                        `family.guardians.${index}.is_contact_person`
+                                        `guardians.${index}.is_contact_person`
                                     ]
                                 }
                             />
@@ -1603,8 +1492,8 @@ export default function FamilyInfo({
                                     </Label>
                                     <Select
                                         value={
-                                            data.family.guardians?.[index]
-                                                ?.address?.island
+                                            data.guardians?.[index]?.address
+                                                ?.island
                                         }
                                         onValueChange={(value) => {
                                             // Find the selected island to get its ID
@@ -1618,8 +1507,9 @@ export default function FamilyInfo({
                                                 handleIslandSelect(
                                                     index,
                                                     value,
-                                                    selectedIsland.island_id ??
-                                                        0,
+                                                    Number(
+                                                        selectedIsland.island_id,
+                                                    ),
                                                 );
                                             }
                                         }}
@@ -1648,7 +1538,7 @@ export default function FamilyInfo({
                                     <InputError
                                         message={
                                             errors[
-                                                `family.guardians.${index}.address.island`
+                                                `guardians.${index}.address.island`
                                             ]
                                         }
                                     />
@@ -1660,8 +1550,8 @@ export default function FamilyInfo({
                                     </Label>
                                     <Select
                                         value={
-                                            data.family.guardians?.[index]
-                                                ?.address?.region
+                                            data.guardians?.[index]?.address
+                                                ?.region
                                         }
                                         onValueChange={(value) => {
                                             const regionData = guardianRegions[
@@ -1675,13 +1565,15 @@ export default function FamilyInfo({
                                                 handleRegionSelect(
                                                     index,
                                                     value,
-                                                    regionData.region_id,
+                                                    Number(
+                                                        regionData.region_id,
+                                                    ),
                                                 );
                                             }
                                         }}
                                         disabled={
-                                            !data.family.guardians?.[index]
-                                                ?.address?.island
+                                            !data.guardians?.[index]?.address
+                                                ?.island
                                         }
                                     >
                                         <SelectTrigger>
@@ -1689,16 +1581,16 @@ export default function FamilyInfo({
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectGroup>
-                                                {(
-                                                    guardianRegions[index] || []
-                                                ).map((item, idx) => (
-                                                    <SelectItem
-                                                        key={idx}
-                                                        value={`${item.region_name} - ${item.region_description}`}
-                                                    >
-                                                        {`${item.region_name} - ${item.region_description}`}
-                                                    </SelectItem>
-                                                ))}
+                                                {guardianRegions[index]?.map(
+                                                    (item, idx) => (
+                                                        <SelectItem
+                                                            key={idx}
+                                                            value={`${item.region_name} - ${item.region_description}`}
+                                                        >
+                                                            {`${item.region_name} - ${item.region_description}`}
+                                                        </SelectItem>
+                                                    ),
+                                                )}
                                             </SelectGroup>
                                         </SelectContent>
                                     </Select>
@@ -1706,7 +1598,7 @@ export default function FamilyInfo({
                                     <InputError
                                         message={
                                             errors[
-                                                `family.guardians.${index}.address.region`
+                                                `guardians.${index}.address.region`
                                             ]
                                         }
                                     />
@@ -1721,8 +1613,8 @@ export default function FamilyInfo({
                                     </Label>
                                     <Select
                                         value={
-                                            data.family.guardians?.[index]
-                                                ?.address?.province
+                                            data.guardians?.[index]?.address
+                                                ?.province
                                         }
                                         onValueChange={(value) => {
                                             const provinceData =
@@ -1735,13 +1627,15 @@ export default function FamilyInfo({
                                                 handleProvinceSelect(
                                                     index,
                                                     value,
-                                                    provinceData.province_id,
+                                                    Number(
+                                                        provinceData.province_id,
+                                                    ),
                                                 );
                                             }
                                         }}
                                         disabled={
-                                            !data.family.guardians?.[index]
-                                                ?.address?.region
+                                            !data.guardians?.[index]?.address
+                                                ?.region
                                         }
                                     >
                                         <SelectTrigger>
@@ -1769,7 +1663,7 @@ export default function FamilyInfo({
                                     <InputError
                                         message={
                                             errors[
-                                                `family.guardians.${index}.address.province`
+                                                `guardians.${index}.address.province`
                                             ]
                                         }
                                     />
@@ -1781,8 +1675,8 @@ export default function FamilyInfo({
                                     </Label>
                                     <Select
                                         value={
-                                            data.family.guardians?.[index]
-                                                ?.address?.city ?? ''
+                                            data.guardians?.[index]?.address
+                                                ?.city ?? ''
                                         }
                                         onValueChange={(value) => {
                                             const cityData = (
@@ -1797,18 +1691,20 @@ export default function FamilyInfo({
                                                 handleCitySelect(
                                                     index,
                                                     cityData.municipality_name,
-                                                    cityData.municipality_id,
+                                                    Number(
+                                                        cityData.municipality_id,
+                                                    ),
                                                 );
                                             } else {
                                                 setData(
-                                                    `family.guardians.${index}.address.city`,
+                                                    `guardians.${index}.address.city`,
                                                     value,
                                                 );
                                             }
                                         }}
                                         disabled={
-                                            !data.family.guardians?.[index]
-                                                ?.address?.province
+                                            !data.guardians?.[index]?.address
+                                                ?.province
                                         }
                                     >
                                         <SelectTrigger>
@@ -1835,7 +1731,7 @@ export default function FamilyInfo({
                                     <InputError
                                         message={
                                             errors[
-                                                `family.guardians.${index}.address.city`
+                                                `guardians.${index}.address.city`
                                             ]
                                         }
                                     />
@@ -1850,18 +1746,18 @@ export default function FamilyInfo({
                                     </Label>
                                     <Select
                                         value={
-                                            data.family.guardians?.[index]
-                                                ?.address?.brgy ?? ''
+                                            data.guardians?.[index]?.address
+                                                ?.brgy ?? ''
                                         }
                                         onValueChange={(value) =>
                                             setData(
-                                                `family.guardians.${index}.address.brgy`,
+                                                `guardians.${index}.address.brgy`,
                                                 value,
                                             )
                                         }
                                         disabled={
-                                            !data.family.guardians?.[index]
-                                                ?.address?.city
+                                            !data.guardians?.[index]?.address
+                                                ?.city
                                         }
                                     >
                                         <SelectTrigger>
@@ -1886,7 +1782,7 @@ export default function FamilyInfo({
                                     <InputError
                                         message={
                                             errors[
-                                                `family.guardians.${index}.address.brgy`
+                                                `guardians.${index}.address.brgy`
                                             ]
                                         }
                                     />
@@ -1899,8 +1795,8 @@ export default function FamilyInfo({
                                     <Input
                                         type="number"
                                         value={
-                                            data.family.guardians?.[index]
-                                                ?.address?.zip_code ?? ''
+                                            data.guardians?.[index]?.address
+                                                ?.zip_code ?? ''
                                         }
                                         onChange={(e) => {
                                             const value = e.target.value.slice(
@@ -1908,7 +1804,7 @@ export default function FamilyInfo({
                                                 4,
                                             );
                                             setData(
-                                                `family.guardians.${index}.address.zip_code`,
+                                                `guardians.${index}.address.zip_code`,
                                                 value ? value : null,
                                             );
                                         }}
@@ -1918,7 +1814,7 @@ export default function FamilyInfo({
                                     <InputError
                                         message={
                                             errors[
-                                                `family.guardians.${index}.address.zip_code`
+                                                `guardians.${index}.address.zip_code`
                                             ]
                                         }
                                     />
