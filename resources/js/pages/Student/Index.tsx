@@ -352,7 +352,7 @@ export default function Index() {
                         information, while enabling the administration to
                         access, organize, and update records promptly and
                         accurately, thereby minimizing the reliance on physical
-                        documentation.
+                        documentation. test
                     </p>
                 </div>
             </header>
