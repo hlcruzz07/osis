@@ -59,6 +59,7 @@ import {
     fetchProvinceByRegionId,
     fetchRegionsByIslandId,
 } from '@/lib/utils';
+import { StudentFormProps } from '@/types/entities/student-form';
 import { Link } from '@inertiajs/react';
 import {
     Asterisk,
@@ -83,7 +84,7 @@ import {
 import { useEffect, useState } from 'react';
 
 type StudentInfoProps = {
-    data: StudentUseFormProps;
+    data: StudentFormProps;
     setData: (key: string, value: any) => void;
     errors: Record<string, string>;
     setModalOpen?: () => void;

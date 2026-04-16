@@ -43,6 +43,13 @@ export function FinishAlertModal({ isOpen, onFinish }: FinishAlertModalProps) {
                         successfully.
                         <br />
                         <br />
+                        <span className="font-bold text-green-500">
+                            You may take a screenshot of this message as proof
+                            that you have successfully complied with the
+                            submission requirements.
+                        </span>
+                        <br />
+                        <br />
                         If you need to update or correct any information you
                         submitted, please contact our official Facebook page or
                         visit the school office during office hours for

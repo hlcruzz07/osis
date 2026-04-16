@@ -1,3 +1,5 @@
+import { GuardianProps } from '@/types/entities/guardian';
+import { QuestionProps } from '@/types/entities/question';
 import type { InertiaLinkProps } from '@inertiajs/react';
 import { type ClassValue, clsx } from 'clsx';
 import { toast } from 'sonner';
@@ -126,12 +128,12 @@ export const fetchBrgyByCityId = async (id: number): Promise<BrgyProps[]> => {
     }
 };
 
-export const fetchQuestions = async (): Promise<QuestionsProps[]> => {
+export const fetchQuestions = async (): Promise<QuestionProps[]> => {
     try {
         const res = await fetch('/table_questions.json');
         if (!res.ok) throw new Error('Failed to fetch questions');
 
-        const dataQuestions: QuestionsProps[] = await res.json();
+        const dataQuestions: QuestionProps[] = await res.json();
 
         return dataQuestions;
     } catch (error) {
@@ -170,3 +172,19 @@ export const handleErrors = (errors: Record<string, string | string[]>) => {
         }
     }
 };
+
+export const isSelectedAsContactPerson = (
+    role: string,
+    guardians: GuardianProps[],
+): boolean => {
+    const selected = guardians?.find((m) => m?.is_contact_person);
+
+    if (!selected) return false;
+    return selected.role !== role;
+};
+export function formatCount(num: number) {
+    if (num >= 1_000_000)
+        return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (num >= 1_000) return (num / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+    return num.toString();
+}

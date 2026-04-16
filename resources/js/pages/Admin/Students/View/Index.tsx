@@ -3,7 +3,6 @@ import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 import { students } from '@/routes';
-import { Student } from '@/types/student';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import Heading from '@/components/heading';
@@ -12,20 +11,37 @@ import {
     BanIcon,
     ContactIcon,
     GraduationCap,
+    GraduationCapIcon,
+    MapPin,
+    MapPinCheckIcon,
+    NotebookPenIcon,
     PencilIcon,
     PersonStanding,
     SaveIcon,
     School2Icon,
+    ShieldUser,
+    ShieldUserIcon,
     User,
+    UserPenIcon,
     Users,
+    Users2Icon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { DropdownProps } from '@/types/dropdowns';
+import { DropdownProps } from '@/types/entities/dropdowns';
 import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner';
 import { useAppearance } from '@/hooks/use-appearance';
 import StudentTab from './Tabs/StudentTab';
+import AddressTab from './Tabs/AddressTab';
+import FamilyTab from './Tabs/FamilyTab';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+import EducationTab from './Tabs/EducationTab';
+import GuardiansTab from './Tabs/GuardiansTab';
+import SiblingsTab from './Tabs/SiblingsTab';
+import { StudentProps } from '@/types/entities/student';
+import AdditionalInfoTab from './Tabs/AdditionalInfoTab';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -34,86 +50,100 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 type PageProps = {
-    student: Student;
+    student: StudentProps;
     dropdowns: DropdownProps[];
 };
 
 export default function Index() {
     const { student, dropdowns } = usePage<PageProps>().props;
 
-    const { appearance } = useAppearance();
+    const [activeTab, setActiveTab] = useState<number>(0);
 
-    const flash: FlashMessages = usePage().props.flash || {};
+    const sidebarNavItems = [
+        {
+            title: 'Student Information',
+            tab: <StudentTab dropdowns={dropdowns} studentData={student} />,
+            icon: <ContactIcon />,
+        },
 
-    useEffect(() => {
-        if (!flash) return;
-        if (flash.success) toast.success(flash.success);
-        if (flash.error) toast.error(flash.error);
-        if (flash.info) toast.info(flash.info);
-        if (flash.warning) toast.warning(flash.warning);
-    }, [flash]);
+        {
+            title: 'Address',
+            tab: <AddressTab studentData={student} />,
+            icon: <MapPinCheckIcon />,
+        },
+
+        {
+            title: 'Family Information',
+            tab: <FamilyTab dropdowns={dropdowns} studentData={student} />,
+            icon: <Users2Icon />,
+        },
+
+        {
+            title: 'Educational Background',
+            tab: <EducationTab dropdowns={dropdowns} studentData={student} />,
+            icon: <GraduationCapIcon />,
+        },
+
+        {
+            title: 'Guardians',
+            tab: <GuardiansTab dropdowns={dropdowns} studentData={student} />,
+            icon: <ShieldUser />,
+        },
+
+        {
+            title: 'Siblings',
+            tab: <SiblingsTab dropdowns={dropdowns} studentData={student} />,
+            icon: <Users2Icon />,
+        },
+        {
+            title: 'Additional Information',
+            tab: <AdditionalInfoTab studentData={student} />,
+            icon: <UserPenIcon />,
+        },
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Toaster
-                closeButton
-                position="top-right"
-                richColors
-                theme={appearance}
-            />
-
             <Head title="Students" />
 
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto">
-                    <div className="flex flex-col items-start justify-between lg:flex-row">
-                        <Link href={students().url}>
-                            <Button variant="outline">
-                                <ArrowLeft /> Back
-                            </Button>
-                        </Link>
-                    </div>
+            <div className="px-4 py-6">
+                <div className="flex flex-col lg:flex-row lg:space-x-10">
+                    <aside className="w-full lg:w-auto">
+                        <nav
+                            className="flex flex-col space-y-1 space-x-0"
+                            aria-label="Student Tabs"
+                        >
+                            {sidebarNavItems.map((item, key) => (
+                                <Button
+                                    key={key}
+                                    size="sm"
+                                    variant="ghost"
+                                    className={cn('w-full justify-start', {
+                                        'bg-[var(--main-color)]':
+                                            activeTab === key,
+                                    })}
+                                    onClick={() => setActiveTab(key)}
+                                >
+                                    {item.icon && (
+                                        <span className="mr-2">
+                                            {item.icon}
+                                        </span>
+                                    )}
+                                    {item.title}
+                                </Button>
+                            ))}
+                        </nav>
+                    </aside>
 
-                    <Tabs defaultValue="student">
-                        <TabsList className="flex h-auto! w-full flex-col lg:flex-row">
-                            <TabsTrigger
-                                value="student"
-                                className="w-full py-2 sm:px-0 lg:px-5 lg:py-3"
-                            >
-                                <ContactIcon /> Student Information
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="family"
-                                className="w-full py-2 sm:px-0 lg:px-5 lg:py-3"
-                            >
-                                <ContactIcon /> Family Information
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="education"
-                                className="w-full py-2 sm:px-0 lg:px-5 lg:py-3"
-                            >
-                                <GraduationCap /> Education Information
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="guardians"
-                                className="w-full py-2 sm:px-0 lg:px-5 lg:py-3"
-                            >
-                                <Users /> Guaridans
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="siblings"
-                                className="w-full py-2 sm:px-0 lg:px-5 lg:py-3"
-                            >
-                                <PersonStanding /> Siblings
-                            </TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="student">
-                            <StudentTab
-                                dropdowns={dropdowns}
-                                studentData={student}
-                            />
-                        </TabsContent>
-                    </Tabs>
+                    <Separator className="my-6 lg:hidden" />
+
+                    <div className="max-w-6xl flex-1">
+                        {
+                            sidebarNavItems.find(
+                                (item, key) => key === activeTab,
+                            )?.tab
+                        }
+                    </div>
                 </div>
             </div>
         </AppLayout>

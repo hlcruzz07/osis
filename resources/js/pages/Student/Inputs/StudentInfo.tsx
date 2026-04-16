@@ -37,7 +37,8 @@ import {
     fetchProvinceByRegionId,
     fetchRegionsByIslandId,
 } from '@/lib/utils';
-import { DropdownProps } from '@/types/dropdowns';
+import { DropdownProps } from '@/types/entities/dropdowns';
+import { StudentFormProps } from '@/types/entities/student-form';
 import {
     Asterisk,
     Calendar1Icon,
@@ -52,7 +53,7 @@ import {
 import { useEffect, useState } from 'react';
 
 type StudentInfoProps = {
-    data: StudentUseFormProps;
+    data: StudentFormProps;
     setData: (key: string, value: any) => void;
     errors: Record<string, string>;
     academic_year_and_semester: {
@@ -111,9 +112,7 @@ export default function StudentInfo({
         (item) => item.title === 'Year Levels',
     )?.dropdowns;
 
-    const citizenArr = dropdowns.find(
-        (item) => item.title === 'Citizenship',
-    )?.dropdowns;
+    const [citizenArr, setCitizenArr] = useState<string[]>([]);
 
     const [religionPopover, setReligionPopover] = useState(false);
     const [citizenshipPopover, setCitizenshipPopover] = useState(false);
@@ -142,6 +141,16 @@ export default function StudentInfo({
             scholarship_mobile_num: null,
         });
     };
+
+    useEffect(() => {
+        fetchCitizenship()
+            .then((data) => {
+                setCitizenArr(data);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }, []);
 
     return (
         <>

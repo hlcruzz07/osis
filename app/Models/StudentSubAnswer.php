@@ -15,6 +15,11 @@ class StudentSubAnswer extends Model
         'answer_boolean',
     ];
 
+    protected $casts = [
+        'answer_date' => 'datetime',
+        'answer_boolean' => 'boolean',
+    ];
+
     public function student()
     {
         return $this->belongsTo(Student::class, 'student_id');

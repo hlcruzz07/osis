@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\AcademicYearAndSemester;
+use App\Models\Student;
 use App\Repositories\EntityDropdownRepo;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -26,19 +28,20 @@ class StudentFilterRequest extends FormRequest
 
         $entityRepo = new EntityDropdownRepo();
         $validCampuses = $entityRepo->getDropdownsByTitle("Campuses");
+        $validCourses = $entityRepo->getDropdownsByTitle("Courses");
+        $validStudentType = $entityRepo->getDropdownsByTitle("Student Type");
+
 
         return [
             'search' => 'nullable|string|max:50',
-            'academic_year' => 'nullable|string|max:20',
-            'semester' => 'nullable|string|max:20',
+            'academic_year' => ['nullable', 'string'],
+            'semester' => ['nullable', 'string'],
             'year_level' => 'nullable|string|max:20',
             'campus' => ['nullable', 'string', Rule::in($validCampuses)],
-            'course' => 'nullable|string|max:20',
-            'date_admitte_from' => 'nullable|date',
-            'date_admitte_to' => 'nullable|date',
-            'student_type' => 'nullable|string|max:20',
-            'equity_indicator' => 'nullable|string|max:20',
-            'sexual_orient' => 'nullable|string|max:20',
+            'course' => ['nullable', 'string', Rule::in($validCourses)],
+            'date_admitted_from' => 'nullable|date',
+            'date_admitted_to' => 'nullable|date',
+            'student_type' => ['nullable', 'string', Rule::in($validStudentType)],
             'sort' => 'nullable|in:id,created_at,campus_hash,course_hash',
             'order' => 'nullable|in:asc,desc',
             'show' => 'nullable|in:10,25,50,100,150,200|integer',

@@ -170,7 +170,7 @@ class EntityDropdownSeeder extends Seeder
                 'Php 219,140 and above',
             ],
 
-            'Parents Marital Status' => [
+            'Parents Martial Status' => [
                 'None',
                 'Married And Living Together',
                 'Single Parent',

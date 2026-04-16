@@ -27,8 +27,12 @@ import { ConfirmAlertModal } from './Modal/ConfirmAlertModal';
 import { Spinner } from '@/components/ui/spinner';
 import { FinishAlertModal } from './Modal/FinishAlertModal';
 
-import { DropdownProps } from '@/types/dropdowns';
+import { DropdownProps } from '@/types/entities/dropdowns';
 import AddressInfo from './Inputs/AddressInfo';
+import { FlashMessages } from '@/types/flash';
+import { QuestionProps } from '@/types/entities/question';
+import { StudentFormProps } from '@/types/entities/student-form';
+import { GuardianProps } from '@/types/entities/guardian';
 
 type PageProps = {
     questions: QuestionProps[];
@@ -45,7 +49,7 @@ export default function Index() {
         usePage<PageProps>().props;
 
     const { data, setData, errors, processing, post } =
-        useForm<StudentUseFormProps>({
+        useForm<StudentFormProps>({
             student: {
                 academic_year: '',
                 semester: '',
@@ -126,7 +130,7 @@ export default function Index() {
             birthplace: null,
             mobile_num: null,
             religion: '',
-            citizenship: null,
+            citizenship: '',
             highest_educ_attainment: '',
             cause_of_death: null,
             year_of_death: null,
@@ -352,7 +356,7 @@ export default function Index() {
                         information, while enabling the administration to
                         access, organize, and update records promptly and
                         accurately, thereby minimizing the reliance on physical
-                        documentation. test
+                        documentation.
                     </p>
                 </div>
             </header>

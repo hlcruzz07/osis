@@ -33,10 +33,7 @@ class Student extends Model
         'sexual_orient',
         'height',
         'weight',
-        'family_size',
-        'nature_residence',
-        'house_monthly_income',
-        'ordinal_position',
+
 
         'academic_year_hash',
         'semester_hash',
@@ -64,10 +61,7 @@ class Student extends Model
         'sexual_orient_hash',
         'height_hash',
         'weight_hash',
-        'family_size_hash',
-        'nature_residence_hash',
-        'house_monthly_income_hash',
-        'ordinal_position_hash',
+
     ];
     protected $casts
         = [
@@ -97,10 +91,6 @@ class Student extends Model
             'sexual_orient' => 'encrypted',
             'height' => 'encrypted',
             'weight' => 'encrypted',
-            'family_size' => 'encrypted',
-            'nature_residence' => 'encrypted',
-            'house_monthly_income' => 'encrypted',
-            'ordinal_position' => 'encrypted',
         ];
 
 
@@ -138,5 +128,7 @@ class Student extends Model
     {
         return $this->hasMany(StudentSubAnswer::class, 'student_id');
     }
+
+
 
 }

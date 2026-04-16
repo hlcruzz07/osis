@@ -27,8 +27,6 @@ class FamilyInfo extends Model
         'nature_residence' => 'encrypted',
         'house_monthly_income' => 'encrypted',
         'ordinal_position' => 'encrypted',
-
-
     ];
 
     public function student()

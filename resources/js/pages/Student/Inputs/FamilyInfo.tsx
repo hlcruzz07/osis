@@ -47,8 +47,10 @@ import {
     fetchIslandGroup,
     fetchProvinceByRegionId,
     fetchRegionsByIslandId,
+    isSelectedAsContactPerson,
 } from '@/lib/utils';
-import { DropdownProps } from '@/types/dropdowns';
+import { DropdownProps } from '@/types/entities/dropdowns';
+import { StudentFormProps } from '@/types/entities/student-form';
 import {
     Asterisk,
     Building2,
@@ -69,7 +71,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 type StudentInfoProps = {
-    data: StudentUseFormProps;
+    data: StudentFormProps;
     setData: (key: string, value: any) => void;
     errors: Record<string, string>;
     dropdowns: DropdownProps[];
@@ -102,7 +104,7 @@ export default function FamilyInfo({
     )?.dropdowns;
 
     const parentsMaritalStatusArr = dropdowns.find(
-        (item) => item.title === 'Parents Marital Status',
+        (item) => item.title === 'Parents Martial Status',
     )?.dropdowns;
 
     const religionArr = dropdowns.find(
@@ -212,13 +214,6 @@ export default function FamilyInfo({
         );
 
         toast.success(`${memberToDelete} removed.`);
-    };
-
-    const isSelectedAsContactPerson = (role: string): boolean => {
-        const selected = data.guardians?.find((m) => m?.is_contact_person);
-
-        if (!selected) return false;
-        return selected.role !== role;
     };
 
     // Reset functions for address
@@ -461,7 +456,7 @@ export default function FamilyInfo({
                                     capitalizeString(e.target.value),
                                 )
                             }
-                            placeholder="Please specify parent's marital status"
+                            placeholder="Please specify parent's martial status"
                         />
                     )}
                     <InputError
@@ -1076,9 +1071,7 @@ export default function FamilyInfo({
                                     value={
                                         data.guardians[index]?.mobile_num ?? ''
                                     }
-                                    name={
-                                        data.guardians[index]?.mobile_num ?? ''
-                                    }
+                                    name={`guardians.${index}.mobile_num`}
                                     onChange={(e) => {
                                         const value = e.target.value.slice(
                                             0,
@@ -1157,7 +1150,7 @@ export default function FamilyInfo({
                                             className="w-full justify-between"
                                         >
                                             {data.guardians?.[index]
-                                                ?.citizenship ??
+                                                ?.citizenship ||
                                                 'Choose an option'}
                                             <ChevronsUpDown className="opacity-50" />
                                         </Button>
@@ -1311,13 +1304,7 @@ export default function FamilyInfo({
                                     'Deceased' && (
                                     <>
                                         <div className="flex flex-col gap-3">
-                                            <Label>
-                                                Cause of Death{' '}
-                                                <Asterisk
-                                                    size={12}
-                                                    color="red"
-                                                />
-                                            </Label>
+                                            <Label>Cause of Death </Label>
                                             <Input
                                                 type="text"
                                                 maxLength={100}
@@ -1351,7 +1338,7 @@ export default function FamilyInfo({
                                         <div className="flex flex-col gap-3">
                                             <LabelExample
                                                 title="Year of Death"
-                                                isRequired
+                                                isRequired={false}
                                                 example="2012, 2015"
                                             />
                                             <Input
@@ -1420,7 +1407,10 @@ export default function FamilyInfo({
                         <div className="flex flex-col gap-3">
                             <FieldLabel
                                 className={`${
-                                    isSelectedAsContactPerson(member) ||
+                                    isSelectedAsContactPerson(
+                                        member,
+                                        data.guardians,
+                                    ) ||
                                     data.guardians?.[index]?.life_status ===
                                         'Deceased'
                                         ? 'cursor-not-allowed opacity-50'
@@ -1430,7 +1420,10 @@ export default function FamilyInfo({
                                 <Field orientation="horizontal">
                                     <Checkbox
                                         disabled={
-                                            isSelectedAsContactPerson(member) ||
+                                            isSelectedAsContactPerson(
+                                                member,
+                                                data.guardians,
+                                            ) ||
                                             data.guardians?.[index]
                                                 ?.life_status === 'Deceased'
                                         }

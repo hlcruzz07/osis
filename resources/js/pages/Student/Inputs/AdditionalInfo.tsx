@@ -70,8 +70,10 @@ import {
 import { useEffect, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useForm, usePage } from '@inertiajs/react';
+import { StudentFormProps } from '@/types/entities/student-form';
+import { QuestionProps } from '@/types/entities/question';
 type StudentInfoProps = {
-    data: StudentUseFormProps;
+    data: StudentFormProps;
     setData: (key: string, value: any) => void;
     errors: Record<string, string>;
     setModalOpen?: () => void;
@@ -93,7 +95,7 @@ export default function AdditionalInfo({
             return;
         }
 
-        const formatted: StudentUseFormProps['answers'] = [];
+        const formatted: StudentFormProps['answers'] = [];
 
         // Only initialize parent questions, sub-questions will be added on-demand
         questions?.forEach((q) => {
@@ -238,17 +240,20 @@ export default function AdditionalInfo({
                                     {/** boolean answers stored as string 'true'/'false' */}
                                     <Checkbox
                                         checked={Boolean(
+                                            q.id &&
                                             data.answers[
                                                 findAnswerIndex(q.id, null)
                                             ]?.answer,
                                         )}
-                                        onCheckedChange={(checked) =>
-                                            handleAnswerChange(
-                                                q.id,
-                                                null,
-                                                checked,
-                                            )
-                                        }
+                                        onCheckedChange={(checked) => {
+                                            if (q.id) {
+                                                handleAnswerChange(
+                                                    q.id,
+                                                    null,
+                                                    checked,
+                                                );
+                                            }
+                                        }}
                                     />
                                     <FieldContent>
                                         <FieldTitle>{q.question}</FieldTitle>
@@ -258,7 +263,7 @@ export default function AdditionalInfo({
                             <InputError
                                 message={
                                     errors[
-                                        `answers.${findAnswerIndex(q.id, null)}.answer`
+                                        `answers.${q.id && findAnswerIndex(q.id, null)}.answer`
                                     ]
                                 }
                             />
@@ -270,12 +275,15 @@ export default function AdditionalInfo({
                             </Label>
                             <Select
                                 value={
-                                    data.answers[findAnswerIndex(q.id, null)]
-                                        ?.answer || ''
+                                    (q.id &&
+                                        data.answers[
+                                            findAnswerIndex(q.id, null)
+                                        ]?.answer) ||
+                                    ''
                                 }
                                 name={`question_${q.id}`}
                                 onValueChange={(val) =>
-                                    handleAnswerChange(q.id, null, val)
+                                    q.id && handleAnswerChange(q.id, null, val)
                                 }
                             >
                                 <SelectTrigger>
@@ -299,7 +307,7 @@ export default function AdditionalInfo({
                             <InputError
                                 message={
                                     errors[
-                                        `answers.${findAnswerIndex(q.id, null)}.answer`
+                                        `answers.${q.id && findAnswerIndex(q.id, null)}.answer`
                                     ]
                                 }
                             />
@@ -315,15 +323,22 @@ export default function AdditionalInfo({
                                 value={
                                     q.answer_type === 'date'
                                         ? formatDateForInput(
+                                              q.id &&
+                                                  data.answers[
+                                                      findAnswerIndex(
+                                                          q.id,
+                                                          null,
+                                                      )
+                                                  ]?.answer,
+                                          )
+                                        : ((q.id &&
                                               data.answers[
                                                   findAnswerIndex(q.id, null)
-                                              ]?.answer,
-                                          )
-                                        : (data.answers[
-                                              findAnswerIndex(q.id, null)
-                                          ]?.answer ?? '')
+                                              ]?.answer) ??
+                                          '')
                                 }
                                 onChange={(e) =>
+                                    q.id &&
                                     handleAnswerChange(
                                         q.id,
                                         null,
@@ -334,7 +349,7 @@ export default function AdditionalInfo({
                             <InputError
                                 message={
                                     errors[
-                                        `answers.${findAnswerIndex(q.id, null)}.answer`
+                                        `answers.${q.id && findAnswerIndex(q.id, null)}.answer`
                                     ]
                                 }
                             />
@@ -345,6 +360,7 @@ export default function AdditionalInfo({
                         q.sub_questions.length > 0 &&
                         (() => {
                             const parentAnswer =
+                                q.id &&
                                 data.answers[findAnswerIndex(q.id, null)]
                                     ?.answer;
                             const shouldShow =
@@ -360,7 +376,23 @@ export default function AdditionalInfo({
                             }
 
                             return q.sub_questions?.map((subQ, subIndex) => {
-                                const idx = findAnswerIndex(q.id, subQ.id);
+                                let idx: number | undefined = undefined;
+
+                                if (q.id && subQ.id) {
+                                    idx = findAnswerIndex(q.id, subQ.id);
+                                }
+
+                                const value =
+                                    subQ.answer_type === 'date'
+                                        ? idx !== undefined
+                                            ? formatDateForInput(
+                                                  data.answers[idx]?.answer,
+                                              )
+                                            : ''
+                                        : idx !== undefined
+                                          ? (data.answers[idx]?.answer ?? '')
+                                          : '';
+
                                 return (
                                     <div
                                         key={subIndex}
@@ -375,27 +407,25 @@ export default function AdditionalInfo({
                                             type={subQ.answer_type}
                                             name={`question_${q.id}_subquestion_${subQ.id}`}
                                             placeholder={subQ.sub_question}
-                                            value={
-                                                subQ.answer_type === 'date'
-                                                    ? formatDateForInput(
-                                                          data.answers[idx]
-                                                              ?.answer,
-                                                      )
-                                                    : (data.answers[idx]
-                                                          ?.answer ?? '')
-                                            }
-                                            onChange={(e) =>
-                                                handleAnswerChange(
-                                                    q.id,
-                                                    subQ.id,
-                                                    e.target.value,
-                                                )
-                                            }
+                                            value={value}
+                                            onChange={(e) => {
+                                                if (q.id && subQ.id) {
+                                                    handleAnswerChange(
+                                                        q.id,
+                                                        subQ.id,
+                                                        e.target.value,
+                                                    );
+                                                }
+                                            }}
                                         />
-                                        {/* {data.answers[idx]?.answer ?? 'Invalid'} */}
+
                                         <InputError
                                             message={
-                                                errors[`answers.${idx}.answer`]
+                                                idx !== undefined
+                                                    ? errors[
+                                                          `answers.${idx}.answer`
+                                                      ]
+                                                    : undefined
                                             }
                                         />
                                     </div>

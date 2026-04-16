@@ -1,5 +1,5 @@
 export type EducationProps = {
-    id: number;
+    id?: number;
     education_level: string;
     school_name: string;
     school_address: string;

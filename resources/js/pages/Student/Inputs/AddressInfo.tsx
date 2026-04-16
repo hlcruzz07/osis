@@ -35,11 +35,12 @@ import {
     fetchProvinceByRegionId,
     fetchRegionsByIslandId,
 } from '@/lib/utils';
+import { StudentFormProps } from '@/types/entities/student-form';
 import { Asterisk, Check, ChevronsUpDown, MailIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 type StudentInfoProps = {
-    data: StudentUseFormProps;
+    data: StudentFormProps;
     setData: (key: string, value: any) => void;
     errors: Record<string, string>;
     setModalOpen?: () => void;

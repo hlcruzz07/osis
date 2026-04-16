@@ -38,7 +38,8 @@ import {
     fetchProvinceByRegionId,
     fetchRegionsByIslandId,
 } from '@/lib/utils';
-import { DropdownProps } from '@/types/dropdowns';
+import { DropdownProps } from '@/types/entities/dropdowns';
+import { StudentFormProps } from '@/types/entities/student-form';
 import {
     Asterisk,
     Building2,
@@ -55,7 +56,7 @@ import {
 import { useEffect, useState } from 'react';
 
 type StudentInfoProps = {
-    data: StudentUseFormProps;
+    data: StudentFormProps;
     setData: (key: string, value: any) => void;
     errors: Record<string, string>;
     dropdowns: DropdownProps[];
@@ -323,7 +324,7 @@ export default function EducationInfo({
                                     <LabelExample
                                         title="Academic Year"
                                         isRequired={false}
-                                        example="2024 - 2025"
+                                        example="2024-2025"
                                     />
                                     <Input
                                         type="text"

@@ -31,13 +31,14 @@ class FamilyInfoRequest extends FormRequest
         $validEducationalAttainment = $entityRepo->getDropdownsByTitle("Educational Attainment");
         $validLifeStatus = $entityRepo->getDropdownsByTitle("Life Status");
 
+
         $has_siblings = count($this->input('siblings', [])) > 0;
 
         return [
 
             'family.family_size' => 'required|integer|min:1|max:25',
-            'family.parent_martial_status' => 'required|max:50',
-            'family.nature_residence' => 'required|max:50',
+            'family.parent_martial_status' => ['required', 'max:50'],
+            'family.nature_residence' => ['required', 'max:50'],
 
             'family.house_monthly_income' => [
                 'required',
@@ -109,8 +110,8 @@ class FamilyInfoRequest extends FormRequest
                 }
             ],
             'guardians.*.occupation' => 'nullable|string|max:100',
-            'guardians.*.cause_of_death' => 'nullable|required_if:guardians.*.life_status,Deceased|string|max:100',
-            'guardians.*.year_of_death' => 'nullable|required_if:guardians.*.life_status,Deceased|digits:4',
+            'guardians.*.cause_of_death' => 'nullable|string|max:100',
+            'guardians.*.year_of_death' => 'nullable|digits:4',
 
 
             // Address
@@ -128,19 +129,28 @@ class FamilyInfoRequest extends FormRequest
     {
         return [
 
-            // Family Info
+            // Family Size
             'family.family_size.required' => 'Family size is required.',
             'family.family_size.integer' => 'Family size must be a valid number.',
             'family.family_size.min' => 'Family size must be at least 1.',
             'family.family_size.max' => 'Family maximum size is 25.',
 
-            'family.parent_martial_status.required' => 'Parent marital status is required.',
-            'family.nature_residence.required' => 'Nature of residence is required.',
+            // Parent Martial Status
+            'family.parent_martial_status.required' => 'Parent martial status is required.',
+            'family.parent_martial_status.max' => 'Parent martial status must not exceed 50 characters.',
 
+            // Nature of Residence
+            'family.nature_residence.required' => 'Nature of residence is required.',
+            'family.nature_residence.max' => 'Nature of residence must not exceed 50 characters.',
+
+            // Monthly Income
             'family.house_monthly_income.required' => 'Please select your house monthly income.',
             'family.house_monthly_income.in' => 'Selected monthly income is invalid.',
 
+            // Ordinal Position
             'family.ordinal_position.required' => 'Ordinal position is required.',
+            'family.ordinal_position.max' => 'Ordinal position must not exceed 50 characters.',
+
             'siblings.required' => 'Please provide sibling information.',
             'siblings.array' => 'Siblings must be a valid list.',
 
@@ -179,11 +189,9 @@ class FamilyInfoRequest extends FormRequest
             'guardians.*.life_status.in' =>
                 'Life status must be either Living or Deceased.',
 
-            'guardians.*.cause_of_death.required_if' => 'The cause of death is required when the guardian is marked as deceased.',
             'guardians.*.cause_of_death.string' => 'The cause of death must be a valid text.',
             'guardians.*.cause_of_death.max' => 'The cause of death may not exceed 100 characters.',
 
-            'guardians.*.year_of_death.required_if' => 'The year of death is required when the guardian is marked as deceased.',
             'guardians.*.year_of_death.digits' => 'The year of death must be exactly 4 digits.',
 
             'guardians.*.address.island.required' =>

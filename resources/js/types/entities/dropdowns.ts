@@ -1,4 +1,4 @@
-import { create } from './../actions/Laravel/Fortify/Http/Controllers/AuthenticatedSessionController';
+import { create } from '../../actions/Laravel/Fortify/Http/Controllers/AuthenticatedSessionController';
 export type DropdownProps = {
     title: string;
     dropdowns: string[];

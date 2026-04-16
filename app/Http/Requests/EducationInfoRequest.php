@@ -26,9 +26,6 @@ class EducationInfoRequest extends FormRequest
         $entity = new EntityDropdownRepo();
 
         $validSchoolType = $entity->getDropdownsByTitle("School Type");
-        $isTransferee = $this->input('student.student_type') === 'Transferee';
-        $hasCollege = !empty(array_filter((array) $this->input('education.college')));
-
 
         return [
             'educations.*.education_level' => 'required|in:Elementary,Junior High School,Senior High School,College',

@@ -4,89 +4,109 @@ namespace App\Repositories;
 
 use App\Models\Address;
 use App\Models\Guardian;
+use App\Services\HashingService;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 
 class GuardianRepo
 {
 
-    public function __construct(protected Guardian $model, protected Address $address)
+    public function __construct(protected Guardian $model, protected Address $address, protected HashingService $hashingService)
     {
     }
-    /**
-     * Generate SHA256 hash of a value
-     */
-    protected function hashValue(?string $value): ?string
-    {
-        if (is_null($value) || $value === '') {
-            return null;
-        }
-        return hash('sha256', $value);
-    }
+
+
     public function store(array $data, int $student_id)
     {
-        foreach ($data as $item) {
 
-            $guardian = $this->model->create([
-                'student_id' => $student_id,
-                'fname' => $item['fname'],
-                'mname' => $item['mname'] ?? null,
-                'lname' => $item['lname'],
-                'suffix' => $item['suffix'] ?? null,
-                'role' => $item['role'],
-                'birthdate' => $item['birthdate'],
-                'birthplace' => $item['birthplace'] ?? null,
-                'mobile_num' => $item['mobile_num'] ?? null,
-                'religion' => $item['religion'],
-                'citizenship' => $item['citizenship'],
-                'highest_educ_attainment' => $item['highest_educ_attainment'],
-                'life_status' => $item['life_status'],
-                'cause_of_death' => $item['cause_of_death'] ?? null,
-                'year_of_death' => $item['year_of_death'] ?? null,
-                'occupation' => $item['occupation'] ?? null,
-                'is_contact_person' => $item['is_contact_person'],
-                'fname_hash' => $this->hashValue($item['fname'] ?? null),
-                'mname_hash' => $this->hashValue($item['mname'] ?? null),
-                'lname_hash' => $this->hashValue($item['lname'] ?? null),
-                'suffix_hash' => $this->hashValue($item['suffix'] ?? null),
-                'role_hash' => $this->hashValue($item['role'] ?? null),
-                'birthdate_hash' => $this->hashValue($item['birthdate'] ?? null),
-                'birthplace_hash' => $this->hashValue($item['birthplace'] ?? null),
-                'mobile_num_hash' => $this->hashValue($item['mobile_num'] ?? null),
-                'religion_hash' => $this->hashValue($item['religion'] ?? null),
-                'citizenship_hash' => $this->hashValue($item['citizenship'] ?? null),
-                'highest_educ_attainment_hash' => $this->hashValue($item['highest_educ_attainment'] ?? null),
-                'life_status_hash' => $this->hashValue($item['life_status'] ?? null),
-                'cause_of_death_hash' => $this->hashValue($item['cause_of_death'] ?? null),
-                'year_of_death_hash' => $this->hashValue($item['year_of_death'] ?? null),
-                'occupation_hash' => $this->hashValue($item['occupation'] ?? null),
-            ]);
+        $guardians = isset($data[0]) ? $data : [$data];
 
-            $id = $guardian->id;
+        foreach ($guardians as $item) {
+            $guardianData = array_merge(
+                [
+                    'student_id' => $student_id,
+                ],
+                $this->hashingService->appendHashValues($item, 'student_id')
+            );
 
-            $this->storeAddress($item['address'], $id);
+            $guardian = $this->model->create($guardianData);
 
+            if (!empty($item['address'])) {
+                $this->storeAddress($item['address'], $guardian->id);
+            }
+        }
+    }
 
+    protected function storeAddress(array $data, int $id)
+    {
+        $this->address->create(
+            array_merge(
+                ['guardian_id' => $id],
+                $this->hashingService->appendHashValues($data, ['guardian_id'])
+            )
+        );
+    }
+
+    public function updateGuardianById(int $id, array $data)
+    {
+        $guardian = $this->model->findOrFail($id);
+
+        if ($data['is_contact_person']) {
+            $this->disableContactPersonByStudentId($guardian->student_id, $id);
         }
 
+        $guardian->update(
+            $this->hashingService->appendHashValues(Arr::except($data, 'address'))
+        );
+
+        $this->updateAddress($id, $data['address']);
+
+
+        return $guardian;
     }
 
-    public function storeAddress(array $data, int $id)
+    public function updateAddress(int $id, array $data)
     {
-        $this->address->create([
-            'guardian_id' => $id,
-            'island' => $data['island'],
-            'region' => $data['region'],
-            'province' => $data['province'],
-            'city' => $data['city'],
-            'brgy' => $data['brgy'],
-            'zip_code' => $data['zip_code'],
-            'island_hash' => $this->hashValue($data['island'] ?? null),
-            'region_hash' => $this->hashValue($data['region'] ?? null),
-            'province_hash' => $this->hashValue($data['province'] ?? null),
-            'city_hash' => $this->hashValue($data['city'] ?? null),
-            'brgy_hash' => $this->hashValue($data['brgy'] ?? null),
-            'zip_code_hash' => $this->hashValue($data['zip_code'] ?? null),
-        ]);
+        $address = $this->address->where([
+            'guardian_id' => $id
+        ])->first();
+
+        $address->update(
+            $this->hashingService->appendHashValues($data)
+        );
+
+        return $address;
     }
+
+    public function hasOtherGuardianContact(int $excludeGuardianId): bool
+    {
+        $guardian = $this->model->findOrFail($excludeGuardianId);
+
+        return $this->model
+            ->where('student_id', $guardian->student_id)
+            ->where('is_contact_person', true)
+            ->where('id', '!=', $excludeGuardianId)
+            ->exists();
+    }
+
+    protected function disableContactPersonByStudentId(int $studentId, int $exeptId)
+    {
+        $this->model
+            ->where('student_id', $studentId)
+            ->where('is_contact_person', true)
+            ->where('id', '!=', $exeptId)
+            ->update([
+                'is_contact_person' => false,
+            ]);
+    }
+
+    public function hasExistingGuardian(int $student_id, string $role)
+    {
+        return $this->model
+            ->where('student_id', $student_id)
+            ->where('role_hash', $this->hashingService->hashValue($role))
+            ->exists();
+    }
+
 
 }

@@ -2,8 +2,12 @@
 
 namespace App\Jobs;
 
+use App\Repositories\AddressRepo;
 use App\Repositories\AnswerRepo;
+use App\Repositories\EducationRepo;
+use App\Repositories\FamilyInfoRepo;
 use App\Repositories\GuardianRepo;
+use App\Repositories\SiblingRepo;
 use App\Repositories\StudentRepo;
 use Illuminate\Bus\Queueable;
 use Illuminate\Support\Arr;
@@ -26,23 +30,28 @@ class StoreStudentSubmission implements ShouldQueue
 
     public function handle(
         StudentRepo $studentRepo,
+        AnswerRepo $answerRepo,
+        FamilyInfoRepo $familyInfoRepo,
         GuardianRepo $guardianRepo,
-        AnswerRepo $answerRepo
+        AddressRepo $addressRepo,
+        SiblingRepo $siblingRepo,
+        EducationRepo $educationRepo
+
     ): void {
 
-        DB::transaction(function () use ($studentRepo, $guardianRepo, $answerRepo) {
+        DB::transaction(function () use ($educationRepo, $studentRepo, $guardianRepo, $answerRepo, $addressRepo, $siblingRepo, $familyInfoRepo) {
 
             // INSERTIONS
             $student_id = $studentRepo->storeStudent($this->data['student']);
 
-            $studentRepo->storeStudentAddress($this->data['address'], $student_id);
+            $addressRepo->storeStudentAddress($this->data['address'], $student_id);
 
-            $studentRepo->storeStudentEducations($this->data['educations'], $student_id);
+            $educationRepo->store($this->data['educations'], $student_id);
 
-            $studentRepo->storeFamilyInfo($this->data['family'], $student_id);
+            $familyInfoRepo->store($this->data['family'], $student_id);
 
             if (!empty($this->data['siblings'] && count($this->data['siblings']) > 0)) {
-                $studentRepo->storeSiblings($this->data['siblings'], $student_id);
+                $siblingRepo->storeSiblings($this->data['siblings'], $student_id);
             }
 
             $guardianRepo->store($this->data['guardians'], $student_id);

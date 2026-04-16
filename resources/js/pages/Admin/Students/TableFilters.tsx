@@ -1,6 +1,16 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+} from '@/components/ui/command';
 import {
     DropdownMenu,
+    DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -8,6 +18,12 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -16,25 +32,80 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { FilterData } from '@/types/filter-data';
 import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+import apiService from '@/lib/api-service';
+import { handleErrors } from '@/lib/utils';
+import { exportStudents } from '@/routes';
+import { DropdownProps } from '@/types/entities/dropdowns';
+import { FilterData } from '@/types/filter-data';
+import { router } from '@inertiajs/react';
+import { format } from 'date-fns';
+import { isEqual } from 'lodash';
+import {
+    AlertCircleIcon,
     ArrowDownNarrowWide,
     ArrowUpDownIcon,
     ArrowUpNarrowWide,
+    BookOpenCheckIcon,
+    Calendar1Icon,
+    CalendarCheck2Icon,
+    CalendarIcon,
+    CheckIcon,
     ChevronDownIcon,
     ChevronsLeftRight,
+    GraduationCapIcon,
+    School2Icon,
+    SearchIcon,
     Trash2Icon,
     UploadCloudIcon,
+    Users2Icon,
+    XIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { DateRange } from 'react-day-picker';
+import { toast } from 'sonner';
 
 type FilterProps = {
     data: FilterData;
     setFilter: (key: string, value: any) => void;
+    dropdowns: DropdownProps[];
+    academic_years: string[];
+    semesters: string[];
+    total: number | null;
 };
 
-export default function TableFilters({ data, setFilter }: FilterProps) {
+export default function TableFilters({
+    data,
+    setFilter,
+    dropdowns,
+    academic_years,
+    semesters,
+    total,
+}: FilterProps) {
+    const coursesArr = dropdowns.find(
+        (item) => item.title === 'Courses',
+    )?.dropdowns;
+
+    const studentTypeArr = dropdowns.find(
+        (item) => item.title === 'Student Type',
+    )?.dropdowns;
+
+    const yearLevelsArr = dropdowns.find(
+        (item) => item.title === 'Year Levels',
+    )?.dropdowns;
+
+    const campusArr = dropdowns.find(
+        (item) => item.title === 'Campuses',
+    )?.dropdowns;
+
     const [searchVal, setSearchVal] = useState('');
+    const [popover, setPopover] = useState(false);
+
+    const [range, setRange] = useState<DateRange | undefined>(undefined);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -43,18 +114,120 @@ export default function TableFilters({ data, setFilter }: FilterProps) {
 
         return () => clearTimeout(timeout);
     }, [searchVal]);
+
+    const defaultValue: FilterData = {
+        search: null,
+        academic_year: null,
+        semester: null,
+        year_level: null,
+        campus: null,
+        course: null,
+        date_admitted_from: null,
+        date_admitted_to: null,
+        student_type: null,
+        show: 10,
+        sort: 'id',
+        order: 'desc',
+    };
+
+    const resetFilter = () => {
+        Object.entries(defaultValue).forEach(([key, value]) => {
+            setFilter(key as any, value);
+        });
+        setRange(undefined);
+    };
+    const handleExport = async () => {
+        let interval: any;
+
+        const exportPromise = new Promise(async (resolve, reject) => {
+            try {
+                const res = await apiService.post(exportStudents().url, data);
+
+                if (res.data.status === 'error') {
+                    return reject(res.data.message);
+                }
+
+                interval = setInterval(async () => {
+                    try {
+                        const response = await apiService.get(`/download`, {
+                            responseType: 'blob',
+                        });
+
+                        const url = window.URL.createObjectURL(
+                            new Blob([response.data]),
+                        );
+
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.setAttribute('download', 'students.zip');
+                        document.body.appendChild(link);
+                        link.click();
+
+                        clearInterval(interval);
+                        resolve('Download complete');
+                    } catch (err: any) {
+                        // STILL PROCESSING → ignore 404
+                        if (err?.response?.status === 404) return;
+
+                        // REAL ERROR → stop everything
+                        clearInterval(interval);
+                        reject('Export failed');
+                    }
+                }, 3000);
+            } catch (err: any) {
+                clearInterval(interval);
+                reject(
+                    err?.response?.data?.message || 'Failed to start export',
+                );
+            }
+        });
+
+        toast.promise(exportPromise, {
+            loading: 'Exporting students...',
+            success: 'Students exported successfully',
+            error: (err) => err || 'Something went wrong',
+        });
+    };
+
     return (
         <>
-            <div className="flex flex-col items-start justify-between gap-3 xl:flex-row">
-                <Input
-                    type="search"
-                    placeholder="Search first name, last name, email, mobile number..."
-                    className="w-full"
-                    value={searchVal}
-                    onChange={(e) => setSearchVal(e.target.value)}
-                />
+            <div className="flex flex-col items-start justify-between gap-3 lg:flex-row">
+                <div className="relative flex w-full items-center">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <button
+                                type="button"
+                                className="absolute start-3 text-amber-500 hover:text-amber-600"
+                            >
+                                <AlertCircleIcon size={15} />
+                            </button>
+                        </TooltipTrigger>
 
-                <div className="flex w-full flex-wrap items-center justify-between gap-3 md:w-auto md:grow md:flex-nowrap">
+                        <TooltipContent className="max-w-xs border border-amber-200 bg-amber-50 text-amber-900 shadow-md">
+                            <p className="text-xs leading-snug">
+                                Search is case-sensitive because data is
+                                encrypted for security purposes. Try matching
+                                exact capitalization for best results.
+                            </p>
+                        </TooltipContent>
+                    </Tooltip>
+
+                    <div className="animate-border-flow w-full rounded-md bg-gradient-to-r from-emerald-400 via-[#2ca87f] to-emerald-900 bg-[length:300%_300%] p-[2px]">
+                        <Input
+                            type="text"
+                            placeholder="Search first name, last name, email, mobile number..."
+                            className="rounded-md border-0 bg-white ps-8 focus-visible:ring-0 dark:bg-black"
+                            value={searchVal}
+                            onChange={(e) => setSearchVal(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="absolute end-3 text-accent-foreground">
+                        <SearchIcon size={15} />
+                    </div>
+                </div>
+
+                <div className="flex w-full flex-wrap items-center gap-3 md:w-auto md:grow md:flex-nowrap">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline">
@@ -63,7 +236,7 @@ export default function TableFilters({ data, setFilter }: FilterProps) {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-max" align="end">
-                            {[10, 25, 50, 100, 150, 200].map((option) => (
+                            {[10, 25, 50, 100, 150].map((option) => (
                                 <DropdownMenuItem
                                     key={option}
                                     onClick={() => setFilter('show', option)}
@@ -152,105 +325,76 @@ export default function TableFilters({ data, setFilter }: FilterProps) {
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <Button>
+                    <Button
+                        type="button"
+                        disabled={total === 0}
+                        onClick={handleExport}
+                    >
                         <UploadCloudIcon /> Export
                     </Button>
                 </div>
             </div>
             <div className="mt-3 flex flex-col items-start justify-between gap-5 md:flex-row md:items-start">
-                {/* <div className="flex w-full grow flex-wrap gap-3 xl:w-auto">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
-                            <BookMarkedIcon />
-                            College
-                            <ChevronDownIcon />
-                            {selectedCollege && (
-                                <Badge className="ml-2">
-                                    {selectedCollege}
-                                </Badge>
-                            )}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-max" align="start">
-                        {collegeTalArr?.map((item, index) => (
-                            <DropdownMenuCheckboxItem
-                                key={index}
-                                checked={selectedCollege === item.value}
-                                onSelect={() => {
-                                    setSelectedProgram(null);
-                                    setSelectedMajor(null);
-
-                                    setSelectedCollege((prev) =>
-                                        prev === item.value ? null : item.value,
-                                    );
-                                }}
-                            >
-                                {item.name}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-
-                {programsArr && (
+                <div className="flex w-full grow flex-wrap gap-3 xl:w-auto">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline">
-                                <BookOpenCheck />
-                                Programs
-                                <ChevronDownIcon />
-                                {selectedProgram && (
-                                    <Badge className="ml-2">
-                                        {selectedProgram}
-                                    </Badge>
+                                <Calendar1Icon />
+                                Academic Year
+                                {data.academic_year && (
+                                    <Badge>{data.academic_year}</Badge>
                                 )}
+                                <ChevronDownIcon />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-max" align="start">
-                            {programsArr?.map((item, index) => (
-                                <DropdownMenuCheckboxItem
-                                    key={index}
-                                    checked={selectedProgram === item.name}
-                                    onSelect={() => {
-                                        setSelectedMajor(null);
-                                        setSelectedSection(null);
-                                        setSelectedProgram((prev) =>
-                                            prev === item.name
-                                                ? null
-                                                : item.name,
-                                        );
-                                    }}
-                                >
-                                    {item.name}
-                                </DropdownMenuCheckboxItem>
-                            ))}
+                        <DropdownMenuContent className="w-full" align="start">
+                            {[...new Set(academic_years)]?.map(
+                                (item, index) => (
+                                    <DropdownMenuCheckboxItem
+                                        key={index}
+                                        checked={data.academic_year === item}
+                                        onSelect={() => {
+                                            if (data.academic_year === item) {
+                                                setFilter(
+                                                    'academic_year',
+                                                    null,
+                                                );
+                                                return;
+                                            }
+
+                                            setFilter('academic_year', item);
+                                        }}
+                                    >
+                                        {item}
+                                    </DropdownMenuCheckboxItem>
+                                ),
+                            )}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                )}
-                {majorArr && majorArr.length > 0 && (
+
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline">
-                                <BookOpenCheck />
-                                Majors
-                                <ChevronDownIcon />
-                                {selectedMajor && (
-                                    <Badge className="ml-2">
-                                        {selectedMajor}
-                                    </Badge>
+                                <BookOpenCheckIcon />
+                                Semester
+                                {data.semester && (
+                                    <Badge>{data.semester}</Badge>
                                 )}
+                                <ChevronDownIcon />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-max" align="start">
-                            {majorArr?.map((item, index) => (
+                        <DropdownMenuContent align="start">
+                            {[...new Set(semesters)]?.map((item, index) => (
                                 <DropdownMenuCheckboxItem
                                     key={index}
-                                    checked={selectedMajor === item}
+                                    checked={data.semester === item}
                                     onSelect={() => {
-                                        setSelectedSection(null);
-                                        setSelectedMajor((prev) =>
-                                            prev === item ? null : item,
-                                        );
+                                        if (data.semester === item) {
+                                            setFilter('semester', null);
+                                            return;
+                                        }
+
+                                        setFilter('semester', item);
                                     }}
                                 >
                                     {item}
@@ -258,31 +402,30 @@ export default function TableFilters({ data, setFilter }: FilterProps) {
                             ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                )}
 
-                {sectionsArr && sectionsArr.length > 0 && selectedProgram && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline">
-                                <BookOpenCheck />
-                                Sections
-                                <ChevronDownIcon />
-                                {selectedSection && (
-                                    <Badge className="ml-2">
-                                        {selectedSection}
-                                    </Badge>
+                                <CalendarCheck2Icon />
+                                Year Level
+                                {data.year_level && (
+                                    <Badge>{data.year_level}</Badge>
                                 )}
+                                <ChevronDownIcon />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-max" align="start">
-                            {sectionsArr?.map((item, index) => (
+                        <DropdownMenuContent align="start">
+                            {yearLevelsArr?.map((item, index) => (
                                 <DropdownMenuCheckboxItem
                                     key={index}
-                                    checked={selectedSection === item}
+                                    checked={data.year_level === item}
                                     onSelect={() => {
-                                        setSelectedSection((prev) =>
-                                            prev === item ? null : item,
-                                        );
+                                        if (data.year_level === item) {
+                                            setFilter('year_level', null);
+                                            return;
+                                        }
+
+                                        setFilter('year_level', item);
                                     }}
                                 >
                                     {item}
@@ -290,208 +433,213 @@ export default function TableFilters({ data, setFilter }: FilterProps) {
                             ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                )}
 
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
-                            <BookOpenCheck />
-                            Year Level
-                            <ChevronDownIcon />
-                            {selectedYear && (
-                                <Badge className="ml-2">{selectedYear}</Badge>
-                            )}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-max" align="start">
-                        {[
-                            '1st Year',
-                            '2nd Year',
-                            '3rd Year',
-                            '4th Year',
-                            '5th Year',
-                        ].map((item, index) => (
-                            <DropdownMenuCheckboxItem
-                                key={index}
-                                checked={selectedYear === item}
-                                onSelect={() => {
-                                    setSelectedYear((prev) =>
-                                        prev === item ? null : item,
-                                    );
-                                }}
-                            >
-                                {item}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline">
-                            <ChartLineIcon />
-                            Status
-                            <div className="space-x-1">
-                                {isExported ? (
-                                    <Badge variant="default">
-                                        <CheckIcon />
-                                        Exported
-                                    </Badge>
-                                ) : isExported !== null ? (
-                                    <Badge variant="destructive">
-                                        <AlertCircleIcon />
-                                        Exported
-                                    </Badge>
-                                ) : (
-                                    ''
-                                )}
-                                {isCompleted ? (
-                                    <Badge variant="default">
-                                        <CheckIcon />
-                                        Completed
-                                    </Badge>
-                                ) : isCompleted !== null ? (
-                                    <Badge variant="destructive">
-                                        <AlertCircleIcon />
-                                        Completed
-                                    </Badge>
-                                ) : (
-                                    ''
-                                )}
-                            </div>
-                            <ChevronDownIcon />
-                        </Button>
-                    </DropdownMenuTrigger>
-
-                    <DropdownMenuContent className="w-max" align="start">
-                        <DropdownMenuSub>
-                            <DropdownMenuSubTrigger>
-                                Exported
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent>
-                                {[
-                                    {
-                                        label: 'Yes',
-                                        value: true,
-                                    },
-                                    {
-                                        label: 'No',
-                                        value: false,
-                                    },
-                                ].map((item) => (
-                                    <DropdownMenuCheckboxItem
-                                        key={item.label}
-                                        checked={isExported === item.value}
-                                        onSelect={(event) => {
-                                            event.preventDefault();
-
-                                            setIsExported(
-                                                isExported === item.value
-                                                    ? null
-                                                    : item.value,
-                                            );
-                                        }}
-                                    >
-                                        {item.label}
-                                    </DropdownMenuCheckboxItem>
-                                ))}
-                            </DropdownMenuSubContent>
-                        </DropdownMenuSub>
-                        <DropdownMenuSeparator />
-
-                        <DropdownMenuSub>
-                            <DropdownMenuSubTrigger>
-                                Completed
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent>
-                                {[
-                                    {
-                                        label: 'Yes',
-                                        value: true,
-                                    },
-                                    {
-                                        label: 'No',
-                                        value: false,
-                                    },
-                                ].map((item) => (
-                                    <DropdownMenuCheckboxItem
-                                        key={item.label}
-                                        checked={isCompleted === item.value}
-                                        onSelect={(event) => {
-                                            event.preventDefault();
-
-                                            // toggle behavior (click again to clear)
-                                            setIsCompleted(
-                                                isCompleted === item.value
-                                                    ? null
-                                                    : item.value,
-                                            );
-                                        }}
-                                    >
-                                        {item.label}
-                                    </DropdownMenuCheckboxItem>
-                                ))}
-                            </DropdownMenuSubContent>
-                        </DropdownMenuSub>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-
-                <div className="flex items-center">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                <Users2Icon />
+                                Student Type
+                                {data.student_type && (
+                                    <Badge>{data.student_type}</Badge>
+                                )}
+                                <ChevronDownIcon />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                            {studentTypeArr?.map((item, index) => (
+                                <DropdownMenuCheckboxItem
+                                    key={index}
+                                    checked={data.student_type === item}
+                                    onSelect={() => {
+                                        if (data.student_type === item) {
+                                            setFilter('student_type', null);
+                                            return;
+                                        }
+
+                                        setFilter('student_type', item);
+                                    }}
+                                >
+                                    {item}
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                <School2Icon />
+                                Campus
+                                {data.campus && <Badge>{data.campus}</Badge>}
+                                <ChevronDownIcon />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                            {campusArr?.map((item, index) => (
+                                <DropdownMenuCheckboxItem
+                                    key={index}
+                                    checked={data.campus === item}
+                                    onSelect={() => {
+                                        if (data.campus === item) {
+                                            setFilter('campus', null);
+                                            return;
+                                        }
+
+                                        setFilter('campus', item);
+                                    }}
+                                >
+                                    {item}
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <Popover
+                        open={popover}
+                        onOpenChange={(open) => setPopover(open)}
+                    >
+                        <PopoverTrigger asChild>
                             <Button
                                 variant="outline"
-                                className={`w-max justify-between ${range && 'rounded-e-none border-e-0'}`}
+                                className="flex items-center gap-2"
                             >
-                                <CalendarIcon />
-                                {range?.from && range?.to
-                                    ? `${range.from.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} – ${range.to.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`
-                                    : 'Date Updated'}
-
+                                <GraduationCapIcon />
+                                Course
+                                {data.course && <Badge>{data.course}</Badge>}
                                 <ChevronDownIcon />
                             </Button>
-                        </DropdownMenuTrigger>
+                        </PopoverTrigger>
 
-                        <DropdownMenuContent className="w-auto p-0">
-                            <Calendar
-                                mode="range"
-                                selected={range}
-                                captionLayout="dropdown"
-                                onSelect={(newRange) => {
-                                    if (!newRange) return;
+                        <PopoverContent className="w-full p-0">
+                            <Command>
+                                <CommandInput placeholder="Search course..." />
+                                <CommandEmpty>No course found.</CommandEmpty>
 
-                                    setRange(newRange as DateRange);
+                                <CommandGroup>
+                                    {coursesArr?.map((item, index) => (
+                                        <CommandItem
+                                            key={index}
+                                            onSelect={() => {
+                                                if (data.course === item) {
+                                                    setFilter('course', null);
+                                                } else {
+                                                    setFilter('course', item);
+                                                }
+
+                                                setPopover(false);
+                                            }}
+                                            className="flex items-center justify-between"
+                                        >
+                                            {item}
+
+                                            {data.course === item && (
+                                                <CheckIcon className="h-4 w-4" />
+                                            )}
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
+
+                    <div className="flex items-center">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className={`w-max justify-between ${
+                                        range?.from && range?.to
+                                            ? 'rounded-e-none border-e-0'
+                                            : ''
+                                    }`}
+                                >
+                                    <CalendarIcon />
+
+                                    {range?.from && range?.to
+                                        ? `${range.from.toLocaleDateString(
+                                              'en-US',
+                                              {
+                                                  year: 'numeric',
+                                                  month: 'long',
+                                                  day: 'numeric',
+                                              },
+                                          )} – ${range.to.toLocaleDateString(
+                                              'en-US',
+                                              {
+                                                  year: 'numeric',
+                                                  month: 'long',
+                                                  day: 'numeric',
+                                              },
+                                          )}`
+                                        : 'Date'}
+
+                                    <ChevronDownIcon />
+                                </Button>
+                            </DropdownMenuTrigger>
+
+                            <DropdownMenuContent className="w-auto p-0">
+                                <Calendar
+                                    mode="range"
+                                    selected={range}
+                                    buttonVariant="secondary"
+                                    captionLayout="dropdown"
+                                    onSelect={(newRange) => {
+                                        if (!newRange) return;
+
+                                        setRange(newRange);
+
+                                        setFilter(
+                                            'date_admitted_from',
+                                            format(
+                                                newRange.from!,
+                                                'yyyy-MM-dd',
+                                            ),
+                                        );
+                                        setFilter(
+                                            'date_admitted_to',
+                                            format(newRange.to!, 'yyyy-MM-dd'),
+                                        );
+                                    }}
+                                />
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        {range && (
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                onClick={() => {
+                                    setRange(undefined);
+                                    setFilter('date_admitted_from', null);
+                                    setFilter('date_admitted_to', null);
                                 }}
-                            />
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    {range && (
+                                className="rounded-s-none"
+                            >
+                                <XIcon />
+                            </Button>
+                        )}
+                    </div>
+
+                    {!isEqual(defaultValue, data) && (
                         <Button
                             type="button"
+                            onClick={resetFilter}
                             variant="destructive"
-                            onClick={() => setRange(undefined)}
-                            className="rounded-s-none"
                         >
-                            {' '}
-                            <XIcon />
+                            <Trash2Icon /> Reset
                         </Button>
                     )}
                 </div>
 
-                {hasActiveFilters && (
-                    <Button
-                        type="button"
-                        onClick={resetFilters}
-                        variant="destructive"
+                <p className="text-sm whitespace-nowrap">
+                    Total Entries:{' '}
+                    <Badge
+                        variant="secondary"
+                        className="bg-green-600 text-white"
                     >
-                        <FilterXIcon /> Reset Filter
-                    </Button>
-                )}
-            </div>
-            <p className="text-sm whitespace-nowrap">
-                Total Entries:{' '}
-                <Badge>{Number(students?.total || 0).toLocaleString()}</Badge>
-            </p> */}
+                        {Number(total).toLocaleString()}
+                    </Badge>
+                </p>
             </div>
         </>
     );

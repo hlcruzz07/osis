@@ -38,15 +38,6 @@ class StudentAddressInfo extends FormRequest
     public function messages(): array
     {
         return [
-            // Email
-            'email.email' => 'Please enter a valid email address.',
-            'email.max' => 'Email must not exceed 50 characters.',
-
-            // Mobile number
-            'mobile_num.numeric' => 'Mobile number must contain numbers only.',
-            'mobile_num.starts_with' => 'Mobile number should always starts with 9.',
-            'mobile_num.digits' => 'Mobile number must be exactly 10 digits.',
-
             // Island
             'address.island.required' => 'Please select an island.',
             'address.island.in' => 'Selected island is invalid. Choose Luzon, Visayas, or Mindanao.',

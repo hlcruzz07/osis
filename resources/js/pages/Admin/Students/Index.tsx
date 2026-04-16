@@ -8,19 +8,18 @@ import { useEffect, useState } from 'react';
 
 import TableFilters from './TableFilters';
 import { FilterData } from '@/types/filter-data';
-import { Student } from '@/types/student';
 import { PaginateStudents } from '@/types/data-table';
 import apiService from '@/lib/api-service';
 import { Button } from '@/components/ui/button';
-import { EyeIcon, PencilIcon, UserPenIcon, UserSearchIcon } from 'lucide-react';
+import { UserSearchIcon } from 'lucide-react';
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useInitials } from '@/hooks/use-initials';
-import { Badge } from '@/components/ui/badge';
+import { handleErrors } from '@/lib/utils';
+import { toast } from 'sonner';
+import { DropdownProps } from '@/types/entities/dropdowns';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -29,8 +28,15 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+type PageProps = {
+    dropdowns: DropdownProps[];
+    academic_years: string[];
+    semesters: string[];
+};
+
 export default function Index() {
     const [students, setStudents] = useState<PaginateStudents | null>(null);
+    const { dropdowns, academic_years, semesters } = usePage<PageProps>().props;
 
     const [filter, setFilter] = useState<FilterData>({
         search: null, // for fullname, email, mobile_num
@@ -39,11 +45,9 @@ export default function Index() {
         year_level: null,
         campus: null,
         course: null,
-        date_admitte_from: null,
-        date_admitte_to: null,
+        date_admitted_from: null,
+        date_admitted_to: null,
         student_type: null,
-        equity_indicator: null,
-        sexual_orient: null,
         show: 10,
         sort: 'id',
         order: 'desc',
@@ -66,12 +70,28 @@ export default function Index() {
         } catch (error) {
             console.error('Error fetching students', error);
             setStudents(null);
+            toast.error('Something went wrong fetching students.');
         }
     };
 
     useEffect(() => {
         fetchStudentsData();
     }, [filter]);
+
+    const tableColumns = [
+        '#',
+        'Name',
+        'Email',
+        'Year Level',
+        'Type',
+        'Campus',
+        'Course',
+        'Mobile #',
+        'Academic Year',
+        'Semester',
+        'Date',
+        'Action',
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -93,26 +113,20 @@ export default function Index() {
                 </div>
                 <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl border p-4">
                     <div className="relative min-h-[100vh] flex-1 rounded-xl border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                        <TableFilters data={filter} setFilter={updateFilter} />
+                        <TableFilters
+                            data={filter}
+                            setFilter={updateFilter}
+                            dropdowns={dropdowns}
+                            academic_years={academic_years}
+                            semesters={semesters}
+                            total={students?.total ?? null}
+                        />
 
-                        <div className="relative overflow-x-auto rounded-md lg:border">
+                        <div className="relative mt-3 overflow-x-auto rounded-md lg:border">
                             <table className="table w-full text-left text-base text-foreground">
                                 <thead className="lg:border-b">
                                     <tr>
-                                        {[
-                                            '#',
-                                            'Name',
-                                            'Email',
-                                            'Type',
-                                            'Campus',
-                                            'Course',
-                                            'Gender',
-                                            'Mobile #',
-                                            'Academic Year',
-                                            'Semester',
-                                            'Date',
-                                            'Action',
-                                        ].map((header) => (
+                                        {tableColumns.map((header) => (
                                             <th key={header} scope="col">
                                                 {header}
                                             </th>
@@ -130,8 +144,11 @@ export default function Index() {
                                             <td data-label="Name">
                                                 {`${row.fname} ${row.mname ? row.mname.slice(0, 1) + '.' : ''} ${row.lname} ${row.suffix ? row.suffix + '.' : ''}`}
                                             </td>
-                                            <td data-label="Mobile #">
+                                            <td data-label="Email">
                                                 {row.email}
+                                            </td>
+                                            <td data-label="Year Level">
+                                                {row.year_level}
                                             </td>
                                             <td data-label="Type">
                                                 {row.student_type}
@@ -142,9 +159,7 @@ export default function Index() {
                                             <td data-label="Course">
                                                 {row.course}
                                             </td>
-                                            <td data-label="Gender">
-                                                {row.sexual_orient}
-                                            </td>
+
                                             <td data-label="Mobile #">
                                                 {row.mobile_num}
                                             </td>
@@ -174,10 +189,7 @@ export default function Index() {
                                                                     ).url
                                                                 }
                                                             >
-                                                                <Button
-                                                                    variant="secondary"
-                                                                    size="sm"
-                                                                >
+                                                                <Button size="sm">
                                                                     <UserSearchIcon />
                                                                 </Button>
                                                             </Link>
@@ -195,7 +207,9 @@ export default function Index() {
                                         <>
                                             <tr>
                                                 <td
-                                                    colSpan={13}
+                                                    colSpan={
+                                                        tableColumns.length
+                                                    }
                                                     className="force-center border p-3 text-center"
                                                 >
                                                     No records found.
