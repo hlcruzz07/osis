@@ -86,7 +86,7 @@ export default function SiblingsTab({ studentData, dropdowns }: PageProps) {
                                     </td>
 
                                     <td data-label="Action">
-                                        {/* <div className="flex flex-wrap gap-2">
+                                        <div className="flex flex-wrap gap-2">
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <Button size="sm">
@@ -97,7 +97,7 @@ export default function SiblingsTab({ studentData, dropdowns }: PageProps) {
                                                     <p>Edit Guardian</p>
                                                 </TooltipContent>
                                             </Tooltip>
-                                        </div> */}
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

@@ -388,7 +388,10 @@ export default function StudentInfo({
                             name="student.email"
                             value={data.student.email ?? ''}
                             onChange={(e) =>
-                                setData('student.email', e.target.value)
+                                setData(
+                                    'student.email',
+                                    e.target.value.toLowerCase(),
+                                )
                             }
                             className="py-2 ps-9"
                             placeholder="Enter Email Address"

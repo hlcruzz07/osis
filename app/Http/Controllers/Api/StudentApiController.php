@@ -27,4 +27,20 @@ class StudentApiController extends Controller
             ], 500);
         }
     }
+
+    public function getStudentsPerDateFilter(Request $request)
+    {
+        try {
+            $data = $this->studentRepo->getStudentsPerDateFilter($request->date);
+
+            return response()->json($data);
+
+        } catch (Exception $e) {
+
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

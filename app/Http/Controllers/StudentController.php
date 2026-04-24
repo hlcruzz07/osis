@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\StudentsExport;
+use App\Facades\ActivityLog;
 use App\Http\Requests\AdditionalInfoRequest;
 use App\Http\Requests\CreateGuardianRequest;
 use App\Http\Requests\EducationInfoRequest;
@@ -26,6 +27,7 @@ use App\Repositories\GuardianRepo;
 use App\Repositories\QuestionRepo;
 use App\Repositories\StudentRepo;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -139,7 +141,6 @@ class StudentController extends Controller
 
     public function students()
     {
-
         $academicYears = Cache::remember('academic_years', 3600, function () {
             return Student::select('academic_year')
                 ->distinct()
@@ -156,10 +157,15 @@ class StudentController extends Controller
             return EntityDropdown::all();
         });
 
+        $student_type_count = Cache::remember('student_type_count', 3600, function () {
+            return $this->studentRepo->getStudentTypeCount();
+        });
+
         return Inertia::render('Admin/Students/Index', [
             'dropdowns' => $dropdowns,
             'academic_years' => $academicYears,
-            'semesters' => $semesters
+            'semesters' => $semesters,
+            'student_type_count' => $student_type_count
         ]);
     }
 
@@ -204,14 +210,17 @@ class StudentController extends Controller
 
             ExportStudentsZipJob::dispatch($students);
 
+            ActivityLog::log('export', 'Exported (' . count($students) . ') students data', Auth::user()->email, request(), 'success');
+
             return response()->json([
                 'status' => 'success',
-
             ]);
 
         } catch (Exception $e) {
 
             Log::error("Failed to export students: " . $e->getMessage());
+
+            ActivityLog::log('export', 'Failed to export students data', Auth::user()->email, request(), 'failed');
 
             return response()->json([
                 'status' => 'error',

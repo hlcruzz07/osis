@@ -7,7 +7,9 @@ import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Button } from './ui/button';
 
-export default function ThemeButton({}: HTMLAttributes<HTMLDivElement>) {
+type Props = HTMLAttributes<HTMLDivElement>;
+
+export default function ThemeButton({ className, ...props }: Props) {
     const { appearance, updateAppearance } = useAppearance();
     const [popoverOpen, setPopoverOpen] = useState(false);
 
@@ -18,11 +20,8 @@ export default function ThemeButton({}: HTMLAttributes<HTMLDivElement>) {
     ];
 
     return (
-        <div className="fixed top-3 right-3 z-100">
-            <Popover
-                open={popoverOpen}
-                onOpenChange={(open) => setPopoverOpen(open)}
-            >
+        <div {...props} className={cn('fixed top-3 right-3 z-50', className)}>
+            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                 <PopoverTrigger>
                     <Button
                         variant={appearance === 'light' ? 'default' : 'outline'}

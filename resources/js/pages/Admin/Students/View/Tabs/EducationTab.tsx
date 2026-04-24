@@ -572,7 +572,7 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                         </div>
                     ))}
 
-                    {/* <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
+                    <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
                         {isEditMode ? (
                             <div>
                                 <Button
@@ -608,7 +608,7 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                                 <PencilIcon /> Edit
                             </Button>
                         )}
-                    </div> */}
+                    </div>
                 </form>
             </FormLayout>
         </>

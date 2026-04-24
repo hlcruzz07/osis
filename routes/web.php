@@ -1,25 +1,23 @@
 <?php
 
 use App\Http\Controllers\AcademicYearAndSemesterController;
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EducationController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\FamilyInfoController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\StudentController;
-use App\Models\AcademicYearAndSemester;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get("/", function () {
-    return redirect('/student');
-});
-
-Route::get('/student', [StudentController::class, 'index'])->name('home');
+Route::get("/", [StudentController::class, 'index'])->name('home');
 
 // Student Validations & Submission
-Route::middleware(['throttle:10,1'])->group(function () {
+Route::middleware(['throttle:60,1'])->group(function () {
     Route::post('/student/validate/student-info', [StudentController::class, 'validateStudentInfo'])->name('validateStudentInfo');
     Route::post('/student/validate/student-address', [StudentController::class, 'validateAddress'])->name('validateAddress');
     Route::post('/student/validate/education', [StudentController::class, 'validateEducation'])->name('validateEducation');
@@ -30,30 +28,50 @@ Route::middleware(['throttle:10,1'])->group(function () {
 
 // Admin Routes
 
-// Students
-Route::get('/students', [StudentController::class, 'students'])->name('students');
-Route::get('/student/{id}', [StudentController::class, 'view'])->name('viewStudent');
-Route::put('/student/{id}/student', [StudentController::class, 'update'])->name('updateStudent');
-Route::post('/students/export', [StudentController::class, 'export'])->name('exportStudents');
-Route::get('/download', [ExportController::class, 'download']);
+Route::get('/admin', [AuthController::class, 'index'])->name('admin');
+Route::get('/auth/google/redirect', [AuthController::class, 'redirect'])->name('login');
+Route::get('/auth/google/callback', [AuthController::class, 'callback']);
 
-Route::get('/test', [StudentController::class, 'export']);
+// Auth
+Route::middleware(['custom.auth', 'throttle:60,1', 'role:admin|super_admin'])->group(function () {
 
-// Address
-Route::put('/student/{id}/student-address', [AddressController::class, 'updateStudentAddress'])->name('updateStudentAddress');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-// Family
-Route::put('/student/{id}/family-info', [FamilyInfoController::class, 'update'])->name('updateFamily');
+    Route::middleware('permission:view_students')->group(function () {
+        Route::get('/students', [StudentController::class, 'students'])->name('students');
+        Route::get('/student/{id}', [StudentController::class, 'view'])->name('viewStudent');
+    });
 
-// Education
-Route::put('/student/{id}/education', [EducationController::class, 'update'])->name('updateEducation');
 
-// Guardian
-Route::put('/student/{id}/guardian', [GuardianController::class, 'update'])->name('updateGuardian');
-Route::post('/student/{student_id}/guardian/create', [GuardianController::class, 'create'])->name('createGuardian');
+    Route::middleware('permission:export_students')->group(function () {
+        Route::post('/students/export', [StudentController::class, 'export'])->name('exportStudents');
+        Route::get('/download', [ExportController::class, 'download']);
+    });
 
-Route::put('/academic-year-and-semester', [AcademicYearAndSemesterController::class, 'update'])->name('updateAcademicYearAndSemester');
+    Route::middleware('permission:update_students')->group(function () {
+        Route::put('/student/{id}/student', [StudentController::class, 'update'])->name('updateStudent');
+        Route::put('/student/{id}/student-address', [AddressController::class, 'updateStudentAddress'])->name('updateStudentAddress');
+        Route::put('/student/{id}/family-info', [FamilyInfoController::class, 'update'])->name('updateFamily');
+        Route::put('/student/{id}/education', [EducationController::class, 'update'])->name('updateEducation');
+        Route::put('/student/{id}/guardian', [GuardianController::class, 'update'])->name('updateGuardian');
+    });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-require __DIR__ . '/settings.php';
+    Route::middleware('permission:create_students')->group(function () {
+        Route::post('/student/{student_id}/guardian/create', [GuardianController::class, 'create'])->name('createGuardian');
+    });
+
+    Route::middleware('permission:update_academic_year_and_semester')->group(function () {
+        Route::put('/academic-year-and-semester', [AcademicYearAndSemesterController::class, 'update'])->name('updateAcademicYearAndSemester');
+    });
+
+    Route::middleware('permission:view_activity_logs')->group(function () {
+        Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activityLogs');
+    });
+
+    Route::middleware('role:super_admin')->group(function () {
+        Route::get('/accounts', [AccountController::class, 'index'])->name('accounts');
+    });
+
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
 require __DIR__ . '/api.php';

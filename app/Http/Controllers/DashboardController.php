@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYearAndSemester;
 use App\Repositories\StudentRepo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -16,12 +17,13 @@ class DashboardController extends Controller
     public function index()
     {
         $academicYearAndSemester = AcademicYearAndSemester::first();
-
+        $studentsCountPerCampus = $this->studentRepo->getStudentsCountPerCampus();
         $latestStudents = $this->studentRepo->getLatestStudents();
 
-        return Inertia::render('dashboard', [
+        return Inertia::render('Admin/Dashboard/Index', [
             'academic_year_and_semester' => $academicYearAndSemester,
-            'latestStudents' => $latestStudents
+            'latestStudents' => $latestStudents,
+            'studentsCountPerCampus' => $studentsCountPerCampus
         ]);
     }
 }

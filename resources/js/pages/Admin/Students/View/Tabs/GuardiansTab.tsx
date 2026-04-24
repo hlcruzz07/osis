@@ -146,7 +146,7 @@ export default function GuardiansTab({ studentData, dropdowns }: PageProps) {
                                     </td>
 
                                     <td data-label="Action">
-                                        {/* <div className="flex flex-wrap gap-2">
+                                        <div className="flex flex-wrap gap-2">
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <Button
@@ -163,7 +163,7 @@ export default function GuardiansTab({ studentData, dropdowns }: PageProps) {
                                                     <p>Edit Guardian</p>
                                                 </TooltipContent>
                                             </Tooltip>
-                                        </div> */}
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

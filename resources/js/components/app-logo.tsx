@@ -10,7 +10,7 @@ export default function AppLogo() {
             <div className="ml-1 grid flex-1 text-left text-sm">
                 <span className="mb-0.5 flex flex-col gap-1 truncate leading-tight font-semibold">
                     CHMSU OSIS
-                    <small className="text-[10px]">
+                    <small className="text-[10px] font-light">
                         Online Student Information Sheet
                     </small>
                 </span>

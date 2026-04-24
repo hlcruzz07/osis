@@ -3,7 +3,8 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../css/app.css';
-import { initializeTheme } from './hooks/use-appearance';
+import { initializeTheme, useAppearance } from './hooks/use-appearance';
+import { Toaster } from './components/ui/sonner';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -19,7 +20,10 @@ createInertiaApp({
 
         root.render(
             <StrictMode>
-                <App {...props} />
+                <>
+                    <Toaster position="top-right" richColors />
+                    <App {...props} />
+                </>
             </StrictMode>,
         );
     },

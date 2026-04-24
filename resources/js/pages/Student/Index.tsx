@@ -282,12 +282,17 @@ export default function Index() {
 
     useEffect(() => {
         if (!flash) return;
-        if (flash.success) toast.success(flash.success);
-        if (flash.error) toast.error(flash.error);
-        if (flash.info) toast.info(flash.info);
-        if (flash.warning) toast.warning(flash.warning);
-    }, [flash]);
 
+        // Small delay to prevent duplicate toasts in StrictMode
+        const timeoutId = setTimeout(() => {
+            if (flash.success) toast.success(flash.success);
+            if (flash.error) toast.error(flash.error);
+            if (flash.info) toast.info(flash.info);
+            if (flash.warning) toast.warning(flash.warning);
+        }, 100);
+
+        return () => clearTimeout(timeoutId);
+    }, [flash]);
     const [openCancelModal, setOpenCancelModal] = useState(false);
     const [openConfirmModal, setOpenConfirmModal] = useState(false);
 

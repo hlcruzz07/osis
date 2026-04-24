@@ -182,9 +182,40 @@ export const isSelectedAsContactPerson = (
     if (!selected) return false;
     return selected.role !== role;
 };
+
 export function formatCount(num: number) {
     if (num >= 1_000_000)
         return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
     if (num >= 1_000) return (num / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
     return num.toString();
 }
+
+export function sliceText(txt: string, maxLength: number) {
+    if (!txt) return '';
+    if (txt.length <= maxLength) return txt;
+    return txt.slice(0, maxLength) + '...';
+}
+export function actionColor(
+    action: 'create' | 'delete' | 'update' | 'login' | 'export',
+) {
+    switch (action) {
+        case 'create':
+            return 'bg-green-600';
+        case 'delete':
+            return 'bg-red-600';
+        case 'update':
+            return 'bg-blue-600';
+        case 'login':
+            return 'bg-purple-600';
+        case 'export':
+            return 'bg-teal-600';
+        default:
+            return 'bg-black';
+    }
+}
+
+export const normalizeName = (name: string) => {
+    return name
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+};

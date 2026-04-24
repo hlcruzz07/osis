@@ -335,7 +335,7 @@ export default function FamilyTab({ studentData, dropdowns }: PageProps) {
                         )}
                         <InputError message={errors['nature_residence']} />
                     </div>
-                    {/* <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
+                    <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
                         {isEditMode ? (
                             <div>
                                 <Button
@@ -371,7 +371,7 @@ export default function FamilyTab({ studentData, dropdowns }: PageProps) {
                                 <PencilIcon /> Edit
                             </Button>
                         )}
-                    </div> */}
+                    </div>
                 </form>
             </FormLayout>
         </>

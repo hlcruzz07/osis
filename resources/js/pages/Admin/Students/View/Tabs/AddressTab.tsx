@@ -588,7 +588,7 @@ export default function AddressTab({ studentData }: PageProps) {
                             <InputError message={address.errors['zip_code']} />
                         </div>
                     </TwoColumnInput>
-                    {/* <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
+                    <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
                         {isEditMode ? (
                             <div>
                                 <Button
@@ -618,7 +618,7 @@ export default function AddressTab({ studentData }: PageProps) {
                                 <PencilIcon /> Edit
                             </Button>
                         )}
-                    </div> */}
+                    </div>
                 </form>
             </FormLayout>
         </>

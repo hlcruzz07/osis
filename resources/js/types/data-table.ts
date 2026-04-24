@@ -1,7 +1,7 @@
-import { Student } from './student';
+import { StudentProps } from './entities/student';
 
 export type PaginateStudents = {
-    data: Student[];
+    data: StudentProps[];
     links: { url: string | null; label: string; active: boolean }[];
     from: number;
     to: number;
