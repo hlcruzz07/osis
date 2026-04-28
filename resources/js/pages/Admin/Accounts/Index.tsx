@@ -39,6 +39,7 @@ import TableLayout from '@/layouts/table-layout';
 import { AddAccountModal } from './Modal/AddAccountModal';
 import { PermissionProps } from '@/types/permission';
 import { RoleProps } from '@/types/role';
+import { EditAccountModal } from './Modal/EditAccountModal';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -140,9 +141,21 @@ export default function Index() {
         }
     };
 
+    const [openEditAccountModal, setOpenEditAccountModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Accounts" />
+
+            <EditAccountModal
+                open={openEditAccountModal}
+                setOpen={setOpenEditAccountModal}
+                roles={roles}
+                permissions={permissions}
+                onReload={fetchAccountsData}
+                user={selectedUser}
+            />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <TableLayout>
                     <TableFilterAccounts
@@ -207,11 +220,11 @@ export default function Index() {
                                                             size="icon"
                                                             variant="default"
                                                         >
-                                                            <UserSearchIcon className="size-4" />
+                                                            <UserPenIcon className="size-4" />
                                                         </Button>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
-                                                        <p>View Account</p>
+                                                        <p>Edit Account</p>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </div>

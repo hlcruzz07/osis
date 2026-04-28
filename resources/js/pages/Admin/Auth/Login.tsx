@@ -11,8 +11,6 @@ export default function Login() {
         window.location.href = '/auth/google/redirect';
     };
 
-    const { appearance } = useAppearance();
-
     const flash: FlashMessages = usePage().props.flash || {};
 
     useEffect(() => {
@@ -28,18 +26,14 @@ export default function Login() {
 
         return () => clearTimeout(timeoutId);
     }, [flash]);
+
     return (
         <AuthLayout
             title="Welcome"
             description="Sign in using your CHMSU Google account"
         >
             <Head title="Login" />
-            <Toaster
-                closeButton
-                position="top-center"
-                richColors
-                theme={appearance}
-            />
+
             <div className="flex min-h-[60vh] items-center justify-center">
                 <div className="w-full max-w-sm rounded-2xl border bg-white p-8 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
                     {/* Logo / Title */}

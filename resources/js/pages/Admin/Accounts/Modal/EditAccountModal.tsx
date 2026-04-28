@@ -42,6 +42,7 @@ import {
 } from '@/components/ui/tooltip';
 import { capitalizeString, cn, handleErrors, normalizeName } from '@/lib/utils';
 import { createAccount } from '@/routes';
+import { User } from '@/types';
 import { PermissionProps } from '@/types/permission';
 import { RoleProps } from '@/types/role';
 import { useForm } from '@inertiajs/react';
@@ -65,25 +66,27 @@ type FormData = {
     permissions: string[];
 };
 
-export function AddAccountModal({
+export function EditAccountModal({
     open,
     setOpen,
     roles,
     permissions,
     onReload,
+    user,
 }: {
     open: boolean;
     setOpen: (open: boolean) => void;
     roles: RoleProps[];
     permissions: PermissionProps[];
     onReload: () => void;
+    user: User | null;
 }) {
     const { data, setData, processing, errors, post, clearErrors, reset } =
         useForm<FormData>({
-            email: '',
-            name: '',
-            role: null,
-            permissions: [],
+            email: user?.email || '',
+            name: user?.name || '',
+            role: (user?.roles[0]?.name as 'admin' | 'super_admin') ?? null,
+            permissions: user?.permissions.map((item) => item.name) || [],
         });
 
     const handleForm = (e: React.FormEvent) => {
@@ -122,10 +125,10 @@ export function AddAccountModal({
         <Dialog open={open || processing} onOpenChange={setOpen}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Add Account</DialogTitle>
+                    <DialogTitle>Edit Account</DialogTitle>
                     <DialogDescription>
-                        Create a new user account by providing basic details and
-                        assigning roles and permissions.
+                        Update the user's account details, including their role
+                        and permissions.
                     </DialogDescription>
                     <form onSubmit={handleForm} className="my-5 space-y-5">
                         <div className="flex flex-col gap-3">
@@ -392,7 +395,7 @@ export function AddAccountModal({
                                         <Spinner /> Loading...
                                     </>
                                 ) : (
-                                    <>Submit</>
+                                    <>Save changes</>
                                 )}
                             </Button>
                         </div>

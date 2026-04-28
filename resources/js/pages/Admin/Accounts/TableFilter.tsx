@@ -76,6 +76,7 @@ import { AddAccountModal } from './Modal/AddAccountModal';
 import { permission } from 'process';
 import { RoleProps } from '@/types/role';
 import { PermissionProps } from '@/types/permission';
+import { EditAccountModal } from './Modal/EditAccountModal';
 
 type FilterProps = {
     data: FilterDataUser;
@@ -133,7 +134,9 @@ export default function TableFilterAccounts({
                 setOpen={setOpenAddAccountModal}
                 roles={roles}
                 permissions={permissions}
+                onReload={onRefresh}
             />
+
             <div className="flex flex-col items-start justify-between gap-3 lg:flex-row">
                 <div className="relative flex w-full items-center gap-3">
                     <Tooltip>
@@ -144,11 +147,32 @@ export default function TableFilterAccounts({
                         </TooltipTrigger>
                         <TooltipContent>Refresh</TooltipContent>
                     </Tooltip>
-                    <div className="animate-border-flow w-full rounded-md bg-gradient-to-r from-emerald-400 via-[#2ca87f] to-emerald-900 bg-[length:300%_300%] p-[2px]">
+
+                    <div className="animate-border-flow relative flex w-full items-center rounded-md bg-gradient-to-r from-emerald-400 via-[#2ca87f] to-emerald-900 bg-[length:300%_300%] p-[2px]">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    type="button"
+                                    className="absolute start-3 text-amber-500 hover:text-amber-600"
+                                >
+                                    <AlertCircleIcon size={15} />
+                                </button>
+                            </TooltipTrigger>
+
+                            <TooltipContent className="max-w-xs border border-amber-200 bg-amber-50 text-amber-900 shadow-md">
+                                <p className="text-xs leading-snug">
+                                    Search is case-sensitive because data is
+                                    encrypted for security purposes. Try
+                                    matching exact capitalization for best
+                                    results.
+                                </p>
+                            </TooltipContent>
+                        </Tooltip>
+
                         <Input
                             type="text"
                             placeholder="Search action, description, email, ip address, browser..."
-                            className="rounded-md border-0 bg-white focus-visible:ring-0 dark:bg-black"
+                            className="rounded-md border-0 bg-white ps-9 focus-visible:ring-0 dark:bg-black"
                             value={searchVal}
                             onChange={(e) => setSearchVal(e.target.value)}
                         />

@@ -8,6 +8,7 @@ export type User = {
     created_at: string;
     updated_at: string;
     roles: Role[];
+    permissions: Permission[];
     [key: string]: unknown;
 };
 
@@ -15,6 +16,11 @@ export type Auth = {
     user: User;
 };
 type Role = {
+    id: number;
+    name: string;
+};
+
+type Permission = {
     id: number;
     name: string;
 };

@@ -33,7 +33,7 @@ Route::get('/auth/google/redirect', [AuthController::class, 'redirect'])->name('
 Route::get('/auth/google/callback', [AuthController::class, 'callback']);
 
 // Auth
-Route::middleware(['custom.auth', 'throttle:60,1', 'role:admin|super_admin'])->group(function () {
+Route::middleware(['custom.auth', 'throttle:60,1'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -64,12 +64,14 @@ Route::middleware(['custom.auth', 'throttle:60,1', 'role:admin|super_admin'])->g
         Route::put('/academic-year-and-semester', [AcademicYearAndSemesterController::class, 'update'])->name('updateAcademicYearAndSemester');
     });
 
-    Route::middleware('permission:view_activity_logs')->group(function () {
+    Route::middleware(['permission:view_activity_logs'])->group(function () {
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activityLogs');
     });
 
-    Route::middleware('role:super_admin')->group(function () {
+    Route::middleware(['permission:view_accounts|create_accounts|update_accounts|delete_accounts', 'role:super_admin'])->group(function () {
         Route::get('/accounts', [AccountController::class, 'index'])->name('accounts');
+        Route::post('/accounts/create', [AccountController::class, 'create'])->name('createAccount');
+
     });
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

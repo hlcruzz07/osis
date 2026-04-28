@@ -334,6 +334,7 @@ class StudentRepo
 
     public function updateEducations(array $data)
     {
+        $student_ids = [];
         foreach ($data['educations'] as $education) {
 
             $educ = $this->education->findOrFail($education['id']);
@@ -341,7 +342,11 @@ class StudentRepo
             $educ->update(
                 $this->hashingService->appendHashValues($education, 'id')
             );
+
+            $student_ids[] = $educ->student_id;
         }
+
+        return $student_ids;
     }
 
 

@@ -3,13 +3,15 @@
 namespace App\Repositories;
 
 use App\Models\User;
+use App\Services\HashingService;
+use Carbon\Carbon;
 
 class UserRepo
 {
     /**
      * Create a new class instance.
      */
-    public function __construct(protected User $model)
+    public function __construct(protected User $model, protected HashingService $hashingService)
     {
         //
     }
@@ -22,8 +24,8 @@ class UserRepo
             $search = $filters['search'];
 
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
+                $q->where('hashed_name', 'like', "%{$this->hashingService->hashValue($search)}%")
+                    ->orWhere('hashed_email', 'like', "%{$this->hashingService->hashValue($search)}%")
                     ->orWhereHas('roles', function ($roleQuery) use ($search) {
                         $roleQuery->where('name', 'like', "%{$search}%");
                     });
@@ -54,5 +56,20 @@ class UserRepo
     }
 
 
+    public function create(array $data)
+    {
+        $user = $this->model->create([
+            'name' => $data['name'],
+            'hashed_name' => $this->hashingService->hashValue($data['name']),
+            'email' => $data['email'],
+            'hashed_email' => $this->hashingService->hashValue($data['email']),
+            'email_verified_at' => Carbon::now()
+        ]);
+
+        $user->assignRole($data['role']);
+        $user->givePermissionTo($data['permissions']);
+
+        return $user;
+    }
 
 }

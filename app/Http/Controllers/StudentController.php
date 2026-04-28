@@ -185,9 +185,13 @@ class StudentController extends Controller
         try {
             $this->studentRepo->updateStudentById($id, $request->all());
 
+            ActivityLog::log('update', "updated student information for id: $id", Auth::user()->email, request(), 'success');
+
             return back()->with('success', 'Student Information updated!');
 
         } catch (Exception $e) {
+
+            ActivityLog::log('update', "Failed to update student for id $id: " . $e->getMessage(), Auth::user()->email, request(), 'failed');
 
             Log::error("Failed to update student info for ID $id: " . $e->getMessage());
 
@@ -220,7 +224,7 @@ class StudentController extends Controller
 
             Log::error("Failed to export students: " . $e->getMessage());
 
-            ActivityLog::log('export', 'Failed to export students data', Auth::user()->email, request(), 'failed');
+            ActivityLog::log('export', 'Failed to export students data: ' . $e->getMessage(), Auth::user()->email, request(), 'failed');
 
             return response()->json([
                 'status' => 'error',
