@@ -69,13 +69,11 @@ export function AddAccountModal({
     open,
     setOpen,
     roles,
-    permissions,
     onReload,
 }: {
     open: boolean;
     setOpen: (open: boolean) => void;
     roles: RoleProps[];
-    permissions: PermissionProps[];
     onReload: () => void;
 }) {
     const { data, setData, processing, errors, post, clearErrors, reset } =
@@ -105,22 +103,13 @@ export function AddAccountModal({
         });
     };
 
-    const [permissionPopover, setPermissionPopover] = useState(false);
-
-    const togglePermission = (permission: string) => {
-        if (data.permissions.includes(permission)) {
-            setData(
-                'permissions',
-                data.permissions.filter((p) => p !== permission),
-            );
-        } else {
-            setData('permissions', [...data.permissions, permission]);
-        }
-    };
 
     return (
         <Dialog open={open || processing} onOpenChange={setOpen}>
-            <DialogContent>
+            <DialogContent
+                onInteractOutside={(e) => e.preventDefault()}
+                onEscapeKeyDown={(e) => e.preventDefault()}
+            >
                 <DialogHeader>
                     <DialogTitle>Add Account</DialogTitle>
                     <DialogDescription>
@@ -217,161 +206,6 @@ export function AddAccountModal({
 
                             <InputError message={errors['role']} />
                         </div>
-
-                        <div className="flex flex-col gap-3">
-                            <Label>Permissions</Label>
-                            <div className="relative flex items-center">
-                                <UserIcon
-                                    size={15}
-                                    className="absolute start-3"
-                                />
-                                <Popover
-                                    open={permissionPopover}
-                                    onOpenChange={setPermissionPopover}
-                                >
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            role="combobox"
-                                            aria-expanded={permissionPopover}
-                                            className="w-full justify-between border-2 ps-9!"
-                                        >
-                                            {data.permissions.length > 0
-                                                ? `Total: ${data.permissions.length}`
-                                                : 'Choose permissions'}
-                                            <ChevronsUpDown />
-                                        </Button>
-                                    </PopoverTrigger>
-
-                                    <PopoverContent
-                                        className="w-full p-0"
-                                        align="start"
-                                    >
-                                        <Command>
-                                            <div className="relative border">
-                                                <CommandInput
-                                                    placeholder="Search permissions..."
-                                                    className="h-9"
-                                                />
-
-                                                <div className="absolute top-1 right-1 flex items-center gap-1">
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                size="icon"
-                                                                variant={
-                                                                    data
-                                                                        .permissions
-                                                                        .length >
-                                                                    0
-                                                                        ? 'destructive'
-                                                                        : 'default'
-                                                                }
-                                                                className="size-6"
-                                                                onClick={() => {
-                                                                    if (
-                                                                        data
-                                                                            .permissions
-                                                                            .length >
-                                                                        0
-                                                                    ) {
-                                                                        setData(
-                                                                            'permissions',
-                                                                            [],
-                                                                        );
-                                                                        return;
-                                                                    }
-
-                                                                    setData(
-                                                                        'permissions',
-                                                                        permissions.map(
-                                                                            (
-                                                                                item,
-                                                                            ) =>
-                                                                                item.name,
-                                                                        ),
-                                                                    );
-                                                                }}
-                                                            >
-                                                                {data
-                                                                    .permissions
-                                                                    .length >
-                                                                0 ? (
-                                                                    <Shredder className="size-4" />
-                                                                ) : (
-                                                                    <CheckCheckIcon className="size-4" />
-                                                                )}
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>
-                                                                {data
-                                                                    .permissions
-                                                                    .length > 0
-                                                                    ? 'Deselect all'
-                                                                    : 'Select all'}
-                                                                permissions
-                                                            </p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </div>
-                                            </div>
-
-                                            <CommandList>
-                                                <CommandEmpty>
-                                                    No permissions found.
-                                                </CommandEmpty>
-
-                                                <CommandGroup>
-                                                    {permissions.map(
-                                                        (item: any) => (
-                                                            <CommandItem
-                                                                key={item.id}
-                                                                value={
-                                                                    item.name
-                                                                }
-                                                                onSelect={() =>
-                                                                    togglePermission(
-                                                                        item.name,
-                                                                    )
-                                                                }
-                                                            >
-                                                                {normalizeName(
-                                                                    item.name,
-                                                                )}
-
-                                                                <Check
-                                                                    className={cn(
-                                                                        'ml-auto',
-                                                                        data.permissions.includes(
-                                                                            item.name,
-                                                                        )
-                                                                            ? 'opacity-100'
-                                                                            : 'opacity-0',
-                                                                    )}
-                                                                />
-                                                            </CommandItem>
-                                                        ),
-                                                    )}
-                                                </CommandGroup>
-                                            </CommandList>
-                                        </Command>
-                                    </PopoverContent>
-                                </Popover>
-                            </div>
-
-                            <InputError message={errors['permissions']} />
-                        </div>
-
-                        {data.permissions.length > 0 && (
-                            <div className="flex flex-wrap gap-3">
-                                {data.permissions.map((item) => (
-                                    <Badge variant="secondary">
-                                        <Check /> {normalizeName(item)}
-                                    </Badge>
-                                ))}
-                            </div>
-                        )}
 
                         <div className="flex items-center justify-end gap-3">
                             <Button

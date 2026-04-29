@@ -39,7 +39,20 @@ class RolePermissionSeeder extends Seeder
             'delete_accounts',
             'create_accounts',
 
+            // Roles & Permisions
+            'view_roles',
+            'update_roles',
+            'create_roles',
+            'delete_roles',
 
+            'view_permissions',
+            'update_permissions',
+            'create_permissions',
+            'delete_permissions'
+        ];
+
+        $permissions = [
+           
         ];
 
         foreach ($permissions as $perm) {
@@ -56,7 +69,5 @@ class RolePermissionSeeder extends Seeder
             'view_activity_logs',
             'update_academic_year_and_semester'
         ]);
-        $user = User::findOrFail(1);
-        $user->assignRole('super_admin');
     }
 }

@@ -45,7 +45,7 @@ class AuthController extends Controller
                     request(),
                     'failed'
                 );
-                return redirect()->route('admin')->with('error', 'Account Unauthorize');
+                return redirect()->route('admin')->with('error', 'Invalid credentials');
             }
 
 

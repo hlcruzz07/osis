@@ -16,7 +16,7 @@ class ActivityLogController extends Controller
 
     public function index()
     {
-        $activityActionCount = cache()->remember('activity_actions_count', 60 * 60 * 24, fn() => $this->logRepo->getActivityActionsCount());
+        $activityActionCount = $this->logRepo->getActivityActionsCount();
 
         return Inertia::render('Admin/ActivityLogs/Index', [
             'activity_actions_count' => $activityActionCount,

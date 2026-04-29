@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Facades\ActivityLog;
 use App\Http\Requests\CreateAccountRequest;
+use App\Http\Requests\UpdateAccountRequest;
 use App\Models\User;
 use App\Repositories\UserRepo;
 use Exception;
@@ -22,12 +23,10 @@ class AccountController extends Controller
 
     public function index()
     {
-        $permissions = cache()->remember('permissions', 60 * 60 * 24, fn() => Permission::all());
-
-        $roles = cache()->remember('roles', 60 * 60 * 24, fn() => Role::all());
+        $roles = cache()->remember('roles', 600, fn() => Role::all());
 
         return Inertia::render('Admin/Accounts/Index', [
-            'permissions' => $permissions,
+            
             'roles' => $roles
         ]);
     }
@@ -46,18 +45,47 @@ class AccountController extends Controller
                 'success'
             );
 
-            return redirect()->route('accounts')->with('success', 'Account created successfully!');
+            return redirect()->back()->with('success', 'Account created successfully!');
         } catch (Exception $e) {
 
             ActivityLog::log(
                 'create',
-                'failed to add account' . $e->getMessage(),
+                'failed to add account: ' . $e->getMessage(),
                 Auth::user()->email,
                 request(),
                 'failed'
             );
 
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong, please try again.');
+        }
+    }
+
+    public function update(UpdateAccountRequest $request, int $id)
+    {
+        try {
+
+            $this->userRepo->update($request->all(), $id);
+
+            ActivityLog::log(
+                'update',
+                'updated account with an id number of: ' . $id,
+                Auth::user()->email,
+                request(),
+                'success'
+            );
+
+            return redirect()->back()->with('success', 'Account updated successfully!');
+        } catch (Exception $e) {
+
+            ActivityLog::log(
+                'update',
+                'failed to update account: ' . $e->getMessage(),
+                Auth::user()->email,
+                request(),
+                'failed'
+            );
+
+            return redirect()->back()->with('error', 'Something went wrong, please try again.');
         }
     }
 }

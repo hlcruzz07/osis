@@ -5,22 +5,23 @@ namespace App\Http\Requests;
 use App\Models\User;
 use App\Services\HashingService;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
-class CreateAccountRequest extends FormRequest
+class UpdateAccountRequest extends FormRequest
 {
-
-    public function __construct(protected HashingService $hashingService)
-    {
-
-    }
+    /**
+     * Determine if the user is authorized to make this request.
+     */
     public function authorize(): bool
     {
         return true;
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function __construct(protected HashingService $hashingService) {}
 
 
     public function rules(): array
@@ -31,14 +32,16 @@ class CreateAccountRequest extends FormRequest
                 'email',
                 function ($attribute, $value, $fail) {
                     $hashed = $this->hashingService->hashValue(strtolower($value));
+                    $id = $this->route('id');
 
-                    if (User::where('hashed_email', $hashed)->exists()) {
+                    if (User::where('hashed_email', $hashed)->where('id', '!=' , $id)->exists()) {
                         $fail('This email is already registered.');
                     }
                 },
             ],
             'name' => 'required|string|max:255',
             'role' => 'required|exists:roles,name',
+         
         ];
     }
     public function messages(): array
@@ -54,7 +57,7 @@ class CreateAccountRequest extends FormRequest
 
             'role.required' => 'Role is required.',
             'role.exists' => 'The selected role is invalid.',
+
         ];
     }
-
 }

@@ -29,7 +29,6 @@ import {
     PaginateActivityLogs,
 } from '@/types/activity-log';
 import TableFiltersActivityLogs from './TableFiltersActivityLogs';
-import { setTimeout } from 'timers/promises';
 import { Badge } from '@/components/ui/badge';
 import ActivityLogsWidget from '@/components/Widgets/ActivityLogsWidget';
 import TableLayout from '@/layouts/table-layout';
@@ -141,6 +140,7 @@ export default function Index() {
             });
         }
     };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Students" />

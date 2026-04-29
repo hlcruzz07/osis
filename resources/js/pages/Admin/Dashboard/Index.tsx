@@ -149,9 +149,6 @@ export default function Dashboard() {
     }, [dateFilter]);
 
     const [open, setOpen] = useState(false);
-    const { auth } = usePage().props;
-
-    console.log(auth.user);
 
     const formRef = useRef<HTMLFormElement | null>(null);
 

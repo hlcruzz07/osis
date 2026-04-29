@@ -40,10 +40,10 @@ import {
 import apiService from '@/lib/api-service';
 import { capitalizeString, handleErrors } from '@/lib/utils';
 import { exportStudents } from '@/routes';
-import { FilterDataUser } from '@/types';
 import { FilterDataActivityLog } from '@/types/activity-log';
 import { DropdownProps } from '@/types/entities/dropdowns';
 import { FilterData } from '@/types/filter-data';
+import { FilterDataRole, Permission } from '@/types/roles-permissions';
 import { router } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { isEqual } from 'lodash';
@@ -60,6 +60,7 @@ import {
     ChevronDownIcon,
     ChevronsLeftRight,
     GraduationCapIcon,
+    LockIcon,
     RefreshCwIcon,
     School2Icon,
     SearchIcon,
@@ -72,27 +73,24 @@ import {
 import { useEffect, useState } from 'react';
 import { DateRange } from 'react-day-picker';
 import { toast } from 'sonner';
-import { AddAccountModal } from './Modal/AddAccountModal';
-import { RoleProps } from '@/types/role';
-import { PermissionProps } from '@/types/permission';
-import { EditAccountModal } from './Modal/EditAccountModal';
+import { AddRoleModal } from './Modal/AddRoleModal';
 
 type FilterProps = {
-    data: FilterDataUser;
+    data: FilterDataRole;
     setFilter: (key: string, value: any) => void;
     total: number | null;
     onRefresh: () => void;
-    roles: RoleProps[];
-    
+    permissions: Permission[];
+    onReload: () => void;
 };
 
-export default function TableFilterAccounts({
+export default function TableFiltersRoles({
     data,
     setFilter,
-    onRefresh,
     total,
-    roles,
-   
+    onRefresh,
+    permissions,
+    onReload,
 }: FilterProps) {
     const [searchVal, setSearchVal] = useState('');
 
@@ -103,17 +101,14 @@ export default function TableFilterAccounts({
 
         return () => clearTimeout(timeout);
     }, [searchVal]);
-
-    const [openAddAccountModal, setOpenAddAccountModal] = useState(false);
-
+    const [openAddModal, setOpenAddModal] = useState(false);
     return (
         <>
-            <AddAccountModal
-                open={openAddAccountModal}
-                setOpen={setOpenAddAccountModal}
-                roles={roles}
-               
-                onReload={onRefresh}
+            <AddRoleModal
+                open={openAddModal}
+                setOpen={setOpenAddModal}
+                onReload={onReload}
+                permissions={permissions}
             />
 
             <div className="flex flex-col items-start justify-between gap-3 lg:flex-row">
@@ -128,30 +123,10 @@ export default function TableFilterAccounts({
                     </Tooltip>
 
                     <div className="animate-border-flow relative flex w-full items-center rounded-md bg-gradient-to-r from-emerald-400 via-[#2ca87f] to-emerald-900 bg-[length:300%_300%] p-[2px]">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <button
-                                    type="button"
-                                    className="absolute start-3 text-amber-500 hover:text-amber-600"
-                                >
-                                    <AlertCircleIcon size={15} />
-                                </button>
-                            </TooltipTrigger>
-
-                            <TooltipContent className="max-w-xs border border-amber-200 bg-amber-50 text-amber-900 shadow-md">
-                                <p className="text-xs leading-snug">
-                                    Search is case-sensitive because data is
-                                    encrypted for security purposes. Try
-                                    matching exact capitalization for best
-                                    results.
-                                </p>
-                            </TooltipContent>
-                        </Tooltip>
-
                         <Input
                             type="text"
-                            placeholder="Search action, description, email, ip address, browser..."
-                            className="rounded-md border-0 bg-white ps-9 focus-visible:ring-0 dark:bg-black"
+                            placeholder="Search roles..."
+                            className="rounded-md border-0 bg-white focus-visible:ring-0 dark:bg-black"
                             value={searchVal}
                             onChange={(e) => setSearchVal(e.target.value)}
                         />
@@ -211,23 +186,8 @@ export default function TableFilterAccounts({
                                                 <SelectItem value="id">
                                                     #
                                                 </SelectItem>
-                                                <SelectItem value="email">
-                                                    Email
-                                                </SelectItem>
-                                                <SelectItem value="action">
-                                                    Action
-                                                </SelectItem>
-                                                <SelectItem value="description">
-                                                    Description
-                                                </SelectItem>
-                                                <SelectItem value="ip_address">
-                                                    IP Address
-                                                </SelectItem>
-                                                <SelectItem value="browser">
-                                                    Browser
-                                                </SelectItem>
-                                                <SelectItem value="created_at">
-                                                    Date
+                                                <SelectItem value="name">
+                                                    Name
                                                 </SelectItem>
                                             </SelectGroup>
                                         </SelectContent>
@@ -269,11 +229,8 @@ export default function TableFilterAccounts({
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <Button
-                        type="button"
-                        onClick={() => setOpenAddAccountModal(true)}
-                    >
-                        <UserPlus2Icon /> Add Account
+                    <Button type="button" onClick={() => setOpenAddModal(true)}>
+                        <LockIcon /> Add Role
                     </Button>
                 </div>
             </div>

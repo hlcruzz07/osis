@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->text('avatar')->nullable();
             $table->text('name');
             $table->text('hashed_name');
-            $table->text('email')->unique();
+            $table->text('email');
             $table->text('hashed_email');
             $table->timestamp('email_verified_at')->nullable();
             $table->text('password')->nullable();
@@ -24,7 +24,7 @@ return new class extends Migration {
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->text('email')->primary();
+            $table->text('email');
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });

@@ -4,6 +4,8 @@ import {
     Folder,
     LayoutGrid,
     LogsIcon,
+    UserKey,
+    UserKeyIcon,
     Users,
     Users2Icon,
 } from 'lucide-react';
@@ -21,7 +23,7 @@ import {
 } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
-import { accounts, activityLogs, dashboard, students } from '@/routes';
+import { accounts, activityLogs, dashboard, roles, students } from '@/routes';
 
 const mainNavItems: NavItem[] = [
     {
@@ -48,14 +50,9 @@ const mainNavItems: NavItem[] = [
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        title: 'Roles & Permissions',
+        href: roles(),
+        icon: UserKeyIcon,
     },
 ];
 

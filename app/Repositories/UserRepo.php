@@ -52,7 +52,7 @@ class UserRepo
 
         $show = $filters['show'] ?? 10;
 
-        return $query->with('roles')->paginate($show);
+        return $query->with(['roles','permissions'])->paginate($show);
     }
 
 
@@ -67,9 +67,25 @@ class UserRepo
         ]);
 
         $user->assignRole($data['role']);
-        $user->givePermissionTo($data['permissions']);
 
         return $user;
     }
 
+    public function update(array $data, int $id)
+    {
+        $user = $this->model->findOrFail($id);
+
+        $user->update([
+            'name' => $data['name'],
+            'hashed_name' => $this->hashingService->hashValue($data['name']),
+            'email' => $data['email'],
+            'hashed_email' => $this->hashingService->hashValue($data['email']),
+            'email_verified_at' => Carbon::now()
+        ]);
+
+    
+        $user->syncRoles([$data['role']]);
+
+        return $user;
+    }
 }

@@ -1,15 +1,10 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
-import type {
-    BreadcrumbItem,
-    FilterDataUser,
-    PaginateUsers,
-    User,
-} from '@/types';
+import type { BreadcrumbItem } from '@/types';
 import {
-    accounts,
-    paginateAccounts,
+    roles,
+    paginateRoles,
     paginateStudents,
     students,
     viewStudent,
@@ -21,45 +16,69 @@ import { FilterData } from '@/types/filter-data';
 import { PaginateStudents } from '@/types/data-table';
 import apiService from '@/lib/api-service';
 import { Button } from '@/components/ui/button';
-import { UserLockIcon, UserPenIcon, UserSearchIcon } from 'lucide-react';
+import {
+    ChevronsLeftRight,
+    EllipsisVerticalIcon,
+    EyeIcon,
+    PenIcon,
+    UserPenIcon,
+    UserSearchIcon,
+} from 'lucide-react';
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { actionColor, handleErrors, sliceText } from '@/lib/utils';
+import {
+    actionColor,
+    handleErrors,
+    normalizeName,
+    sliceText,
+} from '@/lib/utils';
 import { toast } from 'sonner';
-import { FilterDataActivityLog } from '@/types/activity-log';
+import {
+    FilterDataActivityLog,
+    PaginateActivityLogs,
+} from '@/types/activity-log';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useInitials } from '@/hooks/use-initials';
-import TableFilterAccounts from './TableFilter';
 import TableLayout from '@/layouts/table-layout';
-import { AddAccountModal } from './Modal/AddAccountModal';
-import { PermissionProps } from '@/types/permission';
-import { RoleProps } from '@/types/role';
-import { EditAccountModal } from './Modal/EditAccountModal';
+import {
+    FilterDataRole,
+    PaginateRoles,
+    Permission,
+    Role,
+} from '@/types/roles-permissions';
+import TableFiltersActivityLogs from '../ActivityLogs/TableFiltersActivityLogs';
+import TableFiltersRoles from './TableFilterRoles';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Label } from '@/components/ui/label';
+import { EditRoleModal } from './Modal/EditRoleModal';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Accounts',
-        href: accounts().url,
+        title: 'Roles & Permissions',
+        href: roles().url,
     },
 ];
-
 type PageProps = {
-    roles: RoleProps[];
+    permissions: Permission[];
 };
 
 export default function Index() {
-    const { roles } = usePage<PageProps>().props;
+    const { permissions } = usePage<PageProps>().props;
 
-    const [accounts, setAccounts] = useState<PaginateUsers | null>(null);
+    const [roles, setRoles] = useState<PaginateRoles | null>(null);
 
-    const [filter, setFilter] = useState<FilterDataUser>({
+    const [filter, setFilter] = useState<FilterDataRole>({
         search: null,
-        role: null,
-        email: null,
         created_at_from: null,
         created_at_to: null,
         show: 10,
@@ -74,25 +93,23 @@ export default function Index() {
         }));
     };
 
-    const fetchAccountsData = async () => {
+    const fetchRolesData = async () => {
         try {
-            const { data } = await apiService.get(paginateAccounts().url, {
+            const { data } = await apiService.get(paginateRoles().url, {
                 params: filter,
             });
 
-            setAccounts(data);
-
-          
+            setRoles(data);
         } catch (error) {
-            console.error('Error fetching activity logs', error);
-            setAccounts(null);
-            toast.error('Something went wrong fetching activity logs.');
+            console.error('Error fetching roles logs', error);
+            setRoles(null);
+            toast.error('Something went wrong fetching roles logs.');
         }
     };
 
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
-            fetchAccountsData();
+            fetchRolesData();
         }, 500);
 
         return () => {
@@ -100,23 +117,18 @@ export default function Index() {
         };
     }, [filter]);
 
-    const getInitials = useInitials();
     const tableColumns = [
         '#',
-        'Picture',
         'Name',
-        'Email',
-        'Role',
-        'Date',
+        'Permissions',
+        'Total Permissions',
         'Action',
     ];
-
     const refresh = async () => {
         const toastId = 'refresh';
+
         setFilter({
             search: null,
-            role: null,
-            email: null,
             created_at_from: null,
             created_at_to: null,
             show: 10,
@@ -127,7 +139,7 @@ export default function Index() {
         toast.loading('Refreshing...', { id: toastId });
 
         try {
-            await fetchAccountsData();
+            await fetchRolesData();
 
             toast.success('Refreshed!', {
                 id: toastId,
@@ -139,31 +151,30 @@ export default function Index() {
         }
     };
 
-    const [openEditAccountModal, setOpenEditAccountModal] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
-
+    const [openEditRole, setOpenEditRole] = useState(false);
+    const [selectedRole, setSelectedRole] = useState<Role | null>(null);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Accounts" />
+            <Head title="Roles & Permissions" />
 
-            <EditAccountModal
-                open={openEditAccountModal}
-                setOpen={setOpenEditAccountModal}
-                roles={roles}
-               
-                onReload={fetchAccountsData}
-                user={selectedUser}
+            <EditRoleModal
+                open={openEditRole}
+                setOpen={setOpenEditRole}
+                onReload={fetchRolesData}
+                permissions={permissions}
+                role={selectedRole}
             />
+
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <TableLayout>
-                    <TableFilterAccounts
+                    <TableFiltersRoles
                         data={filter}
                         setFilter={updateFilter}
-                        total={accounts?.total ?? null}
+                        total={roles?.total ?? null}
                         onRefresh={refresh}
-                        roles={roles}
-            
+                        permissions={permissions}
+                        onReload={fetchRolesData}
                     />
 
                     <div className="relative mt-3 overflow-x-auto rounded-md lg:border">
@@ -178,63 +189,79 @@ export default function Index() {
                                 </tr>
                             </thead>
                             <tbody className="lg:border-b">
-                                {accounts?.data.map((row, index) => (
+                                {roles?.data.map((row, index) => (
                                     <tr
                                         key={index}
                                         className="hover:bg-muted/50"
                                     >
                                         <td data-label="ID">{row.id}</td>
 
-                                        <td data-label="Picture">
-                                            <Avatar className="size-8 overflow-hidden rounded-full">
-                                                <AvatarImage
-                                                    src={row.avatar}
-                                                    alt={row.name}
-                                                />
-                                                <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
-                                                    {getInitials(row.name)}
-                                                </AvatarFallback>
-                                            </Avatar>
+                                        <td data-label="Name">
+                                            {normalizeName(row.name)}
                                         </td>
-
-                                        <td data-label="Name">{row.name}</td>
-
-                                        <td data-label="Email">{row.email}</td>
-
-                                        <td data-label="Role">
-                                            {row.roles[0].name.toUpperCase()}
+                                        <td data-label="Permissions">
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => {}}
+                                                        type="button"
+                                                    >
+                                                        View permissions{' '}
+                                                        <EyeIcon />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent
+                                                    side="bottom"
+                                                    className="max-h-80 overflow-auto"
+                                                >
+                                                    <div className="flex flex-col gap-2 p-1">
+                                                        {row.permissions.map(
+                                                            (item) => (
+                                                                <p className="text-sm">
+                                                                    {normalizeName(
+                                                                        item.name,
+                                                                    )}
+                                                                </p>
+                                                            ),
+                                                        )}
+                                                    </div>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </td>
-
-                                        <td data-label="Date">
-                                            {dayjs(row.created_at).format(
-                                                `MMM D, YYYY - h:mm A`,
-                                            )}
+                                        <td data-label="Total Permissions">
+                                            <Badge variant="secondary">
+                                                {row.permissions.length}
+                                            </Badge>
                                         </td>
-
                                         <td data-label="Action">
-                                            <div className="flex items-center gap-2">
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button
-                                                            size="icon"
-                                                            variant="default"
-                                                            onClick={()=> {
-                                                                setOpenEditAccountModal(true)
-                                                                setSelectedUser(row)
-                                                            }}
-                                                        >
-                                                            <UserPenIcon className="size-4" />
-                                                        </Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>Edit Account</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </div>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="default"
+                                                        onClick={() => {
+                                                            setSelectedRole(
+                                                                row,
+                                                            );
+                                                            setOpenEditRole(
+                                                                true,
+                                                            );
+                                                        }}
+                                                    >
+                                                        <UserPenIcon className="size-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>
+                                                        Edit Role & Permissions
+                                                    </p>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </td>
                                     </tr>
                                 ))}
-                                {accounts?.data.length === 0 || !accounts ? (
+                                {roles?.data.length === 0 || !roles ? (
                                     <>
                                         <tr>
                                             <td
@@ -259,20 +286,20 @@ export default function Index() {
                                             <p className="text-sm text-muted-foreground">
                                                 Showing{' '}
                                                 <span className="font-medium">
-                                                    {accounts?.from}
+                                                    {roles?.from}
                                                 </span>
                                                 –
                                                 <span className="font-medium">
-                                                    {accounts?.to}
+                                                    {roles?.to}
                                                 </span>{' '}
                                                 of{' '}
                                                 <span className="font-medium">
-                                                    {accounts?.total}
+                                                    {roles?.total}
                                                 </span>
                                             </p>
 
                                             <div className="flex flex-wrap gap-2">
-                                                {accounts?.links?.map(
+                                                {roles?.links?.map(
                                                     (link, idx) => {
                                                         // Extract page number from link URL
                                                         let page:
@@ -306,7 +333,7 @@ export default function Index() {
                                                                             data,
                                                                         } =
                                                                             await apiService.get(
-                                                                                paginateAccounts()
+                                                                                paginateRoles()
                                                                                     .url,
                                                                                 {
                                                                                     params: {
@@ -316,7 +343,7 @@ export default function Index() {
                                                                                 },
                                                                             );
 
-                                                                        setAccounts(
+                                                                        setRoles(
                                                                             data,
                                                                         );
                                                                     } catch (error) {

@@ -18,13 +18,7 @@ class QuestionSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::create([
-            'avatar' => null,
-            'name' => "Harold Cruz",
-            'email' => 'haroldlyndon.cruz@chmsu.edu.ph',
-            'email_verified_at' => Carbon::now(),
-            'role' => 'admin',
-        ]);
+        $user = User::findOrFail(2);
         // Get or create an academic year
         $academicYear = AcademicYearAndSemester::first();
         if (!$academicYear) {

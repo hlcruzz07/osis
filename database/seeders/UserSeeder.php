@@ -42,14 +42,5 @@ class UserSeeder extends Seeder
 
         $user2->assignRole('super_admin');
 
-        $user2->givePermissionTo(Permission::all());
-
-        // admin gets limited permissions
-        $user->givePermissionTo([
-            'view_students',
-            'export_students',
-            'view_activity_logs',
-            'update_academic_year_and_semester'
-        ]);
     }
 }
