@@ -51,9 +51,11 @@ import {
     ArrowUpDownIcon,
     ArrowUpNarrowWide,
     BookOpenCheckIcon,
+    BookUserIcon,
     Calendar1Icon,
     CalendarCheck2Icon,
     CalendarIcon,
+    ChartCandlestickIcon,
     CheckIcon,
     ChevronDownIcon,
     ChevronsLeftRight,
@@ -105,6 +107,14 @@ export default function TableFilters({
         (item) => item.title === 'Campuses',
     )?.dropdowns;
 
+    const equityIndicatorArr = dropdowns.find(
+        (item) => item.title === 'Equity Indicator',
+    )?.dropdowns;
+
+    const studentStatusArr = dropdowns.find(
+        (item) => item.title === 'Student Status',
+    )?.dropdowns;
+
     const [searchVal, setSearchVal] = useState('');
     const [popover, setPopover] = useState(false);
 
@@ -122,9 +132,11 @@ export default function TableFilters({
         search: null,
         academic_year: null,
         semester: null,
+        equity_indicator: null,
         year_level: null,
         campus: null,
         course: null,
+        status: null,
         date_admitted_from: null,
         date_admitted_to: null,
         student_type: null,
@@ -228,7 +240,7 @@ export default function TableFilters({
 
                         <Input
                             type="text"
-                            placeholder="Search first name, last name, email, mobile number..."
+                            placeholder="Search reference #, first name, last name, email..."
                             className="rounded-md border-0 bg-white ps-8 focus-visible:ring-0 dark:bg-black"
                             value={searchVal}
                             onChange={(e) => setSearchVal(e.target.value)}
@@ -419,6 +431,37 @@ export default function TableFilters({
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline">
+                                <BookUserIcon />
+                                Equity Indicator
+                                {data.equity_indicator && (
+                                    <Badge>{data.equity_indicator}</Badge>
+                                )}
+                                <ChevronDownIcon />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                            {equityIndicatorArr?.map((item, index) => (
+                                <DropdownMenuCheckboxItem
+                                    key={index}
+                                    checked={data.equity_indicator === item}
+                                    onSelect={() => {
+                                        if (data.equity_indicator === item) {
+                                            setFilter('equity_indicator', null);
+                                            return;
+                                        }
+
+                                        setFilter('equity_indicator', item);
+                                    }}
+                                >
+                                    {item}
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
                                 <CalendarCheck2Icon />
                                 Year Level
                                 {data.year_level && (
@@ -554,6 +597,35 @@ export default function TableFilters({
                             </Command>
                         </PopoverContent>
                     </Popover>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                <ChartCandlestickIcon />
+                                Status
+                                {data.status && <Badge>{data.status}</Badge>}
+                                <ChevronDownIcon />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                            {studentStatusArr?.map((item, index) => (
+                                <DropdownMenuCheckboxItem
+                                    key={index}
+                                    checked={data.status === item}
+                                    onSelect={() => {
+                                        if (data.status === item) {
+                                            setFilter('status', null);
+                                            return;
+                                        }
+
+                                        setFilter('status', item);
+                                    }}
+                                >
+                                    {item}
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
 
                     <div className="flex items-center">
                         <DropdownMenu>

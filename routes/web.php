@@ -17,23 +17,31 @@ use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-Route::get("/", [StudentController::class, 'index'])->name('home');
+
 
 // Student Validations & Submission
+
 Route::middleware(['throttle:60,1'])->group(function () {
+
+    Route::get("/", [StudentController::class, 'index'])->name('home');
+
+    Route::get('/admin', [AuthController::class, 'index'])->name('admin');
+    Route::get('/auth/google/redirect', [AuthController::class, 'redirect'])->name('login');
+    Route::get('/auth/google/callback', [AuthController::class, 'callback']);
+
     Route::post('/student/validate/student-info', [StudentController::class, 'validateStudentInfo'])->name('validateStudentInfo');
     Route::post('/student/validate/student-address', [StudentController::class, 'validateAddress'])->name('validateAddress');
     Route::post('/student/validate/education', [StudentController::class, 'validateEducation'])->name('validateEducation');
     Route::post('/student/validate/family', [StudentController::class, 'validateFamily'])->name('validateFamily');
     Route::post('/student/validate/additional-info', [StudentController::class, 'validateAdditionalInfo'])->name('validateAdditionalInfo');
+
     Route::post('/student/store', [StudentController::class, 'store'])->name('storeStudent');
+
+    Route::get('/student/success', [StudentController::class, 'success'])->name('success');
 });
 
 // Admin Routes
 
-Route::get('/admin', [AuthController::class, 'index'])->name('admin');
-Route::get('/auth/google/redirect', [AuthController::class, 'redirect'])->name('login');
-Route::get('/auth/google/callback', [AuthController::class, 'callback']);
 
 // Auth
 Route::middleware(['custom.auth', 'throttle:60,1'])->group(function () {
@@ -53,10 +61,12 @@ Route::middleware(['custom.auth', 'throttle:60,1'])->group(function () {
 
     Route::middleware('permission:update_students')->group(function () {
         Route::put('/student/{id}/student', [StudentController::class, 'update'])->name('updateStudent');
+        Route::put('/student/{id}/status', [StudentController::class, 'updateStatus'])->name('updateStudentStatus');
         Route::put('/student/{id}/student-address', [AddressController::class, 'updateStudentAddress'])->name('updateStudentAddress');
         Route::put('/student/{id}/family-info', [FamilyInfoController::class, 'update'])->name('updateFamily');
         Route::put('/student/{id}/education', [EducationController::class, 'update'])->name('updateEducation');
         Route::put('/student/{id}/guardian', [GuardianController::class, 'update'])->name('updateGuardian');
+
     });
 
     Route::middleware('permission:create_students')->group(function () {
@@ -71,13 +81,13 @@ Route::middleware(['custom.auth', 'throttle:60,1'])->group(function () {
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activityLogs');
     });
 
-    Route::middleware(['permission:view_accounts|create_accounts|update_accounts|delete_accounts', 'role:super_admin'])->group(function () {
+    Route::middleware(['permission:view_accounts|create_accounts|update_accounts|delete_accounts', 'role:super_administrator'])->group(function () {
         Route::get('/accounts', [AccountController::class, 'index'])->name('accounts');
         Route::post('/accounts/create', [AccountController::class, 'create'])->name('createAccount');
         Route::put('/accounts/{id}/update', [AccountController::class, 'update'])->name('updateAccount');
     });
 
-    Route::middleware(['permission:view_roles|create_roles|update_roles|delete_roles', 'role:super_admin'])->group(function () {
+    Route::middleware(['permission:view_roles|create_roles|update_roles|delete_roles', 'role:super_administrator'])->group(function () {
         Route::get('/roles', [RoleController::class, 'index'])->name('roles');
         Route::post('/roles/create', [RoleController::class, 'create'])->name('createRole');
         Route::put('/roles/{id}/update', [RoleController::class, 'update'])->name('updateRole');

@@ -21,9 +21,13 @@ class FamilyInfoRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+
+
     public function rules(): array
     {
         $entityRepo = new EntityDropdownRepo();
+
+        // dd($this->all());
 
         $validHouseMonthlyIncome = $entityRepo->getDropdownsByTitle("Household Monthly Income");
         $validSuffixes = $entityRepo->getDropdownsByTitle("Suffix");
@@ -31,11 +35,11 @@ class FamilyInfoRequest extends FormRequest
         $validEducationalAttainment = $entityRepo->getDropdownsByTitle("Educational Attainment");
         $validLifeStatus = $entityRepo->getDropdownsByTitle("Life Status");
 
-
         $has_siblings = count($this->input('siblings', [])) > 0;
 
         return [
 
+            // FAMILY
             'family.family_size' => 'required|integer|min:1|max:25',
             'family.parent_martial_status' => ['required', 'max:50'],
             'family.nature_residence' => ['required', 'max:50'],
@@ -47,33 +51,25 @@ class FamilyInfoRequest extends FormRequest
 
             'family.ordinal_position' => 'required|max:50',
 
+            // SIBLINGS
             'siblings' => [
                 Rule::requiredIf($has_siblings),
                 'array',
             ],
 
-            'siblings.*.fname' => [
-                Rule::requiredIf($has_siblings),
-
-                'max:150'
-            ],
-
-            'siblings.*.lname' => [
-                Rule::requiredIf($has_siblings),
-
-                'max:150'
-            ],
-
+            'siblings.*.fname' => [Rule::requiredIf($has_siblings), 'max:150'],
+            'siblings.*.lname' => [Rule::requiredIf($has_siblings), 'max:150'],
             'siblings.*.gender' => [
                 Rule::requiredIf($has_siblings),
                 'string',
                 'in:Male,Female'
             ],
-
             'siblings.*.mname' => 'nullable|max:50',
             'siblings.*.suffix' => ['nullable', Rule::in($validSuffixes)],
 
-            // Guardians Inputs
+            // GUARDIANS BASIC INFO
+            'guardians' => ['array', 'required'],
+
             'guardians.*.fname' => 'required|string|max:50',
             'guardians.*.mname' => 'nullable|string|max:50',
             'guardians.*.lname' => 'required|string|max:50',
@@ -81,6 +77,8 @@ class FamilyInfoRequest extends FormRequest
 
             'guardians.*.birthdate' => 'required|date',
             'guardians.*.birthplace' => 'nullable|string|max:150',
+
+            // FIXED mobile validation (no required_if wildcard)
             'guardians.*.mobile_num' => [
                 'nullable',
                 'required_if:guardians.*.is_contact_person,true',
@@ -89,39 +87,30 @@ class FamilyInfoRequest extends FormRequest
                 'digits:10',
             ],
 
-            'guardians.*.religion' => [
-                'required',
-                Rule::in($validReligion)
-            ],
+            'guardians.*.religion' => ['required', Rule::in($validReligion)],
             'guardians.*.citizenship' => 'required|string|max:50',
+
             'guardians.*.highest_educ_attainment' => [
                 'required',
                 Rule::in($validEducationalAttainment),
-                'string'
             ],
-            'guardians.*.life_status' => ['required', 'string', Rule::in($validLifeStatus)],
-            'guardians.*.is_contact_person' => 'boolean',
-            'guardians' => [
-                function ($attribute, $value, $fail) {
-                    $count = collect($value)->where('is_contact_person', true)->count();
-                    if ($count !== 1) {
-                        $fail('Please choose atleast one person to be your contact person');
-                    }
-                }
-            ],
+
+            'guardians.*.life_status' => ['required', Rule::in($validLifeStatus)],
+
+            'guardians.*.is_contact_person' => ['boolean'],
+
+            // OTHER OPTIONAL FIELDS
             'guardians.*.occupation' => 'nullable|string|max:100',
             'guardians.*.cause_of_death' => 'nullable|string|max:100',
             'guardians.*.year_of_death' => 'nullable|digits:4',
 
-
-            // Address
+            // ADDRESS
             'guardians.*.address.island' => ['required', Rule::in(['Luzon', 'Visayas', 'Mindanao'])],
             'guardians.*.address.region' => 'required',
             'guardians.*.address.province' => 'required',
             'guardians.*.address.city' => 'required',
             'guardians.*.address.brgy' => 'required',
             'guardians.*.address.zip_code' => 'required|numeric|digits:4',
-
         ];
     }
 
@@ -160,6 +149,7 @@ class FamilyInfoRequest extends FormRequest
             'siblings.*.gender.in' => 'Sibling gender must be Male or Female.',
 
             // Guardians
+            'guardians.required' => 'Guardian is required. Please add atleast 1 guardian.',
             'guardians.*.fname.required' => 'Guardian first name is required.',
             'guardians.*.lname.required' => 'Guardian last name is required.',
             'guardians.*.birthdate.required' => 'Guardian birthdate is required.',
@@ -211,5 +201,24 @@ class FamilyInfoRequest extends FormRequest
         ];
     }
 
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $guardians = $this->input('guardians', []);
+
+            $count = collect($guardians)
+                ->where('is_contact_person', true)
+                ->count();
+
+            if ($count < 1) {
+                foreach ($guardians as $index => $guardian) {
+                    $validator->errors()->add(
+                        "guardians.$index.is_contact_person",
+                        'Please select at least one contact person.'
+                    );
+                }
+            }
+        });
+    }
 
 }

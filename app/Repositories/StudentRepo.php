@@ -9,6 +9,7 @@ use App\Models\Guardian;
 use App\Models\Sibling;
 use App\Models\Student;
 use App\Services\HashingService;
+use App\Services\ReferenceNumberService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 class StudentRepo
@@ -16,7 +17,7 @@ class StudentRepo
     /**
      * Create a new class instance.
      */
-    public function __construct(protected Student $model, protected Sibling $sibling, protected Guardian $guardian, protected Education $education, protected AnswerRepo $answerRepo, protected FamilyInfo $familyInfo, protected HashingService $hashingService)
+    public function __construct(protected Student $model, protected Sibling $sibling, protected Guardian $guardian, protected Education $education, protected AnswerRepo $answerRepo, protected FamilyInfo $familyInfo, protected HashingService $hashingService, protected ReferenceNumberService $referenceNumberService)
     {
     }
 
@@ -24,11 +25,12 @@ class StudentRepo
     // CREATE QUERIES
     public function storeStudent(array $data)
     {
-        $student = $this->model->create($this->hashingService->appendHashValues($data));
+        $student = $this->model->create(
+            $this->hashingService->appendHashValues($data)
+        );
 
         return $student->id;
     }
-
 
     // FETCH QUERIES
 
@@ -52,7 +54,8 @@ class StudentRepo
                     ->orWhere('mobile_num_hash', $search)
                     ->orWhere('fname_hash', $search)
                     ->orWhere('lname_hash', $search)
-                    ->orWhere('suffix_hash', $search);
+                    ->orWhere('suffix_hash', $search)
+                    ->orWhere('ref_number_hash', $search);
             });
 
         }
@@ -63,6 +66,10 @@ class StudentRepo
 
         if (!empty($filters['semester'])) {
             $query->where('semester_hash', $this->hashingService->hashValue($filters['semester']));
+        }
+
+        if (!empty($filters['equity_indicator'])) {
+            $query->where('equity_indicator_hash', $this->hashingService->hashValue($filters['equity_indicator']));
         }
 
         if (!empty($filters['year_level'])) {
@@ -76,6 +83,11 @@ class StudentRepo
         if (!empty($filters['course'])) {
             $query->where('course_hash', $this->hashingService->hashValue($filters['course']));
         }
+
+        if (!empty($filters['status'])) {
+            $query->where('status_hash', $this->hashingService->hashValue($filters['status']));
+        }
+
 
         if (!empty($filters['date_admitted_from']) && !empty($filters['date_admitted_to'])) {
             if ($filters['date_admitted_from'] === $filters['date_admitted_to']) {
@@ -112,7 +124,8 @@ class StudentRepo
                     ->orWhere('mobile_num_hash', $search)
                     ->orWhere('fname_hash', $search)
                     ->orWhere('lname_hash', $search)
-                    ->orWhere('suffix_hash', $search);
+                    ->orWhere('suffix_hash', $search)
+                    ->orWhere('ref_number_hash', $search);
             });
         }
 
@@ -122,6 +135,10 @@ class StudentRepo
 
         if (!empty($filters['semester'])) {
             $query->where('semester_hash', $this->hashingService->hashValue($filters['semester']));
+        }
+
+        if (!empty($filters['equity_indicator'])) {
+            $query->where('equity_indicator_hash', $this->hashingService->hashValue($filters['equity_indicator']));
         }
 
         if (!empty($filters['year_level'])) {
@@ -134,6 +151,10 @@ class StudentRepo
 
         if (!empty($filters['course'])) {
             $query->where('course_hash', $this->hashingService->hashValue($filters['course']));
+        }
+
+        if (!empty($filters['status'])) {
+            $query->where('status_hash', $this->hashingService->hashValue($filters['status']));
         }
 
         if (!empty($filters['created_at_from']) && !empty($filters['created_at_to'])) {
@@ -347,6 +368,17 @@ class StudentRepo
         }
 
         return $student_ids;
+    }
+
+    public function updateStudentStatus(int $id, array $data)
+    {
+        $student = $this->model->findOrFail($id);
+
+        $student->update(
+            $this->hashingService->appendHashValues($data)
+        );
+
+        return $student;
     }
 
 

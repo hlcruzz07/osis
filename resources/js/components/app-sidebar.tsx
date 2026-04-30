@@ -4,6 +4,8 @@ import {
     Folder,
     LayoutGrid,
     LogsIcon,
+    UserCog,
+    UserCog2Icon,
     UserKey,
     UserKeyIcon,
     Users,
@@ -24,6 +26,7 @@ import {
 import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
 import { accounts, activityLogs, dashboard, roles, students } from '@/routes';
+import ThemeButton from './ThemeButton';
 
 const mainNavItems: NavItem[] = [
     {
@@ -44,7 +47,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Accounts',
         href: accounts(),
-        icon: Users2Icon,
+        icon: UserCog,
     },
 ];
 

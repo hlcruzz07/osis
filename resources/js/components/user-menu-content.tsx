@@ -8,6 +8,7 @@ import {
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import type { User } from '@/types';
+import ThemeButton from './ThemeButton';
 
 type Props = {
     user: User;

@@ -37,6 +37,11 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 import {
     capitalizeString,
@@ -56,6 +61,7 @@ import {
     Building2,
     Calendar1Icon,
     Check,
+    CheckIcon,
     ChevronsUpDown,
     GraduationCap,
     MailIcon,
@@ -63,6 +69,7 @@ import {
     PhilippinePeso,
     RulerIcon,
     School,
+    StarIcon,
     Trash2Icon,
     UserPlus,
     WeightIcon,
@@ -127,10 +134,7 @@ export default function FamilyInfo({
 
     const [selectedGuardian, setSelectedGuardian] = useState<string>('');
 
-    const [selectedGuardians, setSelectedGuardians] = useState<string[]>([
-        'Father',
-        'Mother',
-    ]);
+    const [selectedGuardians, setSelectedGuardians] = useState<string[]>([]);
 
     useEffect(() => {
         const newSiblings = Array.from({ length: siblingCount }, () => ({
@@ -175,17 +179,13 @@ export default function FamilyInfo({
             );
             return;
         }
+
         setSelectedGuardians((prev) => [...prev, selectedGuardian]);
         setSelectedGuardian('');
         setData(`guardians.${data.guardians.length}.role`, selectedGuardian);
 
         toast.success(`${selectedGuardian} added.`);
     };
-
-    useEffect(() => {
-        setData(`guardians.${0}.role`, 'Father');
-        setData(`guardians.${1}.role`, 'Mother');
-    }, []);
 
     useEffect(() => {
         const siblingsArray = Array.from({ length: siblingCount }, () => ({
@@ -201,10 +201,10 @@ export default function FamilyInfo({
     }, [siblingCount]);
 
     const deleteMember = (memberToDelete: string) => {
-        if (memberToDelete === 'Father' || memberToDelete === 'Mother') {
-            toast.error('Father and Mother cannot be removed.');
-            return;
-        }
+        // if (memberToDelete === 'Father' || memberToDelete === 'Mother') {
+        //     toast.error('Father and Mother cannot be removed.');
+        //     return;
+        // }
         setSelectedGuardians((prev) =>
             prev.filter((member) => member !== memberToDelete),
         );
@@ -838,17 +838,33 @@ export default function FamilyInfo({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                {familyRoleArr
-                                    ?.filter(
-                                        (role) =>
-                                            role !== 'Other' &&
-                                            !selectedGuardians.includes(role),
-                                    )
-                                    .map((item, index) => (
-                                        <SelectItem key={index} value={item}>
-                                            {item}
-                                        </SelectItem>
-                                    ))}
+                                {familyRoleArr?.map((item, index) => (
+                                    <SelectItem
+                                        key={index}
+                                        value={item}
+                                        disabled={selectedGuardians.includes(
+                                            item,
+                                        )}
+                                    >
+                                        {item}
+
+                                        {(item === 'Father' ||
+                                            item === 'Mother') && (
+                                            <Tooltip>
+                                                <TooltipTrigger>
+                                                    <StarIcon color="yellow" />
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Favorite</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        )}
+
+                                        {selectedGuardians.includes(item) && (
+                                            <CheckIcon />
+                                        )}
+                                    </SelectItem>
+                                ))}
                             </SelectGroup>
                         </SelectContent>
                     </Select>
@@ -861,6 +877,8 @@ export default function FamilyInfo({
                         Add <UserPlus />
                     </Button>
                 </div>
+
+                <InputError message={errors['guardians']} />
             </div>
 
             {selectedGuardians.length > 0 &&
@@ -875,16 +893,14 @@ export default function FamilyInfo({
                                 description={`Please supply accurate and up-to-date information regarding the applicant’s ${member.toLocaleLowerCase()} for official records.`}
                             />
 
-                            {member !== 'Father' && member !== 'Mother' && (
-                                <Button
-                                    type="button"
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => deleteMember(member)}
-                                >
-                                    <Trash2Icon />
-                                </Button>
-                            )}
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => deleteMember(member)}
+                            >
+                                <Trash2Icon />
+                            </Button>
                         </div>
 
                         <TwoColumnInput>
@@ -1455,18 +1471,15 @@ export default function FamilyInfo({
                                             Is he/she your contact person?
                                         </FieldTitle>
                                         <InputError
-                                            message={errors['guardians']}
+                                            message={
+                                                errors[
+                                                    `guardians.${index}.is_contact_person`
+                                                ]
+                                            }
                                         />
                                     </FieldContent>
                                 </Field>
                             </FieldLabel>
-                            <InputError
-                                message={
-                                    errors[
-                                        `guardians.${index}.is_contact_person`
-                                    ]
-                                }
-                            />
                         </div>
 
                         <HeadingSmall

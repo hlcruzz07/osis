@@ -14,14 +14,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-
-
-
-        // $this->call(EntityDropdownSeeder::class);
+        $this->call(EntityDropdownSeeder::class);
         $this->call(RolePermissionSeeder::class);
-        // $this->call(UserSeeder::class);
- 
-        
-        // $this->call(QuestionSeeder::class);
+        $this->call(UserSeeder::class);
+        $this->call(QuestionSeeder::class);
+        $this->call(AcademicYearAndSemesterSeeder::class);
     }
 }

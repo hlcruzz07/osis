@@ -56,7 +56,7 @@ class AuthController extends Controller
 
             ActivityLog::log(
                 'login',
-                ($user->roles()->first()->name === 'super_admin' ? 'super admin' : 'admin') . ' has logged in',
+                ($user->roles()->first()->name === 'super_administrator' ? 'super administrator' : 'administrator') . ' has logged in',
                 $user->email,
                 request(),
                 'success'

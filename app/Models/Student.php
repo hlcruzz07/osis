@@ -11,6 +11,7 @@ class Student extends Model
         'semester',
         'lrn',
         'year_level',
+        'ref_number',
         'campus',
         'course',
         'date_admitted',
@@ -33,12 +34,14 @@ class Student extends Model
         'sexual_orient',
         'height',
         'weight',
+        'status',
 
 
         'academic_year_hash',
         'semester_hash',
         'lrn_hash',
         'year_level_hash',
+        'ref_number_hash',
         'campus_hash',
         'course_hash',
         'date_admitted_hash',
@@ -61,6 +64,7 @@ class Student extends Model
         'sexual_orient_hash',
         'height_hash',
         'weight_hash',
+        'status_hash'
 
     ];
     protected $casts
@@ -69,6 +73,7 @@ class Student extends Model
             'semester' => 'encrypted',
             'lrn' => 'encrypted',
             'year_level' => 'encrypted',
+            'ref_number' => 'encrypted',
             'campus' => 'encrypted',
             'course' => 'encrypted',
             'date_admitted' => 'encrypted',
@@ -91,6 +96,7 @@ class Student extends Model
             'sexual_orient' => 'encrypted',
             'height' => 'encrypted',
             'weight' => 'encrypted',
+            'status' => 'encrypted'
         ];
 
 

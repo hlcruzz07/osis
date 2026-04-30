@@ -27,7 +27,12 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { actionColor, handleErrors, sliceText } from '@/lib/utils';
+import {
+    actionColor,
+    handleErrors,
+    normalizeName,
+    sliceText,
+} from '@/lib/utils';
 import { toast } from 'sonner';
 import { FilterDataActivityLog } from '@/types/activity-log';
 import { Badge } from '@/components/ui/badge';
@@ -81,8 +86,6 @@ export default function Index() {
             });
 
             setAccounts(data);
-
-          
         } catch (error) {
             console.error('Error fetching activity logs', error);
             setAccounts(null);
@@ -142,7 +145,6 @@ export default function Index() {
     const [openEditAccountModal, setOpenEditAccountModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Accounts" />
@@ -151,7 +153,6 @@ export default function Index() {
                 open={openEditAccountModal}
                 setOpen={setOpenEditAccountModal}
                 roles={roles}
-               
                 onReload={fetchAccountsData}
                 user={selectedUser}
             />
@@ -163,7 +164,6 @@ export default function Index() {
                         total={accounts?.total ?? null}
                         onRefresh={refresh}
                         roles={roles}
-            
                     />
 
                     <div className="relative mt-3 overflow-x-auto rounded-md lg:border">
@@ -202,7 +202,7 @@ export default function Index() {
                                         <td data-label="Email">{row.email}</td>
 
                                         <td data-label="Role">
-                                            {row.roles[0].name.toUpperCase()}
+                                            {normalizeName(row.roles[0].name)}
                                         </td>
 
                                         <td data-label="Date">
@@ -218,9 +218,13 @@ export default function Index() {
                                                         <Button
                                                             size="icon"
                                                             variant="default"
-                                                            onClick={()=> {
-                                                                setOpenEditAccountModal(true)
-                                                                setSelectedUser(row)
+                                                            onClick={() => {
+                                                                setOpenEditAccountModal(
+                                                                    true,
+                                                                );
+                                                                setSelectedUser(
+                                                                    row,
+                                                                );
                                                             }}
                                                         >
                                                             <UserPenIcon className="size-4" />

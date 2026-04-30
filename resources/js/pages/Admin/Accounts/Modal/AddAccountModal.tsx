@@ -61,7 +61,7 @@ import { useState } from 'react';
 type FormData = {
     email: string;
     name: string;
-    role: 'admin' | 'super_admin' | null;
+    role: 'administrator' | 'super_administrator' | null;
     permissions: string[];
 };
 
@@ -102,7 +102,6 @@ export function AddAccountModal({
             },
         });
     };
-
 
     return (
         <Dialog open={open || processing} onOpenChange={setOpen}>
@@ -181,7 +180,9 @@ export function AddAccountModal({
                                     value={data.role ?? ''}
                                     name="role"
                                     onValueChange={(
-                                        value: 'admin' | 'super_admin',
+                                        value:
+                                            | 'administrator'
+                                            | 'super_administrator',
                                     ) => {
                                         setData('role', value);
                                     }}

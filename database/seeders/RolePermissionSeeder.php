@@ -16,8 +16,8 @@ class RolePermissionSeeder extends Seeder
     public function run()
     {
         // roles
-        $admin = Role::create(['name' => 'admin']);
-        $superAdmin = Role::create(['name' => 'super_admin']);
+        $admin = Role::create(['name' => 'administrator']);
+        $superAdmin = Role::create(['name' => 'super_administrator']);
 
         // permissions
         $permissions = [
@@ -49,10 +49,6 @@ class RolePermissionSeeder extends Seeder
             'update_permissions',
             'create_permissions',
             'delete_permissions'
-        ];
-
-        $permissions = [
-           
         ];
 
         foreach ($permissions as $perm) {

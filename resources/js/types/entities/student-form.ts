@@ -19,6 +19,8 @@ export type StudentFormProps = {
         | 'address'
         | 'answers'
         | 'sub_answers'
+        | 'ref_number'
+        | 'status'
     >;
     address: AddressProps;
     educations: EducationProps[];

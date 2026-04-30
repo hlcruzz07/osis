@@ -18,16 +18,7 @@ class QuestionSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::findOrFail(2);
-        // Get or create an academic year
-        $academicYear = AcademicYearAndSemester::first();
-        if (!$academicYear) {
-            $academicYear = AcademicYearAndSemester::create([
-                'academic_year' => '2025-2026',
-                'semester' => '1st Semester',
-            ]);
-        }
-
+        $user = User::findOrFail(1);
         // Question 1: Study Place at Home
         $question1 = Question::create([
             'user_id' => $user->id,

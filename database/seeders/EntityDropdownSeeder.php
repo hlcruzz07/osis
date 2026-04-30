@@ -10,7 +10,11 @@ class EntityDropdownSeeder extends Seeder
     public function run(): void
     {
         $dropdowns = [
-
+            'Student Status' => [
+                'Pending',
+                'Declined',
+                'Accepted'
+            ],
             'Year Levels' => [
                 'First Year',
                 'Second Year',
@@ -203,6 +207,8 @@ class EntityDropdownSeeder extends Seeder
                 'Aunt',
                 'Friend',
             ],
+
+
         ];
 
         foreach ($dropdowns as $title => $values) {

@@ -1,8 +1,13 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { paginateStudents, students, viewStudent } from '@/routes';
+import {
+    paginateStudents,
+    students,
+    updateStudentStatus,
+    viewStudent,
+} from '@/routes';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 
@@ -11,17 +16,34 @@ import { FilterData } from '@/types/filter-data';
 import { PaginateStudents } from '@/types/data-table';
 import apiService from '@/lib/api-service';
 import { Button } from '@/components/ui/button';
-import { UserSearchIcon } from 'lucide-react';
+import {
+    CheckIcon,
+    ClockIcon,
+    SlidersHorizontalIcon,
+    UserSearchIcon,
+    XIcon,
+} from 'lucide-react';
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { handleErrors } from '@/lib/utils';
+import { handleErrors, sliceText } from '@/lib/utils';
 import { toast } from 'sonner';
 import { DropdownProps } from '@/types/entities/dropdowns';
 import TableLayout from '@/layouts/table-layout';
 import StudentsWidget from '@/components/Widgets/StudentsWidget';
+import { Badge } from '@/components/ui/badge';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuShortcut,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -52,9 +74,11 @@ export default function Index() {
         search: null, // for fullname, email, mobile_num
         academic_year: null,
         semester: null,
+        equity_indicator: null,
         year_level: null,
         campus: null,
         course: null,
+        status: null,
         date_admitted_from: null,
         date_admitted_to: null,
         student_type: null,
@@ -76,6 +100,8 @@ export default function Index() {
                 params: filter,
             });
 
+            console.log(filter);
+
             setStudents(data);
         } catch (error) {
             console.error('Error fetching students', error);
@@ -90,15 +116,16 @@ export default function Index() {
 
     const tableColumns = [
         '#',
+        'Reference #',
+        'Equity Indicator',
         'Name',
-        'Email',
         'Year Level',
         'Type',
         'Campus',
         'Course',
-        'Mobile #',
         'Academic Year',
         'Semester',
+        'Status',
         'Date',
         'Action',
     ];
@@ -109,9 +136,11 @@ export default function Index() {
             search: null,
             academic_year: null,
             semester: null,
+            equity_indicator: null,
             year_level: null,
             campus: null,
             course: null,
+            status: null,
             date_admitted_from: null,
             date_admitted_to: null,
             student_type: null,
@@ -132,6 +161,22 @@ export default function Index() {
             toast.error('Failed to refresh', {
                 id: toastId,
             });
+        }
+    };
+
+    const updateStatus = async (studentId: number, status: string) => {
+        try {
+            router.put(updateStudentStatus(studentId).url, {
+                status,
+            });
+            fetchStudentsData();
+
+            toast.success(
+                `Student's status updated to ${status.toLowerCase()}`,
+            );
+        } catch (error) {
+            console.error('Error updating student status', error);
+            toast.error('Failed to update student status');
         }
     };
 
@@ -169,7 +214,9 @@ export default function Index() {
                         academic_years={academic_years}
                         semesters={semesters}
                         total={students?.total ?? null}
-                        onRefresh={refresh}
+                        onRefresh={() => {
+                            refresh();
+                        }}
                     />
 
                     <div className="relative mt-3 overflow-x-auto rounded-md lg:border">
@@ -190,11 +237,34 @@ export default function Index() {
                                         className="hover:bg-muted/50"
                                     >
                                         <td data-label="ID">{row.id}</td>
+                                        <td data-label="Reference #">
+                                            {row.ref_number}
+                                        </td>
+                                        <td data-label="Equity Indicator">
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <p>
+                                                        {sliceText(
+                                                            row.equity_indicator,
+                                                            20,
+                                                        )}
+                                                    </p>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>
+                                                        {row.equity_indicator}
+                                                    </p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </td>
 
                                         <td data-label="Name">
-                                            {`${row.fname} ${row.mname ? row.mname.slice(0, 1) + '.' : ''} ${row.lname} ${row.suffix ? row.suffix + '.' : ''}`}
+                                            <div className="flex flex-col">
+                                                <b>{`${row.fname} ${row.mname ? row.mname.slice(0, 1) + '.' : ''} ${row.lname} ${row.suffix ? row.suffix + '.' : ''}`}</b>
+                                                <small>{row.email ?? ''}</small>
+                                            </div>
                                         </td>
-                                        <td data-label="Email">{row.email}</td>
+
                                         <td data-label="Year Level">
                                             {row.year_level}
                                         </td>
@@ -208,16 +278,34 @@ export default function Index() {
                                             {row.course}
                                         </td>
 
-                                        <td data-label="Mobile #">
-                                            {row.mobile_num}
-                                        </td>
-
                                         <td data-label="Academic Year">
                                             {row.academic_year}
                                         </td>
 
                                         <td data-label="Semester">
                                             {row.semester}
+                                        </td>
+
+                                        <td data-label="Status">
+                                            <div className="relative">
+                                                <Badge
+                                                    variant={
+                                                        row.status === 'Pending'
+                                                            ? 'outline'
+                                                            : row.status ===
+                                                                'Accepted'
+                                                              ? 'secondary'
+                                                              : 'destructive'
+                                                    }
+                                                    className={
+                                                        row.status === 'Pending'
+                                                            ? 'bg-blue-500 text-white'
+                                                            : ''
+                                                    }
+                                                >
+                                                    {row.status.toUpperCase()}
+                                                </Badge>
+                                            </div>
                                         </td>
 
                                         <td data-label="Date">
@@ -237,7 +325,10 @@ export default function Index() {
                                                                 ).url
                                                             }
                                                         >
-                                                            <Button size="sm">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                            >
                                                                 <UserSearchIcon />
                                                             </Button>
                                                         </Link>
@@ -246,6 +337,101 @@ export default function Index() {
                                                         <p>View Student</p>
                                                     </TooltipContent>
                                                 </Tooltip>
+
+                                                <DropdownMenu>
+                                                    <Tooltip>
+                                                        <TooltipTrigger>
+                                                            <DropdownMenuTrigger
+                                                                asChild
+                                                            >
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                >
+                                                                    <SlidersHorizontalIcon />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                        </TooltipTrigger>
+
+                                                        <TooltipContent>
+                                                            <p>Change Status</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuGroup>
+                                                            <DropdownMenuItem
+                                                                className={
+                                                                    row.status ===
+                                                                    'Accepted'
+                                                                        ? 'bg-muted font-semibold'
+                                                                        : ''
+                                                                }
+                                                                disabled={
+                                                                    row.status ===
+                                                                    'Accepted'
+                                                                }
+                                                                onClick={() =>
+                                                                    updateStatus(
+                                                                        row.id!,
+                                                                        'Accepted',
+                                                                    )
+                                                                }
+                                                            >
+                                                                Accepted
+                                                                <DropdownMenuShortcut>
+                                                                    <CheckIcon />
+                                                                </DropdownMenuShortcut>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                className={
+                                                                    row.status ===
+                                                                    'Pending'
+                                                                        ? 'bg-muted font-semibold'
+                                                                        : ''
+                                                                }
+                                                                disabled={
+                                                                    row.status ===
+                                                                    'Pending'
+                                                                }
+                                                                onClick={() =>
+                                                                    updateStatus(
+                                                                        row.id!,
+                                                                        'Pending',
+                                                                    )
+                                                                }
+                                                            >
+                                                                Pending
+                                                                <DropdownMenuShortcut>
+                                                                    <ClockIcon />
+                                                                </DropdownMenuShortcut>
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem
+                                                                className={
+                                                                    row.status ===
+                                                                    'Declined'
+                                                                        ? 'bg-muted font-semibold'
+                                                                        : ''
+                                                                }
+                                                                disabled={
+                                                                    row.status ===
+                                                                    'Declined'
+                                                                }
+                                                                onClick={() =>
+                                                                    updateStatus(
+                                                                        row.id!,
+                                                                        'Declined',
+                                                                    )
+                                                                }
+                                                            >
+                                                                Decline
+                                                                <DropdownMenuShortcut>
+                                                                    <XIcon />
+                                                                </DropdownMenuShortcut>
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuGroup>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </div>
                                         </td>
                                     </tr>

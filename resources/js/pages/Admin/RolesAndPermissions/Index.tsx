@@ -206,6 +206,7 @@ export default function Index() {
                                                         variant="outline"
                                                         onClick={() => {}}
                                                         type="button"
+                                                        size="sm"
                                                     >
                                                         View permissions{' '}
                                                         <EyeIcon />
@@ -240,6 +241,10 @@ export default function Index() {
                                                     <Button
                                                         size="icon"
                                                         variant="default"
+                                                        disabled={
+                                                            row.name ===
+                                                            'super_administrator'
+                                                        }
                                                         onClick={() => {
                                                             setSelectedRole(
                                                                 row,

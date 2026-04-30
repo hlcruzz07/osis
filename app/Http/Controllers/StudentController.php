@@ -26,7 +26,10 @@ use App\Repositories\AnswerRepo;
 use App\Repositories\GuardianRepo;
 use App\Repositories\QuestionRepo;
 use App\Repositories\StudentRepo;
+use App\Services\ReferenceNumberService;
 use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -39,7 +42,7 @@ class StudentController extends Controller
      * Display a listing of the resource.
      */
 
-    public function __construct(protected StudentRepo $studentRepo, protected QuestionRepo $questionRepo, protected AcademicYearAndSemesterRepo $academicYearAndSemesterRepo, protected AnswerRepo $answerRepo)
+    public function __construct(protected StudentRepo $studentRepo, protected QuestionRepo $questionRepo, protected AcademicYearAndSemesterRepo $academicYearAndSemesterRepo, protected AnswerRepo $answerRepo, protected ReferenceNumberService $referenceNumberService)
     {
     }
 
@@ -47,15 +50,11 @@ class StudentController extends Controller
 
     public function index()
     {
-        $questions = cache()->remember('student_active_questions', 600, function () {
-            return $this->questionRepo->getActive();
-        });
+        $questions = $this->questionRepo->getActive();
 
-        $academic_year_and_semester = cache()->remember('latest_academic_year_semester', 600, function () {
-            return $this->academicYearAndSemesterRepo->getLatest();
-        });
+        $academic_year_and_semester = $this->academicYearAndSemesterRepo->getLatest();
 
-        $dropdowns = cache()->remember('entity_dropdowns_all', 3600, function () {
+        $dropdowns = cache()->remember('entity_dropdowns_all', 600, function () {
             return EntityDropdown::all();
         });
 
@@ -64,6 +63,7 @@ class StudentController extends Controller
             'academic_year_and_semester' => $academic_year_and_semester,
             'dropdowns' => $dropdowns,
         ]);
+
     }
 
     public function validateStudentInfo(StudentInfoRequest $request)
@@ -97,7 +97,13 @@ class StudentController extends Controller
 
             $data = $request->all();
 
-            $student_data = data_get($data, 'student');
+            $randNumber = $this->referenceNumberService->generate();
+
+            $student_data = array_merge(data_get($data, 'student'), [
+                'ref_number' => $randNumber,
+                'status' => 'Pending'
+            ]);
+
             $address_data = data_get($data, 'address');
             $educations_data = data_get($data, 'educations');
             $family_data = data_get($data, 'family');
@@ -127,7 +133,15 @@ class StudentController extends Controller
                 'sub_answers' => $student_sub_answers,
             ]);
 
-            return back()->with('success', 'Student successfully submitted!');
+            $success_data = Arr::only($student_data, [
+                'ref_number',
+                'mname',
+                'fname',
+                'lname',
+                'suffix',
+            ]);
+
+            return redirect()->route('success')->with('success_data', $success_data);
 
         } catch (Exception $e) {
 
@@ -137,29 +151,29 @@ class StudentController extends Controller
         }
     }
 
+    public function success()
+    {
+        return Inertia::render('Student/Success/Index', [
+            'success_data' => session('success_data'),
+        ]);
+    }
+
+
     //ADMIN SIDE
 
     public function students()
     {
-        $academicYears = Cache::remember('academic_years', 3600, function () {
-            return Student::select('academic_year')
-                ->distinct()
-                ->pluck('academic_year');
-        });
+        $academicYears = Student::select('academic_year')
+            ->distinct()
+            ->pluck('academic_year');
 
-        $semesters = Cache::remember('semesters', 3600, function () {
-            return Student::select('semester')
-                ->distinct()
-                ->pluck('semester');
-        });
+        $semesters = Student::select('semester')
+            ->distinct()
+            ->pluck('semester');
 
-        $dropdowns = Cache::remember('entity_dropdowns', 3600, function () {
-            return EntityDropdown::all();
-        });
+        $dropdowns = EntityDropdown::all();
 
-        $student_type_count = Cache::remember('student_type_count', 3600, function () {
-            return $this->studentRepo->getStudentTypeCount();
-        });
+        $student_type_count = $this->studentRepo->getStudentTypeCount();
 
         return Inertia::render('Admin/Students/Index', [
             'dropdowns' => $dropdowns,
@@ -230,6 +244,31 @@ class StudentController extends Controller
                 'status' => 'error',
                 'message' => 'Something went wrong'
             ], 500);
+        }
+    }
+
+    public function updateStatus(Request $request, int $id)
+    {
+        try {
+            $validated = $request->validate([
+                'status' => 'required|in:Pending,Accepted,Declined'
+            ]);
+
+            $student = $this->studentRepo->updateStudentById($id, $validated);
+
+            $updated_status = $student['status'];
+
+            ActivityLog::log('update', "updated student's status to $updated_status for id: $id", Auth::user()->email, request(), 'success');
+
+            return back()->with('success', "Student's Status updated!");
+
+        } catch (Exception $e) {
+
+            ActivityLog::log('update', "Failed to update student's status for id $id: " . $e->getMessage(), Auth::user()->email, request(), 'failed');
+
+            Log::error("Failed to update student's status for ID $id: " . $e->getMessage());
+
+            return back()->with('error', 'Something went wrong, please try again.');
         }
     }
 

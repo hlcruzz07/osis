@@ -30,6 +30,8 @@ class StudentFilterRequest extends FormRequest
         $validCampuses = $entityRepo->getDropdownsByTitle("Campuses");
         $validCourses = $entityRepo->getDropdownsByTitle("Courses");
         $validStudentType = $entityRepo->getDropdownsByTitle("Student Type");
+        $validEquityIndicator = $entityRepo->getDropdownsByTitle("Equity Indicator");
+        $validStudentStatus = $entityRepo->getDropdownsByTitle("Student Status");
 
 
         return [
@@ -37,8 +39,10 @@ class StudentFilterRequest extends FormRequest
             'academic_year' => ['nullable', 'string'],
             'semester' => ['nullable', 'string'],
             'year_level' => 'nullable|string|max:20',
+            'equity_indicator' => ['nullable', Rule::in($validEquityIndicator)],
             'campus' => ['nullable', 'string', Rule::in($validCampuses)],
             'course' => ['nullable', 'string', Rule::in($validCourses)],
+            'status' => ['nullable', 'string', Rule::in($validStudentStatus)],
             'date_admitted_from' => 'nullable|date',
             'date_admitted_to' => 'nullable|date',
             'student_type' => ['nullable', 'string', Rule::in($validStudentType)],

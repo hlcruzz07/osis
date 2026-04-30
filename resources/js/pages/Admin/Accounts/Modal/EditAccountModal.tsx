@@ -63,8 +63,7 @@ import { toast } from 'sonner';
 type FormData = {
     email: string;
     name: string;
-    role: 'admin' | 'super_admin' | null;
-    permissions: string[];
+    role: any;
 };
 
 export function EditAccountModal({
@@ -80,17 +79,15 @@ export function EditAccountModal({
     onReload: () => void;
     user: User | null;
 }) {
-
-    if(!user && open) {
-        toast.error('No selected user found')
+    if (!user && open) {
+        toast.error('No selected user found');
         return;
     }
     const { data, setData, processing, errors, put, clearErrors, reset } =
         useForm<FormData>({
             email: user?.email || '',
             name: user?.name || '',
-            role: (user?.roles[0]?.name as 'admin' | 'super_admin') ?? null,
-            permissions: user?.permissions.map((item) => item.name) || [],
+            role: (user?.roles[0]?.name as any) ?? null,
         });
 
     const handleForm = (e: React.FormEvent) => {
@@ -98,7 +95,7 @@ export function EditAccountModal({
 
         if (processing) return;
 
-        if(!user || !user.id) return
+        if (!user || !user.id) return;
 
         put(updateAccount(user.id).url, {
             preserveScroll: true,
@@ -114,36 +111,21 @@ export function EditAccountModal({
         });
     };
 
-    const [permissionPopover, setPermissionPopover] = useState(false);
-
-    const togglePermission = (permission: string) => {
-        if (data.permissions.includes(permission)) {
-            setData(
-                'permissions',
-                data.permissions.filter((p) => p !== permission),
-            );
-        } else {
-            setData('permissions', [...data.permissions, permission]);
-        }
-    };
-
-    useEffect(()=> {
-        if(!user) return
+    useEffect(() => {
+        if (!user) return;
         setData({
             email: user?.email || '',
             name: user?.name || '',
-            role: (user?.roles[0]?.name as 'admin' | 'super_admin') ?? null,
-            permissions: user?.permissions.map((item) => item.name) || [],
+            role: user?.roles[0]?.name,
         });
-    }, [user])
-
+    }, [user]);
 
     return (
         <Dialog open={open || processing} onOpenChange={setOpen}>
             <DialogContent
                 onInteractOutside={(e) => e.preventDefault()}
                 onEscapeKeyDown={(e) => e.preventDefault()}
-                >
+            >
                 <DialogHeader>
                     <DialogTitle>Edit Account</DialogTitle>
                     <DialogDescription>
@@ -214,11 +196,13 @@ export function EditAccountModal({
                                 <Select
                                     value={data.role ?? ''}
                                     name="role"
-                                    onValueChange={(
-                                        value: 'admin' | 'super_admin',
-                                    ) => {
+                                    onValueChange={(value: any) => {
                                         setData('role', value);
                                     }}
+                                    disabled={
+                                        user?.roles[0].name ===
+                                        'super_administrator'
+                                    }
                                 >
                                     <SelectTrigger className="ps-9">
                                         <SelectValue placeholder="Choose an option" />
@@ -241,15 +225,12 @@ export function EditAccountModal({
                             <InputError message={errors['role']} />
                         </div>
 
-                        
-
                         <div className="flex items-center justify-end gap-3">
                             <Button
                                 type="button"
                                 onClick={() => {
                                     setOpen(false);
                                     clearErrors();
-                                   
                                 }}
                                 variant="outline"
                             >

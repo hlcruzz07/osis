@@ -120,34 +120,6 @@ export default function Index() {
         );
         setData('student.semester', academic_year_and_semester.semester);
 
-        const guardians = Array.from({ length: 2 }, (_, i) => ({
-            fname: '',
-            mname: null,
-            lname: '',
-            suffix: null,
-            role: i === 0 ? 'Father' : 'Mother',
-            birthdate: '',
-            birthplace: null,
-            mobile_num: null,
-            religion: '',
-            citizenship: '',
-            highest_educ_attainment: '',
-            cause_of_death: null,
-            year_of_death: null,
-            life_status: '',
-            occupation: null,
-            is_contact_person: false,
-            address: {
-                island: '',
-                region: '',
-                province: '',
-                city: '',
-                brgy: '',
-                zip_code: null,
-            },
-        }));
-        setData('guardians', guardians);
-
         const educations = Array.from({ length: 3 }, (_, i) => ({
             education_level:
                 i === 0
@@ -171,7 +143,6 @@ export default function Index() {
     }, []);
 
     const [step, setStep] = useState(1);
-    const { appearance } = useAppearance();
     const formRef = useRef<HTMLFormElement>(null);
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -301,13 +272,6 @@ export default function Index() {
     return (
         <>
             <ThemeButton />
-
-            <Toaster
-                closeButton
-                position="top-center"
-                richColors
-                theme={appearance}
-            />
 
             <CancelAlertModal
                 isOpen={openCancelModal}

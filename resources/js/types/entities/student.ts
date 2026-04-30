@@ -9,6 +9,7 @@ export type StudentProps = {
     academic_year: string;
     semester: string;
     lrn: string | null;
+    ref_number: string;
     year_level: string;
     campus: string;
     course: string;
@@ -33,6 +34,7 @@ export type StudentProps = {
     sexual_orient: string;
     height: string;
     weight: string;
+    status: string;
 
     family_info: FamilyProps;
 

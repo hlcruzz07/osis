@@ -2,6 +2,11 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
 import ThemeButton from './ThemeButton';
+import { usePage } from '@inertiajs/react';
+import { normalizeName } from '@/lib/utils';
+import { Badge } from './ui/badge';
+import { UserLockIcon } from 'lucide-react';
+import { Button } from './ui/button';
 
 export function AppSidebarHeader({
     breadcrumbs = [],
@@ -15,7 +20,12 @@ export function AppSidebarHeader({
                     <SidebarTrigger className="-ml-1" />
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
                 </div>
-                <div>
+                <div className="flex items-center gap-2">
+                    <Badge variant="outline">
+                        <UserLockIcon />
+                        {normalizeName(usePage().props.auth.user.roles[0].name)}
+                    </Badge>
+
                     <ThemeButton className="static" />
                 </div>
             </div>

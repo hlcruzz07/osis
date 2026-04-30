@@ -5,6 +5,7 @@ import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
 import { useAppearance } from '@/hooks/use-appearance';
 import type { AppLayoutProps } from '@/types';
 import { FlashMessages } from '@/types/flash';
+import ThemeButton from '@/components/ThemeButton';
 
 export default function AppLayout({
     children,

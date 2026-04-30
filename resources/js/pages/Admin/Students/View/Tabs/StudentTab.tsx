@@ -27,16 +27,18 @@ import {
     fetchRegionsByIslandId,
     handleErrors,
 } from '@/lib/utils';
-import { updateStudent } from '@/routes';
+import { updateStudent, updateStudentStatus } from '@/routes';
 import { DropdownProps } from '@/types/entities/dropdowns';
 import { EducationProps } from '@/types/entities/education';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import {
     Asterisk,
     BanIcon,
     Calendar1Icon,
     Check,
+    CheckIcon,
     ChevronsUpDown,
+    ClockIcon,
     GraduationCap,
     MailIcon,
     PencilIcon,
@@ -44,7 +46,9 @@ import {
     RulerIcon,
     SaveIcon,
     School,
+    SlidersHorizontalIcon,
     WeightIcon,
+    XIcon,
 } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
@@ -65,6 +69,20 @@ import { toast } from 'sonner';
 import { Spinner } from '@/components/ui/spinner';
 import FormLayout from '@/layouts/form-layout';
 import { StudentProps } from '@/types/entities/student';
+import { Badge } from '@/components/ui/badge';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuShortcut,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 type PageProps = {
     studentData: StudentProps;
     dropdowns: DropdownProps[];
@@ -218,16 +236,139 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
             weight: studentData.weight || '',
         });
     };
+    const updateStatus = async (studentId: number, status: string) => {
+        try {
+            await router.put(updateStudentStatus(studentId).url, {
+                status,
+            });
+
+            router.reload({ only: ['studentData'] }); // 👈 re-fetch updated data
+
+            toast.success(
+                `Student's status updated to ${status.toLowerCase()}`,
+            );
+        } catch (error) {
+            console.error('Error updating student status', error);
+            toast.error('Failed to update student status');
+        }
+    };
     return (
         <>
             <Head title="Student Information" />
 
             <FormLayout>
                 <form onSubmit={handleStudentInfoSubmit} className="space-y-5">
-                    <Heading
-                        title="Student Information"
-                        description="Manage and update the student's academic details, enrollment information, and related records."
-                    />
+                    <div className="flex items-start justify-between">
+                        <Heading
+                            title="Student Information"
+                            description="Manage and update the student's academic details, enrollment information, and related records."
+                        />
+                        <div className="flex items-center gap-3">
+                            <Badge
+                                variant={
+                                    studentData.status === 'Pending'
+                                        ? 'outline'
+                                        : studentData.status === 'Accepted'
+                                          ? 'secondary'
+                                          : 'destructive'
+                                }
+                                className={
+                                    studentData.status === 'Pending'
+                                        ? 'bg-blue-500 text-white'
+                                        : ''
+                                }
+                            >
+                                {studentData.status.toUpperCase()}
+                            </Badge>
+                            <DropdownMenu>
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="outline" size="sm">
+                                                <SlidersHorizontalIcon />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                    </TooltipTrigger>
+
+                                    <TooltipContent>
+                                        <p>Change Status</p>
+                                    </TooltipContent>
+                                </Tooltip>
+
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem
+                                            className={
+                                                studentData.status ===
+                                                'Accepted'
+                                                    ? 'bg-muted font-semibold'
+                                                    : ''
+                                            }
+                                            disabled={
+                                                studentData.status ===
+                                                'Accepted'
+                                            }
+                                            onClick={() =>
+                                                updateStatus(
+                                                    studentData.id!,
+                                                    'Accepted',
+                                                )
+                                            }
+                                        >
+                                            Accepted
+                                            <DropdownMenuShortcut>
+                                                <CheckIcon />
+                                            </DropdownMenuShortcut>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            className={
+                                                studentData.status === 'Pending'
+                                                    ? 'bg-muted font-semibold'
+                                                    : ''
+                                            }
+                                            disabled={
+                                                studentData.status === 'Pending'
+                                            }
+                                            onClick={() =>
+                                                updateStatus(
+                                                    studentData.id!,
+                                                    'Pending',
+                                                )
+                                            }
+                                        >
+                                            Pending
+                                            <DropdownMenuShortcut>
+                                                <ClockIcon />
+                                            </DropdownMenuShortcut>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            className={
+                                                studentData.status ===
+                                                'Declined'
+                                                    ? 'bg-muted font-semibold'
+                                                    : ''
+                                            }
+                                            disabled={
+                                                studentData.status ===
+                                                'Declined'
+                                            }
+                                            onClick={() =>
+                                                updateStatus(
+                                                    studentData.id!,
+                                                    'Declined',
+                                                )
+                                            }
+                                        >
+                                            Decline
+                                            <DropdownMenuShortcut>
+                                                <XIcon />
+                                            </DropdownMenuShortcut>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
 
                     <TwoColumnInput>
                         <div className="flex flex-col gap-3">
