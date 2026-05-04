@@ -27,14 +27,18 @@ class AnswerRepo
     {
         foreach ($data as $item) {
 
-            $this->studentAnswer->create([
-                'question_id' => $item['question_id'],
-                'student_id' => $id,
-                'answer_text' => $item['answer_type'] === 'text' ? $item['answer'] : null,
-                'answer_number' => $item['answer_type'] === 'number' ? $item['answer'] : null,
-                'answer_date' => $item['answer_type'] === 'date' ? $item['answer'] : null,
-                'answer_boolean' => $item['answer_type'] === 'boolean' ? $item['answer'] : null,
-            ]);
+            $this->studentAnswer->updateOrCreate(
+                [
+                    'student_id' => $id,
+                    'question_id' => $item['question_id'],
+                ],
+                [
+                    'answer_text' => $item['answer_type'] === 'text' ? $item['answer'] : null,
+                    'answer_number' => $item['answer_type'] === 'number' ? $item['answer'] : null,
+                    'answer_date' => $item['answer_type'] === 'date' ? $item['answer'] : null,
+                    'answer_boolean' => $item['answer_type'] === 'boolean' ? $item['answer'] : null,
+                ]
+            );
         }
 
     }
@@ -44,14 +48,18 @@ class AnswerRepo
     {
         foreach ($data as $item) {
 
-            $this->studentSubAnswer->create([
-                'sub_question_id' => $item['sub_question_id'],
-                'student_id' => $id,
-                'answer_text' => $item['answer_type'] === 'text' ? $item['answer'] : null,
-                'answer_number' => $item['answer_type'] === 'number' ? $item['answer'] : null,
-                'answer_date' => $item['answer_type'] === 'date' ? $item['answer'] : null,
-                'answer_boolean' => $item['answer_type'] === 'boolean' ? $item['answer'] : null,
-            ]);
+            $this->studentSubAnswer->updateOrCreate(
+                [
+                    'sub_question_id' => $item['sub_question_id'],
+                    'student_id' => $id,
+                ],
+                [
+                    'answer_text' => $item['answer_type'] === 'text' ? $item['answer'] : null,
+                    'answer_number' => $item['answer_type'] === 'number' ? $item['answer'] : null,
+                    'answer_date' => $item['answer_type'] === 'date' ? $item['answer'] : null,
+                    'answer_boolean' => $item['answer_type'] === 'boolean' ? $item['answer'] : null,
+                ]
+            );
         }
     }
 }

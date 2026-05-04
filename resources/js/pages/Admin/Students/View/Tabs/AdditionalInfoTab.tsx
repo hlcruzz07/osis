@@ -33,6 +33,8 @@ export default function AdditionalInfoTab({ studentData }: PageProps) {
         return 'N/A';
     }
 
+    console.log(answers);
+
     return (
         <>
             <Head title="Additional Information" />
