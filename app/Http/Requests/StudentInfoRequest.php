@@ -37,8 +37,6 @@ class StudentInfoRequest extends FormRequest
         $validCivilStatus = $entityRepo->getDropdownsByTitle('Civil Status');
 
         return [
-            'student.academic_year' => 'required',
-            'student.semester' => 'required',
             'student.lrn' => 'nullable|digits:12',
             'student.year_level' => ['required', Rule::in($validYearLevels)],
             'student.campus' => ['required', Rule::in($validCampuses)],

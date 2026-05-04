@@ -19,6 +19,7 @@ use App\Http\Requests\UpdateGuardianRequest;
 use App\Http\Requests\UpdateStudentInfoRequest;
 use App\Jobs\ExportStudentsZipJob;
 use App\Jobs\StoreStudentSubmission;
+use App\Models\AcademicYearAndSemester;
 use App\Models\EntityDropdown;
 use App\Models\Student;
 use App\Repositories\AcademicYearAndSemesterRepo;
@@ -50,6 +51,7 @@ class StudentController extends Controller
 
     public function index()
     {
+
         $questions = $this->questionRepo->getActive();
 
         $academic_year_and_semester = $this->academicYearAndSemesterRepo->getLatest();
@@ -98,10 +100,14 @@ class StudentController extends Controller
             $data = $request->all();
 
             $randNumber = $this->referenceNumberService->generate();
+            $academic_year = AcademicYearAndSemester::pluck('academic_year')->toArray()[0];
+            $semester = AcademicYearAndSemester::pluck('semester')->toArray()[0];
 
             $student_data = array_merge(data_get($data, 'student'), [
                 'ref_number' => $randNumber,
-                'status' => 'Pending'
+                'status' => 'Pending',
+                'academic_year' => $academic_year,
+                'semester' => $semester
             ]);
 
             $address_data = data_get($data, 'address');

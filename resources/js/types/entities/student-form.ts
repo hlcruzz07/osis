@@ -21,6 +21,8 @@ export type StudentFormProps = {
         | 'sub_answers'
         | 'ref_number'
         | 'status'
+        | 'academic_year'
+        | 'semester'
     >;
     address: AddressProps;
     educations: EducationProps[];

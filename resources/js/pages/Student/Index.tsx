@@ -51,8 +51,6 @@ export default function Index() {
     const { data, setData, errors, processing, post } =
         useForm<StudentFormProps>({
             student: {
-                academic_year: '',
-                semester: '',
                 lrn: null,
                 year_level: '',
                 campus: '',
@@ -114,12 +112,6 @@ export default function Index() {
         });
 
     useEffect(() => {
-        setData(
-            'student.academic_year',
-            academic_year_and_semester.academic_year,
-        );
-        setData('student.semester', academic_year_and_semester.semester);
-
         const educations = Array.from({ length: 3 }, (_, i) => ({
             education_level:
                 i === 0
