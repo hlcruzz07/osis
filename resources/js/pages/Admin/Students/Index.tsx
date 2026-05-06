@@ -166,9 +166,15 @@ export default function Index() {
 
     const updateStatus = async (studentId: number, status: string) => {
         try {
-            router.put(updateStudentStatus(studentId).url, {
-                status,
-            });
+            router.put(
+                updateStudentStatus(studentId).url,
+                {
+                    status,
+                },
+                {
+                    preserveScroll: true,
+                },
+            );
             fetchStudentsData();
 
             toast.success(
@@ -310,12 +316,12 @@ export default function Index() {
 
                                         <td data-label="Date">
                                             {dayjs(row.created_at).format(
-                                                `MMM D, YYYY - h:mm A`,
+                                                `MMM D, YYYY h:mm A`,
                                             )}
                                         </td>
 
                                         <td data-label="Action">
-                                            <div className="flex flex-wrap gap-2">
+                                            <div className="flex items-center gap-2">
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
                                                         <Link

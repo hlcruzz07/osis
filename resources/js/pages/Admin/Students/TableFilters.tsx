@@ -15,6 +15,7 @@ import {
     DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuLabel,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -39,10 +40,11 @@ import {
 } from '@/components/ui/tooltip';
 import apiService from '@/lib/api-service';
 import { handleErrors } from '@/lib/utils';
-import { exportStudents } from '@/routes';
+import { downloadExcel, exportStudentsPdf, exportStudentsZip } from '@/routes';
 import { DropdownProps } from '@/types/entities/dropdowns';
 import { FilterData } from '@/types/filter-data';
-import { router } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
+
 import { format } from 'date-fns';
 import { isEqual } from 'lodash';
 import {
@@ -59,10 +61,12 @@ import {
     CheckIcon,
     ChevronDownIcon,
     ChevronsLeftRight,
+    FileIcon,
     GraduationCapIcon,
     RefreshCwIcon,
     School2Icon,
     SearchIcon,
+    SheetIcon,
     Trash2Icon,
     UploadCloudIcon,
     Users2Icon,
@@ -151,12 +155,15 @@ export default function TableFilters({
         });
         setRange(undefined);
     };
-    const handleExport = async () => {
+    const handleExportExcel = async () => {
         let interval: any;
 
         const exportPromise = new Promise(async (resolve, reject) => {
             try {
-                const res = await apiService.post(exportStudents().url, data);
+                const res = await apiService.post(
+                    exportStudentsZip().url,
+                    data,
+                );
 
                 if (res.data.status === 'error') {
                     return reject(res.data.message);
@@ -164,9 +171,12 @@ export default function TableFilters({
 
                 interval = setInterval(async () => {
                     try {
-                        const response = await apiService.get(`/download`, {
-                            responseType: 'blob',
-                        });
+                        const response = await apiService.get(
+                            downloadExcel().url,
+                            {
+                                responseType: 'blob',
+                            },
+                        );
 
                         const url = window.URL.createObjectURL(
                             new Blob([response.data]),
@@ -174,17 +184,17 @@ export default function TableFilters({
 
                         const link = document.createElement('a');
                         link.href = url;
-                        link.setAttribute('download', 'students.zip');
+                        link.setAttribute(
+                            'download',
+                            `students_${new Date().getTime()}.zip`,
+                        );
                         document.body.appendChild(link);
                         link.click();
 
                         clearInterval(interval);
                         resolve('Download complete');
                     } catch (err: any) {
-                        // STILL PROCESSING → ignore 404
                         if (err?.response?.status === 404) return;
-
-                        // REAL ERROR → stop everything
                         clearInterval(interval);
                         reject('Export failed');
                     }
@@ -198,12 +208,51 @@ export default function TableFilters({
         });
 
         toast.promise(exportPromise, {
-            loading: 'Exporting students...',
-            success: 'Students exported successfully',
-            error: (err) => err || 'Something went wrong',
+            loading: 'Processing data...',
+            success: 'Exported successfully',
+            error: (err) => err || 'Failed to export',
         });
     };
 
+    const handlePostOpen = () => {
+        const csrf = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute('content');
+
+        if (!csrf) {
+            console.error('CSRF token missing');
+            return;
+        }
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = exportStudentsPdf().url;
+        form.target = '_blank';
+
+        // CSRF
+        const token = document.createElement('input');
+        token.type = 'hidden';
+        token.name = '_token';
+        token.value = csrf;
+        form.appendChild(token);
+
+        Object.entries(data).forEach(([key, value]) => {
+            if (value === null || value === undefined) return;
+
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+
+            // ensure string (important for numbers like `show`)
+            input.value = String(value);
+
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    };
     return (
         <>
             <div className="flex flex-col items-start justify-between gap-3 lg:flex-row">
@@ -350,13 +399,42 @@ export default function TableFilters({
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <Button
-                        type="button"
-                        disabled={total === 0}
-                        onClick={handleExport}
-                    >
-                        <UploadCloudIcon /> Export
-                    </Button>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        disabled={total === 0}
+                                    >
+                                        <UploadCloudIcon />
+                                        Export
+                                    </Button>
+                                </DropdownMenuTrigger>
+
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem
+                                            disabled={total === 0}
+                                            onClick={handlePostOpen}
+                                        >
+                                            <FileIcon /> PDF
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            disabled={total === 0}
+                                            onClick={handleExportExcel}
+                                        >
+                                            <SheetIcon /> Excel
+                                        </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TooltipTrigger>
+
+                        <TooltipContent>
+                            <p>Actions</p>
+                        </TooltipContent>
+                    </Tooltip>
                 </div>
             </div>
             <div className="mt-3 flex flex-col items-start justify-between gap-5 md:flex-row md:items-start">

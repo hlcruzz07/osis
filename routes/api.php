@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Api\AccountApiController;
 use App\Http\Controllers\Api\ActivityLogApiController;
-use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\RoleApiController;
 use App\Http\Controllers\Api\StudentApiController;
 use Illuminate\Support\Facades\Route;

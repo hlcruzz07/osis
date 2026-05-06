@@ -12,6 +12,7 @@ use App\Http\Controllers\FamilyInfoController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StudentController;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Models\Permission;
@@ -41,7 +42,23 @@ Route::middleware(['throttle:60,1'])->group(function () {
 });
 
 // Admin Routes
+Route::get('/test-pdf', function () {
 
+    $students = collect();
+
+    for ($i = 1; $i <= 200; $i++) {
+        $students->push((object) [
+            'fname' => "First$i",
+            'mname' => "M$i",
+            'lname' => "Last$i",
+            'course' => ['BSIT', 'BSCS', 'BSECE'][array_rand(['BSIT', 'BSCS', 'BSECE'])],
+            'year_level' => rand(1, 4),
+            'status' => ['Enrolled', 'Pending', 'Graduating'][array_rand(['Enrolled', 'Pending', 'Graduating'])],
+        ]);
+    }
+
+    return view('pdf.students', ['students' => $students]);
+});
 
 // Auth
 Route::middleware(['custom.auth', 'throttle:60,1'])->group(function () {
@@ -55,8 +72,10 @@ Route::middleware(['custom.auth', 'throttle:60,1'])->group(function () {
 
 
     Route::middleware('permission:export_students')->group(function () {
-        Route::post('/students/export', [StudentController::class, 'export'])->name('exportStudents');
-        Route::get('/download', [ExportController::class, 'download']);
+        Route::post('/students/export-zip', [StudentController::class, 'export'])->name('exportStudentsZip');
+        Route::post('/students/export-pdf', [StudentController::class, 'exportPdf'])->name('exportStudentsPdf');
+        Route::get('/download-excel', [ExportController::class, 'downloadExcel'])->name('downloadExcel');
+        // Route::get('/download-pdf', [ExportController::class, 'downloadPdf'])->name('downloadPdf');
     });
 
     Route::middleware('permission:update_students')->group(function () {

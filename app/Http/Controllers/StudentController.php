@@ -17,6 +17,7 @@ use App\Http\Requests\UpdateAddressInfoRequest;
 use App\Http\Requests\UpdateFamilyInfoRequest;
 use App\Http\Requests\UpdateGuardianRequest;
 use App\Http\Requests\UpdateStudentInfoRequest;
+use App\Jobs\ExportStudentsPdfJob;
 use App\Jobs\ExportStudentsZipJob;
 use App\Jobs\StoreStudentSubmission;
 use App\Models\AcademicYearAndSemester;
@@ -29,6 +30,7 @@ use App\Repositories\GuardianRepo;
 use App\Repositories\QuestionRepo;
 use App\Repositories\StudentRepo;
 use App\Services\ReferenceNumberService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -54,6 +56,7 @@ class StudentController extends Controller
     {
 
         $questions = $this->questionRepo->getActive();
+
 
         $academic_year_and_semester = $this->academicYearAndSemesterRepo->getLatest();
 
@@ -254,6 +257,39 @@ class StudentController extends Controller
         }
     }
 
+    public function exportPdf(ExportStudentsRequest $request)
+    {
+        try {
+            $students = $this->studentRepo->export($request->all());
+
+
+            ActivityLog::log('export', 'Exported (' . count($students) . ') students data', Auth::user()->email, request(), 'success');
+
+            return view('pdf.students', ['students' => $students]);
+
+        } catch (Exception $e) {
+
+            Log::error("Failed to export students: " . $e->getMessage());
+
+            ActivityLog::log('export', 'Failed to export students data: ' . $e->getMessage(), Auth::user()->email, request(), 'failed');
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong'
+            ], 500);
+        }
+    }
+
+    public function previewPdf()
+    {
+        $path = storage_path("app/exports/students.pdf");
+
+        if (!file_exists($path)) {
+            abort(404, 'File not ready yet');
+        }
+
+        return response()->file($path);
+    }
     public function updateStatus(Request $request, int $id)
     {
         try {
