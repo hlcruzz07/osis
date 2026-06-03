@@ -75,7 +75,7 @@ class StudentInfoRequest extends FormRequest
             'student.sexual_orient' => 'required|max:25',
             'student.height' => 'required|numeric|min:30|digits_between:2,3',
             'student.weight' => 'required|numeric|min:30|digits_between:2,3',
-            'student.email' => 'nullable|email|max:50',
+            'student.email' => 'required|email|max:50',
             'student.mobile_num' => 'nullable|numeric|starts_with:9|digits:10',
         ];
 
@@ -167,6 +167,7 @@ class StudentInfoRequest extends FormRequest
 
             'student.email.email' => 'Please enter a valid email address.',
             'student.email.max' => 'Email must not exceed 50 characters.',
+            'student.email.required' => 'Email is required.',
 
             // Mobile number
             'student.mobile_num.numeric' => 'Mobile number must contain numbers only.',

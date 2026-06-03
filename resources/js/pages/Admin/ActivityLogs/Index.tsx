@@ -347,7 +347,7 @@ export default function Index() {
                                                                         );
                                                                     }
                                                                 }}
-                                                                className={`rounded px-3 py-1 ${
+                                                                className={`apy-1 rounded px-3 ${
                                                                     link.active
                                                                         ? 'bg-primary text-white dark:text-black'
                                                                         : 'bg-muted text-muted-foreground hover:bg-muted/70'

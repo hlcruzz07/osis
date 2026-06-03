@@ -378,7 +378,7 @@ export default function StudentInfo({
                 <div className="flex flex-col gap-3">
                     <LabelExample
                         title="Email"
-                        isRequired={false}
+                        isRequired={true}
                         example="johndoe@gmail.com"
                     />
                     <div className="relative flex items-center">

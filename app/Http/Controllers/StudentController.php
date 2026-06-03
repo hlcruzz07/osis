@@ -25,9 +25,13 @@ use App\Models\EntityDropdown;
 use App\Models\Student;
 use App\Models\StudentAnswer;
 use App\Repositories\AcademicYearAndSemesterRepo;
+use App\Repositories\AddressRepo;
 use App\Repositories\AnswerRepo;
+use App\Repositories\EducationRepo;
+use App\Repositories\FamilyInfoRepo;
 use App\Repositories\GuardianRepo;
 use App\Repositories\QuestionRepo;
+use App\Repositories\SiblingRepo;
 use App\Repositories\StudentRepo;
 use App\Services\ReferenceNumberService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -36,6 +40,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
@@ -46,7 +51,7 @@ class StudentController extends Controller
      * Display a listing of the resource.
      */
 
-    public function __construct(protected StudentRepo $studentRepo, protected QuestionRepo $questionRepo, protected AcademicYearAndSemesterRepo $academicYearAndSemesterRepo, protected AnswerRepo $answerRepo, protected ReferenceNumberService $referenceNumberService)
+    public function __construct(protected StudentRepo $studentRepo, protected QuestionRepo $questionRepo, protected AcademicYearAndSemesterRepo $academicYearAndSemesterRepo, protected AnswerRepo $answerRepo, protected ReferenceNumberService $referenceNumberService, protected GuardianRepo $guardianRepo, protected EducationRepo $educationRepo, protected FamilyInfoRepo $familyInfoRepo, protected AddressRepo $addressRepo, protected SiblingRepo $siblingRepo)
     {
     }
 
@@ -132,16 +137,49 @@ class StudentController extends Controller
                 ->toArray();
 
 
-            StoreStudentSubmission::dispatch([
-                'student' => $student_data,
-                'address' => $address_data,
-                'siblings' => $siblings_data,
-                'educations' => $educations_data,
-                'family' => $family_data,
-                'guardians' => $guardians_data,
-                'answers' => $student_main_answers,
-                'sub_answers' => $student_sub_answers,
-            ]);
+            DB::transaction(function () use ($student_data, $address_data, $educations_data, $family_data, $guardians_data, $siblings_data, $student_main_answers, $student_sub_answers) {
+
+                $student_id = $this->studentRepo->storeStudent($student_data);
+
+                $this->addressRepo->storeStudentAddress(
+                    $address_data,
+                    $student_id
+                );
+
+                $this->educationRepo->store(
+                    $educations_data,
+                    $student_id
+                );
+
+                $this->familyInfoRepo->store(
+                    $family_data,
+                    $student_id
+                );
+
+                if (!empty($siblings_data)) {
+                    $this->siblingRepo->storeSiblings(
+                        $siblings_data,
+                        $student_id
+                    );
+                }
+
+                $this->guardianRepo->store(
+                    $guardians_data,
+                    $student_id
+                );
+
+                $this->answerRepo->storeAnswers(
+                    $student_main_answers,
+                    $student_id
+                );
+
+                if (!empty($student_sub_answers)) {
+                    $this->answerRepo->storeSubAnswers(
+                        $student_sub_answers,
+                        $student_id
+                    );
+                }
+            });
 
             $success_data = Arr::only($student_data, [
                 'ref_number',
