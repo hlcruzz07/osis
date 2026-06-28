@@ -39,7 +39,6 @@ import {
 } from '@/components/ui/tooltip';
 import apiService from '@/lib/api-service';
 import { capitalizeString, handleErrors } from '@/lib/utils';
-import { exportStudents } from '@/routes';
 import { FilterDataActivityLog } from '@/types/activity-log';
 import { DropdownProps } from '@/types/entities/dropdowns';
 import { FilterData } from '@/types/filter-data';
