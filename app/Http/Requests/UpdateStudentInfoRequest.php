@@ -26,59 +26,50 @@ class UpdateStudentInfoRequest extends FormRequest
     {
         $entityRepo = new EntityDropdownRepo();
 
-        $validYearLevels = $entityRepo->getDropdownsByTitle('Year Levels');
-        $validCourses = $entityRepo->getDropdownsByTitle('Courses');
-        $validCampuses = $entityRepo->getDropdownsByTitle('Campuses');
-        $validStudentType = $entityRepo->getDropdownsByTitle('Student Type');
-        $validSuffixes = $entityRepo->getDropdownsByTitle('Suffix');
-        $validEquityIndicator = $entityRepo->getDropdownsByTitle('Equity Indicator');
-        $validReligions = $entityRepo->getDropdownsByTitle('Religion');
-        $validCivilStatus = $entityRepo->getDropdownsByTitle('Civil Status');
+        $flatten = fn(array $items) => array_values(
+            array_filter(
+                array_map(fn($item) => is_array($item) ? ($item['name'] ?? null) : $item, $items),
+                fn($v) => $v !== null,
+            )
+        );
+
+        $validYearLevels      = $flatten($entityRepo->getDropdownsByTitle('Year Levels'));
+        $validCourses         = $flatten($entityRepo->getDropdownsByTitle('Courses'));
+        $validCampuses        = $flatten($entityRepo->getDropdownsByTitle('Campuses'));
+        $validStudentType     = $flatten($entityRepo->getDropdownsByTitle('Student Type'));
+        $validSuffixes        = $flatten($entityRepo->getDropdownsByTitle('Suffix'));
+        $validEquityIndicator = $flatten($entityRepo->getDropdownsByTitle('Equity Indicator'));
+        $validReligions       = $flatten($entityRepo->getDropdownsByTitle('Religion'));
+        $validCivilStatus     = $flatten($entityRepo->getDropdownsByTitle('Civil Status'));
 
         return [
             'lrn' => 'nullable|digits:12',
             'year_level' => ['required', Rule::in($validYearLevels)],
             'campus' => ['required', Rule::in($validCampuses)],
-            'course' => [
-                'required',
-                Rule::in($validCourses),
-            ],
+            'course' => ['required', Rule::in($validCourses)],
+            'major' => 'nullable|string|max:100',
             'date_admitted' => 'required|date|before_or_equal:today',
-            'student_type' => [
-                'required',
-                Rule::in($validStudentType)
-            ],
+            'student_type' => ['required', Rule::in($validStudentType)],
 
-            'equity_indicator' => [
-                'required',
-                Rule::in($validEquityIndicator)
-            ],
+            'equity_indicator' => ['nullable', Rule::in($validEquityIndicator)],
             'fname' => 'required|max:50',
             'mname' => 'nullable|max:50',
             'lname' => 'required|max:50',
             'suffix' => ['nullable', Rule::in($validSuffixes)],
             'birthdate' => 'required|date|before_or_equal:today',
             'birthplace' => 'required|max:100',
-            'weekly_allowance' => 'required|numeric|min:0',
-            'financer' => 'required|max:50',
-            'last_attended_school' => 'required|max:100',
-            'religion' => [
-                'required',
-                Rule::in($validReligions)
-            ],
-            'citizenship' => 'required',
-            'civil_status' => [
-                'required',
-                Rule::in($validCivilStatus)
-            ],
+            'weekly_allowance' => 'nullable|numeric|min:0',
+            'financer' => 'nullable|max:50',
+            'last_attended_school' => 'nullable|max:100',
+            'religion' => ['nullable', Rule::in($validReligions)],
+            'citizenship' => 'nullable',
+            'civil_status' => ['required', Rule::in($validCivilStatus)],
             'sexual_orient' => 'required|max:25',
-            'height' => 'required|numeric|min:30|digits_between:2,3',
-            'weight' => 'required|numeric|min:30|digits_between:2,3',
+            'height' => 'nullable|numeric|min:30|digits_between:2,3',
+            'weight' => 'nullable|numeric|min:30|digits_between:2,3',
             'email' => 'nullable|email|max:50',
             'mobile_num' => 'nullable|numeric|starts_with:9|digits:10',
         ];
-
-
     }
 
     public function messages(): array

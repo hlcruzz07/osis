@@ -15,7 +15,8 @@ export type StudentProps = {
     course: string;
     date_admitted: string;
     student_type: string;
-    equity_indicator: string;
+    equity_indicator: string | null;
+    major: string | null;
 
     fname: string;
     mname: string | null;
@@ -23,17 +24,17 @@ export type StudentProps = {
     suffix: string | null;
     birthdate: string;
     birthplace: string;
-    weekly_allowance: string;
-    financer: string;
-    last_attended_school: string;
+    weekly_allowance: string | null;
+    financer: string | null;
+    last_attended_school: string | null;
     email: string | null;
     mobile_num: string | null;
-    religion: string;
-    citizenship: string;
+    religion: string | null;
+    citizenship: string | null;
     civil_status: string;
     sexual_orient: string;
-    height: string;
-    weight: string;
+    height: string | null;
+    weight: string | null;
     status: string;
 
     family_info: FamilyProps;

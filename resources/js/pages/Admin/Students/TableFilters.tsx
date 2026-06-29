@@ -95,9 +95,9 @@ export default function TableFilters({
     total,
     onRefresh,
 }: FilterProps) {
-    const coursesArr = dropdowns.find(
-        (item) => item.title === 'Courses',
-    )?.dropdowns;
+    const coursesArr = dropdowns
+        .find((item) => item.title === 'Courses')
+        ?.dropdowns.map((item: any) => item.name);
 
     const studentTypeArr = dropdowns.find(
         (item) => item.title === 'Student Type',

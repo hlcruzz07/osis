@@ -71,32 +71,32 @@ export default function FamilyTab({ studentData, dropdowns }: PageProps) {
     const [isEditMode, setIsEditMode] = useState(false);
 
     const { data, setData, put, processing, clearErrors, errors } = useForm({
-        family_size: studentData.family_info.family_size || '',
+        family_size: studentData.family_info?.family_size || '',
         parent_martial_status:
-            studentData.family_info.parent_martial_status || '',
-        nature_residence: studentData.family_info.nature_residence || '',
+            studentData.family_info?.parent_martial_status || '',
+        nature_residence: studentData.family_info?.nature_residence || '',
         house_monthly_income:
-            studentData.family_info.house_monthly_income || '',
-        ordinal_position: studentData.family_info.ordinal_position || '',
+            studentData.family_info?.house_monthly_income || '',
+        ordinal_position: studentData.family_info?.ordinal_position || '',
     });
 
     const [selectedMartialStatus, setSelectedMaritalStatus] = useState(
-        studentData.family_info.parent_martial_status,
+        studentData.family_info?.parent_martial_status ?? null,
     );
 
     const [selectedNatureOfResidence, setSelectedNatureOfResidence] = useState(
-        studentData.family_info.nature_residence,
+        studentData.family_info?.nature_residence ?? null,
     );
 
     const setDefaultValue = () => {
         setData({
-            family_size: studentData.family_info.family_size || '',
+            family_size: studentData.family_info?.family_size || '',
             parent_martial_status:
-                studentData.family_info.parent_martial_status || '',
-            nature_residence: studentData.family_info.nature_residence || '',
+                studentData.family_info?.parent_martial_status || '',
+            nature_residence: studentData.family_info?.nature_residence || '',
             house_monthly_income:
-                studentData.family_info.house_monthly_income || '',
-            ordinal_position: studentData.family_info.ordinal_position || '',
+                studentData.family_info?.house_monthly_income || '',
+            ordinal_position: studentData.family_info?.ordinal_position || '',
         });
     };
 
@@ -124,6 +124,23 @@ export default function FamilyTab({ studentData, dropdowns }: PageProps) {
             },
         });
     };
+
+    if (!studentData.family_info) {
+        return (
+            <>
+                <Head title="Family Information" />
+                <FormLayout>
+                    <Heading
+                        title="Family Information"
+                        description="This section contains the student's family details."
+                    />
+                    <p className="text-sm text-muted-foreground">
+                        No family information available for this student.
+                    </p>
+                </FormLayout>
+            </>
+        );
+    }
 
     return (
         <>

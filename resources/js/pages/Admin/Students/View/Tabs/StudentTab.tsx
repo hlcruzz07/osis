@@ -89,9 +89,10 @@ type PageProps = {
 };
 
 export default function StudentTab({ studentData, dropdowns }: PageProps) {
-    const coursesArr = dropdowns.find(
-        (item) => item.title === 'Courses',
-    )?.dropdowns;
+    const coursesDropdown: any[] =
+        dropdowns.find((item) => item.title === 'Courses')?.dropdowns ?? [];
+
+    const coursesArr = coursesDropdown.map((item: any) => item.name);
 
     const equityIndicatorArr = dropdowns.find(
         (item) => item.title === 'Equity Indicator',
@@ -141,9 +142,10 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
         year_level: studentData.year_level,
         campus: studentData.campus,
         course: studentData.course,
+        major: studentData.major || null,
         date_admitted: studentData.date_admitted,
         student_type: studentData.student_type,
-        equity_indicator: studentData.equity_indicator,
+        equity_indicator: studentData.equity_indicator || '',
 
         fname: studentData.fname,
         mname: studentData.mname || null,
@@ -214,9 +216,10 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
             year_level: studentData.year_level || '',
             campus: studentData.campus || '',
             course: studentData.course || '',
+            major: studentData.major || null,
             date_admitted: studentData.date_admitted || '',
             student_type: studentData.student_type || '',
-            equity_indicator: studentData.equity_indicator,
+            equity_indicator: studentData.equity_indicator || '',
             fname: studentData.fname || '',
             mname: studentData.mname || '',
             lname: studentData.lname || '',
@@ -531,6 +534,12 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                             name="course"
                             onValueChange={(value) => {
                                 setData('course', value);
+                                // Reset major when course changes
+                                const courseObj = coursesDropdown.find(
+                                    (c: any) => c.name === value,
+                                );
+                                if (!courseObj?.majors?.length)
+                                    setData('major', null);
                             }}
                             disabled={!isEditMode}
                         >
@@ -549,6 +558,56 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         </Select>
                         <InputError message={errors.course} />
                     </div>
+
+                    {(() => {
+                        const selectedCourseObj = coursesDropdown.find(
+                            (c: any) => c.name === data.course,
+                        );
+                        const majorsArr: string[] =
+                            selectedCourseObj?.majors ?? [];
+                        if (!majorsArr.length && !data.major) return null;
+                        return (
+                            <div className="flex flex-col gap-3">
+                                <Label>Major</Label>
+                                {majorsArr.length > 0 ? (
+                                    <Select
+                                        value={data.major ?? ''}
+                                        name="major"
+                                        onValueChange={(value) =>
+                                            setData('major', value || null)
+                                        }
+                                        disabled={!isEditMode}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Choose a major" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                {majorsArr.map(
+                                                    (item, index) => (
+                                                        <SelectItem
+                                                            key={index}
+                                                            value={item}
+                                                        >
+                                                            {item}
+                                                        </SelectItem>
+                                                    ),
+                                                )}
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <Input
+                                        type="text"
+                                        value={data.major ?? ''}
+                                        disabled
+                                        placeholder="No major"
+                                    />
+                                )}
+                                <InputError message={errors['major']} />
+                            </div>
+                        );
+                    })()}
 
                     <TwoColumnInput>
                         <div className="flex flex-col gap-3">

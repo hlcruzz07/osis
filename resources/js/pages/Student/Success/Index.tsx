@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import * as htmlToImage from 'html-to-image';
 import { Button } from '@/components/ui/button';
 import { DownloadIcon, HomeIcon } from 'lucide-react';
@@ -36,6 +36,10 @@ export default function Index() {
         link.href = dataUrl;
         link.click();
     };
+
+    useEffect(() => {
+        downloadImage();
+    }, [success_data]);
 
     return (
         <div

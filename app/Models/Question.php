@@ -10,6 +10,7 @@ class Question extends Model
         'user_id',
         'question',
         'answer_type',
+        'sub_expected_answer',
         'is_required',
         'is_deleted',
     ];

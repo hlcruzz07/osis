@@ -80,9 +80,9 @@ export default function StudentInfo({
         (item) => item.title === 'Civil Status',
     )?.dropdowns;
 
-    const coursesArr = dropdowns.find(
-        (item) => item.title === 'Courses',
-    )?.dropdowns;
+    const coursesArr = dropdowns
+        .find((item) => item.title === 'Courses')
+        ?.dropdowns.map((item: any) => item.name);
 
     const equityIndicatorArr = dropdowns.find(
         (item) => item.title === 'Equity Indicator',

@@ -12,11 +12,8 @@ use App\Http\Controllers\FamilyInfoController;
 use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StudentController;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+
 
 
 
@@ -30,13 +27,16 @@ Route::middleware(['throttle:60,1'])->group(function () {
     Route::get('/auth/google/redirect', [AuthController::class, 'redirect'])->name('login');
     Route::get('/auth/google/callback', [AuthController::class, 'callback']);
 
-    Route::post('/student/validate/student-info', [StudentController::class, 'validateStudentInfo'])->name('validateStudentInfo');
-    Route::post('/student/validate/student-address', [StudentController::class, 'validateAddress'])->name('validateAddress');
-    Route::post('/student/validate/education', [StudentController::class, 'validateEducation'])->name('validateEducation');
-    Route::post('/student/validate/family', [StudentController::class, 'validateFamily'])->name('validateFamily');
-    Route::post('/student/validate/additional-info', [StudentController::class, 'validateAdditionalInfo'])->name('validateAdditionalInfo');
+    Route::get('/registrar', [StudentController::class, 'registrar'])->name('registrar');
+    Route::post('/registrar/store', [StudentController::class, 'storeRegistrar'])->name('storeRegistrar');
 
-    Route::post('/student/store', [StudentController::class, 'store'])->name('storeStudent');
+    // Route::post('/student/validate/student-info', [StudentController::class, 'validateStudentInfo'])->name('validateStudentInfo');
+    // Route::post('/student/validate/student-address', [StudentController::class, 'validateAddress'])->name('validateAddress');
+    // Route::post('/student/validate/education', [StudentController::class, 'validateEducation'])->name('validateEducation');
+    // Route::post('/student/validate/family', [StudentController::class, 'validateFamily'])->name('validateFamily');
+    // Route::post('/student/validate/additional-info', [StudentController::class, 'validateAdditionalInfo'])->name('validateAdditionalInfo');
+
+    // Route::post('/student/store', [StudentController::class, 'store'])->name('storeStudent');
 
     Route::get('/student/success', [StudentController::class, 'success'])->name('success');
 });
@@ -75,7 +75,6 @@ Route::middleware(['custom.auth', 'throttle:60,1'])->group(function () {
         Route::post('/students/export-zip', [StudentController::class, 'export'])->name('exportStudentsZip');
         Route::post('/students/export-pdf', [StudentController::class, 'exportPdf'])->name('exportStudentsPdf');
         Route::get('/download-excel', [ExportController::class, 'downloadExcel'])->name('downloadExcel');
-        // Route::get('/download-pdf', [ExportController::class, 'downloadPdf'])->name('downloadPdf');
     });
 
     Route::middleware('permission:update_students')->group(function () {
@@ -85,7 +84,6 @@ Route::middleware(['custom.auth', 'throttle:60,1'])->group(function () {
         Route::put('/student/{id}/family-info', [FamilyInfoController::class, 'update'])->name('updateFamily');
         Route::put('/student/{id}/education', [EducationController::class, 'update'])->name('updateEducation');
         Route::put('/student/{id}/guardian', [GuardianController::class, 'update'])->name('updateGuardian');
-
     });
 
     Route::middleware('permission:create_students')->group(function () {

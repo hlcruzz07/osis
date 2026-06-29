@@ -27,11 +27,21 @@ class StudentFilterRequest extends FormRequest
     {
 
         $entityRepo = new EntityDropdownRepo();
-        $validCampuses = $entityRepo->getDropdownsByTitle("Campuses");
-        $validCourses = $entityRepo->getDropdownsByTitle("Courses");
-        $validStudentType = $entityRepo->getDropdownsByTitle("Student Type");
-        $validEquityIndicator = $entityRepo->getDropdownsByTitle("Equity Indicator");
-        $validStudentStatus = $entityRepo->getDropdownsByTitle("Student Status");
+
+        // Some dropdowns (e.g. Courses) are stored as objects {name, majors}.
+        // Flatten each to a plain string so Rule::in() doesn't throw.
+        $flatten = fn(array $items) => array_values(
+            array_filter(
+                array_map(fn($item) => is_array($item) ? ($item['name'] ?? null) : $item, $items),
+                fn($v) => $v !== null,
+            )
+        );
+
+        $validCampuses        = $flatten($entityRepo->getDropdownsByTitle("Campuses"));
+        $validCourses         = $flatten($entityRepo->getDropdownsByTitle("Courses"));
+        $validStudentType     = $flatten($entityRepo->getDropdownsByTitle("Student Type"));
+        $validEquityIndicator = $flatten($entityRepo->getDropdownsByTitle("Equity Indicator"));
+        $validStudentStatus   = $flatten($entityRepo->getDropdownsByTitle("Student Status"));
 
 
         return [

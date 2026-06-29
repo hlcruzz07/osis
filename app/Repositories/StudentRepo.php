@@ -12,14 +12,13 @@ use App\Services\HashingService;
 use App\Services\ReferenceNumberService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+
 class StudentRepo
 {
     /**
      * Create a new class instance.
      */
-    public function __construct(protected Student $model, protected Sibling $sibling, protected Guardian $guardian, protected Education $education, protected AnswerRepo $answerRepo, protected FamilyInfo $familyInfo, protected HashingService $hashingService, protected ReferenceNumberService $referenceNumberService)
-    {
-    }
+    public function __construct(protected Student $model, protected Sibling $sibling, protected Guardian $guardian, protected Education $education, protected AnswerRepo $answerRepo, protected FamilyInfo $familyInfo, protected HashingService $hashingService, protected ReferenceNumberService $referenceNumberService) {}
 
 
     // CREATE QUERIES
@@ -57,7 +56,6 @@ class StudentRepo
                     ->orWhere('suffix_hash', $search)
                     ->orWhere('ref_number_hash', $search);
             });
-
         }
 
         if (!empty($filters['academic_year'])) {
@@ -157,12 +155,12 @@ class StudentRepo
             $query->where('status_hash', $this->hashingService->hashValue($filters['status']));
         }
 
-        if (!empty($filters['created_at_from']) && !empty($filters['created_at_to'])) {
-            if ($filters['created_at_from'] === $filters['created_at_to']) {
-                $query->whereDate('created_at', $filters['created_at_from']);
+        if (!empty($filters['date_admitted_from']) && !empty($filters['date_admitted_to'])) {
+            if ($filters['date_admitted_from'] === $filters['date_admitted_to']) {
+                $query->whereDate('created_at', $filters['date_admitted_from']);
             } else {
-                $query->whereDate('created_at', '>=', $filters['created_at_from'])
-                    ->whereDate('created_at', '<=', $filters['created_at_to']);
+                $query->whereDate('created_at', '>=', $filters['date_admitted_from'])
+                    ->whereDate('created_at', '<=', $filters['date_admitted_to']);
             }
         }
 
@@ -380,7 +378,4 @@ class StudentRepo
 
         return $student;
     }
-
-
-
 }

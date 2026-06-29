@@ -10,16 +10,13 @@ use Illuminate\Http\Request;
 
 class StudentApiController extends Controller
 {
-    public function __construct(protected StudentRepo $studentRepo)
-    {
-    }
+    public function __construct(protected StudentRepo $studentRepo) {}
     public function paginate(StudentFilterRequest $request)
     {
         try {
-            $data = $this->studentRepo->paginate($request->validated());
+            $data = $this->studentRepo->paginate($request->all());
 
             return response()->json($data);
-
         } catch (Exception $e) {
 
             return response()->json([
@@ -34,7 +31,6 @@ class StudentApiController extends Controller
             $data = $this->studentRepo->getStudentsPerDateFilter($request->date);
 
             return response()->json($data);
-
         } catch (Exception $e) {
 
             return response()->json([
@@ -42,5 +38,4 @@ class StudentApiController extends Controller
             ], 500);
         }
     }
-
 }

@@ -32,22 +32,139 @@ class EntityDropdownSeeder extends Seeder
             ],
 
             'Courses' => [
-                'Ba In English Language',
-                'Ba Social Science',
-                'Bs Psychology',
-                'B Of Public Administration',
-                'Bs In Applied Mathematics',
-                'B Of Elementary Education',
-                'B Of Early Childhood Educ',
-                'B Of Physical Education',
-                'B Of Secondary Education',
-                'B Of Special Needs Education',
-                'B Of Technology & Livelihood Education',
-                'B Of Industrial Technology',
-                'Bs In Industrial Technology',
-                'Bs In Hospitality Management',
-                'Bs In Information Systems',
-                'Bs In Civil Engineering',
+                [
+                    'name' => 'Bachelor of Arts in English Language',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'Bachelor of Arts in Social Science',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'Bachelor of Science in Psychology',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'Bachelor of Public Administration',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'Bachelor of Science in Applied Mathematics',
+                    'majors' => [],
+                ],
+
+                [
+                    'name' => 'Bachelor of Elementary Education',
+                    'majors' => ['General Education'],
+                ],
+                [
+                    'name' => 'Bachelor of Early Childhood Education',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'Bachelor of Physical Education',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'Bachelor of Secondary Education',
+                    'majors' => [
+                        'English',
+                        'Filipino',
+                        'Mathematics',
+                        'Science',
+                    ],
+                ],
+                [
+                    'name' => 'Bachelor of Special Needs Education',
+                    'majors' => ['Generalist'],
+                ],
+                [
+                    'name' => 'Bachelor of Technology and Livelihood Education',
+                    'majors' => [
+                        'Home Economics',
+                        'Industrial',
+                    ],
+                ],
+
+                [
+                    'name' => 'Bachelor of Industrial Technology',
+                    'majors' => [
+                        'Apparel & Fashion Technology',
+                        'Architectural Drafting Technology',
+                        'Automotive Technology',
+                        'Culinary Technology',
+                        'Electrical Technology',
+                        'Electronics Technology',
+                        'HVACR Technology',
+                        'Mechanical Technology',
+                    ],
+                ],
+                [
+                    'name' => 'Bachelor of Science in Industrial Technology',
+                    'majors' => [
+                        'Apparel & Fashion Technology',
+                        'Architectural Drafting Technology',
+                        'Automotive Technology',
+                        'Culinary Technology',
+                        'Electrical Technology',
+                        'Electronics Technology',
+                        'HVACR Technology',
+                        'Mechanical Technology',
+                    ],
+                ],
+
+                [
+                    'name' => 'Bachelor of Science in Hospitality Management',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'Bachelor of Science in Information Systems',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'Bachelor of Science in Information Technology',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'Bachelor of Science in Civil Engineering',
+                    'majors' => [],
+                ],
+
+                [
+                    'name' => 'Bachelor of Science in Business Administration',
+                    'majors' => ['Financial Management'],
+                ],
+
+                [
+                    'name' => 'Bachelor of Science in Criminology',
+                    'majors' => [],
+                ],
+
+                [
+                    'name' => 'Bachelor of Science in Accountancy',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'Bachelor of Science in Entrepreneurship',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'Bachelor of Science in Management Accounting',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'Bachelor of Science in Office Administration',
+                    'majors' => [],
+                ],
+
+                [
+                    'name' => 'Bachelor of Science in Computer Engineering',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'Bachelor of Science in Electronics Engineering',
+                    'majors' => [],
+                ],
             ],
 
             'Student Type' => [

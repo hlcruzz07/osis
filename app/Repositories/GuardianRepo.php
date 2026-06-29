@@ -11,9 +11,7 @@ use Illuminate\Support\Arr;
 class GuardianRepo
 {
 
-    public function __construct(protected Guardian $model, protected Address $address, protected HashingService $hashingService)
-    {
-    }
+    public function __construct(protected Guardian $model, protected Address $address, protected HashingService $hashingService) {}
 
 
     public function store(array $data, int $student_id)
@@ -26,7 +24,7 @@ class GuardianRepo
                 [
                     'student_id' => $student_id,
                 ],
-                $this->hashingService->appendHashValues($item, 'student_id')
+                $this->hashingService->appendHashValues(Arr::except($item, ['address']), 'student_id')
             );
 
             $guardian = $this->model->create($guardianData);
@@ -107,6 +105,4 @@ class GuardianRepo
             ->where('role_hash', $this->hashingService->hashValue($role))
             ->exists();
     }
-
-
 }

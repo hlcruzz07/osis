@@ -9,6 +9,7 @@ use App\Http\Requests\CreateGuardianRequest;
 use App\Http\Requests\EducationInfoRequest;
 use App\Http\Requests\ExportStudentsRequest;
 use App\Http\Requests\FamilyInfoRequest;
+use App\Http\Requests\StoreRegistrarRequest;
 use App\Http\Requests\StudentAddressInfo;
 use App\Http\Requests\StudentContactAddressInfo;
 use App\Http\Requests\StudentInfoRequest;
@@ -51,9 +52,7 @@ class StudentController extends Controller
      * Display a listing of the resource.
      */
 
-    public function __construct(protected StudentRepo $studentRepo, protected QuestionRepo $questionRepo, protected AcademicYearAndSemesterRepo $academicYearAndSemesterRepo, protected AnswerRepo $answerRepo, protected ReferenceNumberService $referenceNumberService, protected GuardianRepo $guardianRepo, protected EducationRepo $educationRepo, protected FamilyInfoRepo $familyInfoRepo, protected AddressRepo $addressRepo, protected SiblingRepo $siblingRepo)
-    {
-    }
+    public function __construct(protected StudentRepo $studentRepo, protected QuestionRepo $questionRepo, protected AcademicYearAndSemesterRepo $academicYearAndSemesterRepo, protected AnswerRepo $answerRepo, protected ReferenceNumberService $referenceNumberService, protected GuardianRepo $guardianRepo, protected EducationRepo $educationRepo, protected FamilyInfoRepo $familyInfoRepo, protected AddressRepo $addressRepo, protected SiblingRepo $siblingRepo) {}
 
     // STUDENT SIDE
 
@@ -69,12 +68,30 @@ class StudentController extends Controller
             return EntityDropdown::all();
         });
 
-        return Inertia::render('Student/Index', [
+        return Inertia::render('Student/Forms/Index', [
             'questions' => $questions,
             'academic_year_and_semester' => $academic_year_and_semester,
             'dropdowns' => $dropdowns,
         ]);
+    }
 
+    public function registrar()
+    {
+
+        $questions = $this->questionRepo->getActive();
+
+
+        $academic_year_and_semester = $this->academicYearAndSemesterRepo->getLatest();
+
+        $dropdowns = cache()->remember('entity_dropdowns_all', 600, function () {
+            return EntityDropdown::all();
+        });
+
+        return Inertia::render('Student/Forms/Registrar', [
+            'questions' => $questions,
+            'academic_year_and_semester' => $academic_year_and_semester,
+            'dropdowns' => $dropdowns,
+        ]);
     }
 
     public function validateStudentInfo(StudentInfoRequest $request)
@@ -190,10 +207,89 @@ class StudentController extends Controller
             ]);
 
             return redirect()->route('success')->with('success_data', $success_data);
-
         } catch (Exception $e) {
 
             Log::error("Failed to insert students" . $e->getMessage());
+
+            return back()->with('error', 'Something went wrong, please try again');
+        }
+    }
+
+    public function storeRegistrar(StoreRegistrarRequest $request)
+    {
+        try {
+            $data = $request->all();
+
+            $randNumber = $this->referenceNumberService->generate();
+            $academic_year = AcademicYearAndSemester::pluck('academic_year')->toArray()[0];
+            $semester = AcademicYearAndSemester::pluck('semester')->toArray()[0];
+
+            $student_data = array_merge(data_get($data, 'student'), [
+                'ref_number' => $randNumber,
+                'status' => 'Pending',
+                'academic_year' => $academic_year,
+                'semester' => $semester
+            ]);
+
+            $address_data = data_get($data, 'address');
+            $educations_data = data_get($data, 'educations');
+            $guardians_data = data_get($data, 'guardians');
+            $answers_data = data_get($data, 'answers');
+
+            $student_main_answers = collect($answers_data)
+                ->filter(fn($item) => is_null($item['sub_question_id']))
+                ->values()
+                ->toArray();
+
+            $student_sub_answers = collect($answers_data)
+                ->filter(fn($item) => !is_null($item['sub_question_id']) && !is_null($item['answer']))
+                ->values()
+                ->toArray();
+
+            DB::transaction(function () use ($student_data, $address_data, $educations_data, $guardians_data, $student_main_answers, $student_sub_answers) {
+
+                $student_id = $this->studentRepo->storeStudent($student_data);
+
+                $this->addressRepo->storeStudentAddress(
+                    $address_data,
+                    $student_id
+                );
+
+                $this->educationRepo->store(
+                    $educations_data,
+                    $student_id
+                );
+
+                $this->guardianRepo->store(
+                    $guardians_data,
+                    $student_id
+                );
+
+                $this->answerRepo->storeAnswers(
+                    $student_main_answers,
+                    $student_id
+                );
+
+                if (!empty($student_sub_answers)) {
+                    $this->answerRepo->storeSubAnswers(
+                        $student_sub_answers,
+                        $student_id
+                    );
+                }
+            });
+
+            $success_data = Arr::only($student_data, [
+                'ref_number',
+                'mname',
+                'fname',
+                'lname',
+                'suffix',
+            ]);
+
+            return redirect()->route('success')->with('success_data', $success_data);
+        } catch (Exception $e) {
+
+            Log::error("Failed to insert registrar student: " . $e->getMessage());
 
             return back()->with('error', 'Something went wrong, please try again');
         }
@@ -250,7 +346,6 @@ class StudentController extends Controller
             ActivityLog::log('update', "updated student information for id: $id", Auth::user()->email, request(), 'success');
 
             return back()->with('success', 'Student Information updated!');
-
         } catch (Exception $e) {
 
             ActivityLog::log('update', "Failed to update student for id $id: " . $e->getMessage(), Auth::user()->email, request(), 'failed');
@@ -274,6 +369,12 @@ class StudentController extends Controller
                 ], 400);
             }
 
+            // Ensure the export directory exists before the job tries to write the ZIP
+            $exportDir = storage_path('app/exports');
+            if (!is_dir($exportDir)) {
+                mkdir($exportDir, 0755, true);
+            }
+
             ExportStudentsZipJob::dispatch($students);
 
             ActivityLog::log('export', 'Exported (' . count($students) . ') students data', Auth::user()->email, request(), 'success');
@@ -281,7 +382,6 @@ class StudentController extends Controller
             return response()->json([
                 'status' => 'success',
             ]);
-
         } catch (Exception $e) {
 
             Log::error("Failed to export students: " . $e->getMessage());
@@ -304,7 +404,6 @@ class StudentController extends Controller
             ActivityLog::log('export', 'Exported (' . count($students) . ') students data', Auth::user()->email, request(), 'success');
 
             return view('pdf.students', ['students' => $students]);
-
         } catch (Exception $e) {
 
             Log::error("Failed to export students: " . $e->getMessage());
@@ -342,7 +441,6 @@ class StudentController extends Controller
             ActivityLog::log('update', "updated student's status to $updated_status for id: $id", Auth::user()->email, request(), 'success');
 
             return back()->with('success', "Student's Status updated!");
-
         } catch (Exception $e) {
 
             ActivityLog::log('update', "Failed to update student's status for id $id: " . $e->getMessage(), Auth::user()->email, request(), 'failed');
@@ -352,13 +450,4 @@ class StudentController extends Controller
             return back()->with('error', 'Something went wrong, please try again.');
         }
     }
-
-
-
-
-
-
-
-
-
 }

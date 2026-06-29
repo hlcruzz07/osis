@@ -111,7 +111,7 @@ class QuestionSeeder extends Seeder
         // Question 6: First-generation Student
         $question6 = Question::create([
             'user_id' => $user->id,
-            'question' => 'Are you a first-generation student?',
+            'question' => 'Are you a first-generation student? (Both parents did not complete a four-year college/university degree)',
             'answer_type' => 'boolean',
             'is_required' => false,
             'is_active' => true,
@@ -121,7 +121,7 @@ class QuestionSeeder extends Seeder
         // Question 7: Indigenous Peoples
         $question7 = Question::create([
             'user_id' => $user->id,
-            'question' => 'Indigenous Peoples',
+            'question' => 'Are a member of any Indigenous People (IP) or Indigenous Cultural Community (ICC)?',
             'answer_type' => 'boolean',
             'sub_expected_answer' => 'true',
             'is_required' => false,
