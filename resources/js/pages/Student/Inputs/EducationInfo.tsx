@@ -88,7 +88,7 @@ export default function EducationInfo({
                     className={`space-y-5 rounded-md p-5 shadow-sm ${schoolShadows[index]} lg:p-8`}
                 >
                     <HeadingSmall
-                        title={`${item.education_level} Information ${item.education_level === 'College' ? '(For Transferee)' : ''}`}
+                        title={`${item.education_level} Information `}
                         description="Enter your college details including year graduated and general average."
                     />
                     <TwoColumnInput>

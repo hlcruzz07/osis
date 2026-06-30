@@ -158,7 +158,7 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                             key={index}
                         >
                             <HeadingSmall
-                                title={`${item.education_level} Information ${item.education_level === 'College' ? '(For Transferee)' : ''}`}
+                                title={`${item.education_level} Information`}
                                 description="Enter your college details including year graduated and general average."
                             />
                             <TwoColumnInput>

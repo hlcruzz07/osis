@@ -33,40 +33,40 @@ class EntityDropdownSeeder extends Seeder
 
             'Courses' => [
                 [
-                    'name' => 'Bachelor of Arts in English Language',
+                    'name' => 'Ba In English Language',
                     'majors' => [],
                 ],
                 [
-                    'name' => 'Bachelor of Arts in Social Science',
+                    'name' => 'Ba Social Science',
                     'majors' => [],
                 ],
                 [
-                    'name' => 'Bachelor of Science in Psychology',
+                    'name' => 'Bs Psychology',
                     'majors' => [],
                 ],
                 [
-                    'name' => 'Bachelor of Public Administration',
+                    'name' => 'B Of Public Administration',
                     'majors' => [],
                 ],
                 [
-                    'name' => 'Bachelor of Science in Applied Mathematics',
+                    'name' => 'Bs In Applied Mathematics',
                     'majors' => [],
                 ],
 
                 [
-                    'name' => 'Bachelor of Elementary Education',
+                    'name' => 'B Of Elementary Education',
                     'majors' => ['General Education'],
                 ],
                 [
-                    'name' => 'Bachelor of Early Childhood Education',
+                    'name' => 'B Of Early Childhood Educ',
                     'majors' => [],
                 ],
                 [
-                    'name' => 'Bachelor of Physical Education',
+                    'name' => 'B Of Physical Education',
                     'majors' => [],
                 ],
                 [
-                    'name' => 'Bachelor of Secondary Education',
+                    'name' => 'B Of Secondary Education',
                     'majors' => [
                         'English',
                         'Filipino',
@@ -75,11 +75,11 @@ class EntityDropdownSeeder extends Seeder
                     ],
                 ],
                 [
-                    'name' => 'Bachelor of Special Needs Education',
+                    'name' => 'B Of Special Needs Education',
                     'majors' => ['Generalist'],
                 ],
                 [
-                    'name' => 'Bachelor of Technology and Livelihood Education',
+                    'name' => 'B Of Technology & Livelihood Education',
                     'majors' => [
                         'Home Economics',
                         'Industrial',
@@ -87,7 +87,7 @@ class EntityDropdownSeeder extends Seeder
                 ],
 
                 [
-                    'name' => 'Bachelor of Industrial Technology',
+                    'name' => 'B Of Industrial Technology',
                     'majors' => [
                         'Apparel & Fashion Technology',
                         'Architectural Drafting Technology',
@@ -100,7 +100,7 @@ class EntityDropdownSeeder extends Seeder
                     ],
                 ],
                 [
-                    'name' => 'Bachelor of Science in Industrial Technology',
+                    'name' => 'Bs In Industrial Technology',
                     'majors' => [
                         'Apparel & Fashion Technology',
                         'Architectural Drafting Technology',
@@ -114,55 +114,55 @@ class EntityDropdownSeeder extends Seeder
                 ],
 
                 [
-                    'name' => 'Bachelor of Science in Hospitality Management',
+                    'name' => 'Bs In Hospitality Management',
                     'majors' => [],
                 ],
                 [
-                    'name' => 'Bachelor of Science in Information Systems',
+                    'name' => 'Bs In Information Systems',
                     'majors' => [],
                 ],
                 [
-                    'name' => 'Bachelor of Science in Information Technology',
+                    'name' => 'Bs In Information Technology',
                     'majors' => [],
                 ],
                 [
-                    'name' => 'Bachelor of Science in Civil Engineering',
+                    'name' => 'Bs In Civil Engineering',
                     'majors' => [],
                 ],
 
                 [
-                    'name' => 'Bachelor of Science in Business Administration',
+                    'name' => 'Bs In Business Administration',
                     'majors' => ['Financial Management'],
                 ],
 
                 [
-                    'name' => 'Bachelor of Science in Criminology',
+                    'name' => 'Bs In Criminology',
                     'majors' => [],
                 ],
 
                 [
-                    'name' => 'Bachelor of Science in Accountancy',
+                    'name' => 'Bs In Accountancy',
                     'majors' => [],
                 ],
                 [
-                    'name' => 'Bachelor of Science in Entrepreneurship',
+                    'name' => 'Bs In Entrepreneurship',
                     'majors' => [],
                 ],
                 [
-                    'name' => 'Bachelor of Science in Management Accounting',
+                    'name' => 'Bs In Management Accounting',
                     'majors' => [],
                 ],
                 [
-                    'name' => 'Bachelor of Science in Office Administration',
+                    'name' => 'Bs In Office Administration',
                     'majors' => [],
                 ],
 
                 [
-                    'name' => 'Bachelor of Science in Computer Engineering',
+                    'name' => 'Bs In Computer Engineering',
                     'majors' => [],
                 ],
                 [
-                    'name' => 'Bachelor of Science in Electronics Engineering',
+                    'name' => 'Bs In Electronics Engineering',
                     'majors' => [],
                 ],
             ],

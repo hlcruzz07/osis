@@ -2883,7 +2883,7 @@ export default function Registrar() {
                         className={`space-y-5 rounded-md p-5 shadow-sm ${schoolShadows[index % schoolShadows.length]} lg:p-8`}
                     >
                         <HeadingSmall
-                            title={`${item.education_level} Information${item.education_level === 'College' || item.education_level === 'Grad School' ? ' (For Transferee)' : ''}`}
+                            title={`${item.education_level} Information`}
                             description="Enter your school details including year graduated and general average."
                         />
 
