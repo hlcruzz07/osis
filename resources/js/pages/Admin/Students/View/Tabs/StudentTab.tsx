@@ -94,6 +94,9 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
 
     const coursesArr = coursesDropdown.map((item: any) => item.name);
 
+    console.log('Student Data', studentData);
+    console.log('Courses', coursesArr);
+
     const equityIndicatorArr = dropdowns.find(
         (item) => item.title === 'Equity Indicator',
     )?.dropdowns;

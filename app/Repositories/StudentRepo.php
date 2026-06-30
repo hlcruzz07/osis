@@ -181,7 +181,7 @@ class StudentRepo
 
     public function getLatestStudents()
     {
-        return $this->model->orderBy('created_at', 'desc')->limit(5)->get();
+        return $this->model->orderBy('id', 'desc')->limit(5)->get();
     }
 
     public function getStudentsCountPerCampus()

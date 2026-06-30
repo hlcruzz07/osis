@@ -30,13 +30,13 @@ Route::middleware(['throttle:60,1'])->group(function () {
     Route::get('/registrar', [StudentController::class, 'registrar'])->name('registrar');
     Route::post('/registrar/store', [StudentController::class, 'storeRegistrar'])->name('storeRegistrar');
 
-    // Route::post('/student/validate/student-info', [StudentController::class, 'validateStudentInfo'])->name('validateStudentInfo');
-    // Route::post('/student/validate/student-address', [StudentController::class, 'validateAddress'])->name('validateAddress');
-    // Route::post('/student/validate/education', [StudentController::class, 'validateEducation'])->name('validateEducation');
-    // Route::post('/student/validate/family', [StudentController::class, 'validateFamily'])->name('validateFamily');
-    // Route::post('/student/validate/additional-info', [StudentController::class, 'validateAdditionalInfo'])->name('validateAdditionalInfo');
+    Route::post('/student/validate/student-info', [StudentController::class, 'validateStudentInfo'])->name('validateStudentInfo');
+    Route::post('/student/validate/student-address', [StudentController::class, 'validateAddress'])->name('validateAddress');
+    Route::post('/student/validate/education', [StudentController::class, 'validateEducation'])->name('validateEducation');
+    Route::post('/student/validate/family', [StudentController::class, 'validateFamily'])->name('validateFamily');
+    Route::post('/student/validate/additional-info', [StudentController::class, 'validateAdditionalInfo'])->name('validateAdditionalInfo');
 
-    // Route::post('/student/store', [StudentController::class, 'store'])->name('storeStudent');
+    Route::post('/student/store', [StudentController::class, 'store'])->name('storeStudent');
 
     Route::get('/student/success', [StudentController::class, 'success'])->name('success');
 });

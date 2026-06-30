@@ -100,8 +100,6 @@ export default function Index() {
                 params: filter,
             });
 
-            console.log(filter);
-
             setStudents(data);
         } catch (error) {
             console.error('Error fetching students', error);
