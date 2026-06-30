@@ -2,7 +2,8 @@ import { usePage } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
 import * as htmlToImage from 'html-to-image';
 import { Button } from '@/components/ui/button';
-import { DownloadIcon, HomeIcon } from 'lucide-react';
+import { DownloadIcon } from 'lucide-react';
+
 type PageProps = {
     success_data: {
         ref_number: string;
@@ -15,31 +16,50 @@ type PageProps = {
 
 export default function Index() {
     const { success_data } = usePage<PageProps>().props;
-
     const cardRef = useRef<HTMLDivElement>(null);
+
+    const downloadImage = async () => {
+        if (!cardRef.current || !success_data) return;
+
+        try {
+            const dataUrl = await htmlToImage.toPng(cardRef.current, {
+                cacheBust: true,
+                pixelRatio: 2,
+            });
+
+            const link = document.createElement('a');
+            link.download = `registration-${success_data.ref_number}.png`;
+            link.href = dataUrl;
+            link.click();
+        } catch (err) {
+            console.error('Failed to generate confirmation image:', err);
+        }
+    };
+
+    useEffect(() => {
+        if (!success_data) return;
+
+        // Preload the background image before capturing,
+        // otherwise the PNG can be exported before it finishes loading.
+        const bgImage = new Image();
+        bgImage.src = '/chmsu.webp';
+
+        const triggerDownload = () => downloadImage();
+
+        if (bgImage.complete) {
+            triggerDownload();
+        } else {
+            bgImage.onload = triggerDownload;
+            bgImage.onerror = triggerDownload; // fallback so it doesn't hang forever
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [success_data]);
 
     if (!success_data) {
         window.location.href = '/';
         return null;
     }
-
-    const downloadImage = async () => {
-        if (!cardRef.current) return;
-
-        const dataUrl = await htmlToImage.toPng(cardRef.current, {
-            cacheBust: true,
-            pixelRatio: 2,
-        });
-
-        const link = document.createElement('a');
-        link.download = `registration-${success_data.ref_number}.png`;
-        link.href = dataUrl;
-        link.click();
-    };
-
-    useEffect(() => {
-        downloadImage();
-    }, [success_data]);
 
     return (
         <div
@@ -61,11 +81,16 @@ export default function Index() {
                         CHMSU - OSIS
                     </h1>
                     <h1 className="text-center text-xl font-semibold">
-                        Registration Successful
+                        Registrar Form Submitted Successfully
                     </h1>
 
                     <p className="text-center text-sm text-muted-foreground">
-                        Your application has been successfully submitted.
+                        You have successfully completed the Registrar form.
+                    </p>
+                    <p className="text-center text-sm text-muted-foreground">
+                        Please take a screenshot or download this confirmation.
+                        You will need your reference number to fill up the
+                        Guidance and Scholarship forms.
                     </p>
                 </div>
 
@@ -96,7 +121,7 @@ export default function Index() {
                 {/* Actions */}
                 <div className="mt-6 flex flex-col gap-3">
                     <Button type="button" onClick={downloadImage}>
-                        Download <DownloadIcon />
+                        Download Confirmation <DownloadIcon />
                     </Button>
 
                     <a

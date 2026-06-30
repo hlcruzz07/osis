@@ -131,7 +131,7 @@ class QuestionSeeder extends Seeder
 
         SubQuestion::create([
             'question_id' => $question7->id,
-            'sub_question' => 'Please specify your ethnic group',
+            'sub_question' => 'If checked, please specify: ',
             'answer_type' => 'text',
             'is_required' => false,
         ]);

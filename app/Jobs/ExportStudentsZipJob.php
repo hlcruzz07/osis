@@ -2,13 +2,12 @@
 
 namespace App\Jobs;
 
-use App\Exports\StudentFullExport;
+use App\Exports\StudentsCollectionExport;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
-use ZipArchive;
 
 class ExportStudentsZipJob implements ShouldQueue
 {
@@ -33,36 +32,21 @@ class ExportStudentsZipJob implements ShouldQueue
             mkdir($exportDir, 0755, true);
         }
 
-        $zipPath = $exportDir . '/students.zip';
-        $zip     = new ZipArchive();
+        $excelPath = $exportDir . '/students.xlsx';
 
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            Log::error("ExportStudentsZipJob: cannot create ZIP at {$zipPath}", [
-                'status'  => $zip->getStatusString(),
-                'dir_exists' => is_dir($exportDir),
-                'writable'   => is_writable($exportDir),
-            ]);
-            return;
-        }
-
-        foreach ($this->students as $student) {
-            // Build a safe filename from the student's full name
-            $fullName = implode(' ', array_filter([
-                $student->fname,
-                $student->mname,
-                $student->lname,
-                $student->suffix,
-            ]));
-
-            $safeFileName = trim(preg_replace('/[^\w\-. ]/u', '_', $fullName));
-            $safeFileName = $safeFileName ?: "student_{$student->id}";
-
-            $zip->addFromString(
-                "students/{$safeFileName}.xlsx",
-                Excel::raw(new StudentFullExport($student), \Maatwebsite\Excel\Excel::XLSX)
+        try {
+            Excel::store(
+                new StudentsCollectionExport($this->students),
+                'exports/students.xlsx',
+                'local'
             );
-        }
 
-        $zip->close();
+            Log::info("ExportStudentsZipJob: Successfully created single Excel file at {$excelPath}");
+        } catch (\Exception $e) {
+            Log::error("ExportStudentsZipJob: Failed to create Excel file", [
+                'error' => $e->getMessage(),
+                'path'  => $excelPath,
+            ]);
+        }
     }
 }

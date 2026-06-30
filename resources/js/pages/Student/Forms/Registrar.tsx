@@ -47,7 +47,6 @@ import {
     cn,
     fetchBrgyByCityId,
     fetchCitiesByProvinceId,
-    fetchCitizenship,
     fetchIslandGroup,
     fetchProvinceByRegionId,
     fetchRegionsByIslandId,
@@ -66,7 +65,6 @@ import {
     CheckIcon,
     ChevronsUpDown,
     MailIcon,
-    MapPinHouseIcon,
     School,
     SendIcon,
     StarIcon,
@@ -94,32 +92,17 @@ export default function Registrar() {
         (item) => item.title === 'Suffix',
     )?.dropdowns;
 
-    const yearLevelsArr = dropdowns.find(
-        (item) => item.title === 'Year Levels',
-    )?.dropdowns;
-
     const campusArr = dropdowns.find(
         (item) => item.title === 'Campuses',
     )?.dropdowns;
 
-    const sexualOrientArr = dropdowns.find(
-        (item) => item.title === 'Sexual Orientation',
-    )?.dropdowns;
     const civilStatusArr = dropdowns.find(
         (item) => item.title === 'Civil Status',
-    )?.dropdowns;
-
-    const lifeStatusArr = dropdowns.find(
-        (item) => item.title === 'Life Status',
     )?.dropdowns;
 
     const coursesArr = dropdowns
         .find((item) => item.title === 'Courses')
         ?.dropdowns.map((item: any) => item.name);
-
-    const studentTypeArr = dropdowns.find(
-        (item) => item.title === 'Student Type',
-    )?.dropdowns;
 
     const schoolTypeArr = dropdowns.find(
         (item) => item.title === 'School Type',
@@ -179,20 +162,22 @@ export default function Registrar() {
             suffix: null as null | string,
             birthdate: '',
             birthplace: '',
-            sexual_orient: '',
+            gender: '',
             civil_status: '',
             email: '',
             mobile_num: null as null | string,
             date_admitted: '',
             campus: '',
-            year_level: '',
             course: '',
             major: null as null | string,
             has_major: false,
-            student_type: '',
             is_first_generation_student: false,
             is_indigenous_people: false,
             ethnic_group: null as null | string,
+            student_type: '' as string,
+            scholarship_program: null as null | string,
+            scholarship_contact: null as null | string,
+            scholarship_address: null as null | string,
         },
 
         address: {
@@ -211,16 +196,13 @@ export default function Registrar() {
         answers: [],
     });
 
+    console.log(data);
     const educAttainmentArr = dropdowns.find(
         (item) => item.title === 'Educational Attainment',
     )?.dropdowns;
 
     const familyRoleArr = dropdowns.find(
         (item) => item.title === 'Family Role',
-    )?.dropdowns;
-
-    const religionArr = dropdowns.find(
-        (item) => item.title === 'Religion',
     )?.dropdowns;
 
     const [selectedGuardian, setSelectedGuardian] = useState<string>('');
@@ -240,26 +222,23 @@ export default function Registrar() {
         [key: number]: BrgyProps[];
     }>({});
 
-    const [citizenshipArr, setCitizenshipArr] = useState<string[]>([]);
+    const [guardianUseSameAddress, setGuardianUseSameAddress] = useState<{
+        [key: number]: boolean;
+    }>({});
 
     // Initialize Mother and Father as default guardians
     useEffect(() => {
-        setSelectedGuardians(['Mother', 'Father']);
-        setData('guardians', [
+        const guardians = ['Mother', 'Father'];
+
+        const guardianData = [
             {
                 role: 'Mother',
                 fname: '',
                 mname: null,
                 lname: '',
                 suffix: null,
-                birthdate: '',
-                birthplace: '',
                 mobile_num: null,
-                religion: '',
-                citizenship: '',
                 highest_educ_attainment: '',
-                life_status: '',
-                occupation: '',
                 is_contact_person: false,
                 address: {
                     island: '',
@@ -276,14 +255,8 @@ export default function Registrar() {
                 mname: null,
                 lname: '',
                 suffix: null,
-                birthdate: '',
-                birthplace: '',
                 mobile_num: null,
-                religion: '',
-                citizenship: '',
                 highest_educ_attainment: '',
-                life_status: '',
-                occupation: '',
                 is_contact_person: false,
                 address: {
                     island: '',
@@ -294,11 +267,37 @@ export default function Registrar() {
                     zip_code: null,
                 },
             },
-        ] as unknown as any);
-    }, []);
+        ];
+
+        if (data.student.civil_status === 'Married') {
+            guardians.push('Spouse');
+
+            guardianData.push({
+                role: 'Spouse',
+                fname: '',
+                mname: null,
+                lname: '',
+                suffix: null,
+                mobile_num: null,
+                highest_educ_attainment: '',
+                is_contact_person: false,
+                address: {
+                    island: '',
+                    region: '',
+                    province: '',
+                    city: '',
+                    brgy: '',
+                    zip_code: null,
+                },
+            });
+        }
+
+        setSelectedGuardians(guardians);
+        setData('guardians', guardianData as any);
+        setGuardianUseSameAddress({});
+    }, [data.student.civil_status]);
 
     useEffect(() => {
-        fetchCitizenship().then(setCitizenshipArr);
         fetchIslandGroup().then(setIslandGroup);
     }, []);
 
@@ -549,71 +548,35 @@ export default function Registrar() {
         });
     };
 
-    const [isUsingAddress, setIsUsingAddress] = useState(false);
-
-    const useStudentAddress = async (index: number) => {
-        setIsUsingAddress(true);
-        toast.loading('Using student address...', { id: 'copy-address' });
-
-        try {
-            const studentAddress = data.address;
-
-            const island = islandGroup.find(
-                (i) => i.island_name === studentAddress.island,
-            );
-            if (!island) throw new Error('Island not found.');
-
-            const regions = await fetchRegionsByIslandId(
-                Number(island.island_id),
-            );
-            const region = regions.find(
-                (r) =>
-                    `${r.region_name} - ${r.region_description}` ===
-                    studentAddress.region,
-            );
-
-            const provinces = await fetchProvinceByRegionId(
-                Number(region?.region_id),
-            );
-            const province = provinces.find(
-                (p) => p.province_name === studentAddress.province,
-            );
-
-            const cities = await fetchCitiesByProvinceId(
-                Number(province?.province_id),
-            );
-            const city = cities.find(
-                (c) => c.municipality_name === studentAddress.city,
-            );
-
-            const brgys = await fetchBrgyByCityId(
-                Number(city?.municipality_id),
-            );
-
-            setGuardianRegions((prev) => ({ ...prev, [index]: regions }));
-            setGuardianProvinces((prev) => ({ ...prev, [index]: provinces }));
-            setGuardianCities((prev) => ({ ...prev, [index]: cities }));
-            setGuardianBrgys((prev) => ({ ...prev, [index]: brgys }));
-
-            setTimeout(() => {
-                setData(`guardians.${index}.address`, {
-                    island: studentAddress.island,
-                    region: studentAddress.region,
-                    province: studentAddress.province,
-                    city: studentAddress.city,
-                    brgy: studentAddress.brgy,
-                    zip_code: studentAddress.zip_code,
-                });
-
-                toast.success('Student address used successfully', {
-                    id: 'copy-address',
-                });
-                setIsUsingAddress(false);
-            }, 100);
-        } catch (error) {
-            console.error('Error copying address:', error);
-            toast.error('Failed to copy address', { id: 'copy-address' });
-            setIsUsingAddress(false);
+    const handleGuardianSameAddress = (index: number, checked: boolean) => {
+        if (checked) {
+            if (!canUseStudentAddress()) {
+                toast.error('Please fill in your current address first.');
+                return;
+            }
+            setGuardianUseSameAddress((prev) => ({ ...prev, [index]: true }));
+            setData(`guardians.${index}.address`, {
+                island: data.address.island,
+                region: data.address.region,
+                province: data.address.province,
+                city: data.address.city,
+                brgy: data.address.brgy,
+                zip_code: data.address.zip_code,
+            });
+        } else {
+            setGuardianUseSameAddress((prev) => ({ ...prev, [index]: false }));
+            setData(`guardians.${index}.address`, {
+                island: '',
+                region: '',
+                province: '',
+                city: '',
+                brgy: '',
+                zip_code: null,
+            });
+            setGuardianRegions((prev) => ({ ...prev, [index]: [] }));
+            setGuardianProvinces((prev) => ({ ...prev, [index]: [] }));
+            setGuardianCities((prev) => ({ ...prev, [index]: [] }));
+            setGuardianBrgys((prev) => ({ ...prev, [index]: [] }));
         }
     };
 
@@ -657,14 +620,8 @@ export default function Registrar() {
             school_name: '',
             school_address: '',
             school_type: '',
-            year_graduated: '',
-            general_average: '',
+            year_graduated: null,
             strand: null,
-            course: null,
-            academic_year: null,
-            scholarship_program: null,
-            scholarship_address: null,
-            scholarship_mobile_num: null,
         }));
         setData('educations', educations);
     }, []);
@@ -674,14 +631,8 @@ export default function Registrar() {
         school_name: '',
         school_address: '',
         school_type: '',
-        year_graduated: '',
-        general_average: '',
+        year_graduated: null,
         strand: null,
-        course: null,
-        academic_year: null,
-        scholarship_program: null,
-        scholarship_address: null,
-        scholarship_mobile_num: null,
     });
 
     const toggleEducLevel = (level: string) => {
@@ -969,27 +920,22 @@ export default function Registrar() {
                     </div>
                     <div className="flex flex-col gap-3">
                         <Label>
-                            Sex Orientation
+                            Gender
                             <Asterisk color="red" size={12} />
                         </Label>
                         <Select
-                            value={selectedSexOrient ?? ''}
+                            value={data.gender}
                             onValueChange={(value) => {
-                                setSelectedOrient(value);
-                                if (value !== 'Others') {
-                                    setData('student.sexual_orient', value);
-                                    return;
-                                }
-                                setData('student.sexual_orient', '');
+                                setData('student.gender', value);
                             }}
-                            name="student.sexual_orient"
+                            name="student.gender"
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Choose an option" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    {sexualOrientArr?.map((item, index) => (
+                                    {['Male', 'Female'].map((item, index) => (
                                         <SelectItem key={index} value={item}>
                                             {item}
                                         </SelectItem>
@@ -998,21 +944,7 @@ export default function Registrar() {
                             </SelectContent>
                         </Select>
 
-                        {selectedSexOrient === 'Others' && (
-                            <Input
-                                value={data.student.sexual_orient}
-                                maxLength={25}
-                                onChange={(e) =>
-                                    setData(
-                                        'student.sexual_orient',
-                                        capitalizeString(e.target.value),
-                                    )
-                                }
-                                name="student.sexual_orient"
-                                placeholder="Please specify your sex orientation"
-                            />
-                        )}
-                        <InputError message={errors['student.sexual_orient']} />
+                        <InputError message={errors['student.gender']} />
                     </div>
                 </TwoColumnInput>
 
@@ -1088,61 +1020,6 @@ export default function Registrar() {
                             }}
                         />
                         <InputError message={errors['student.date_admitted']} />
-                    </div>
-                    <div className="flex flex-col gap-3">
-                        <Label>
-                            Student Type
-                            <Asterisk color="red" size={12} />
-                        </Label>
-                        <Select
-                            value={data.student.student_type}
-                            name="student.student_type"
-                            onValueChange={(value) => {
-                                setData('student.student_type', value);
-                            }}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Choose an option" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {studentTypeArr?.map((item, index) => (
-                                        <SelectItem key={index} value={item}>
-                                            {item}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                        <InputError message={errors['student.student_type']} />
-                    </div>
-                </TwoColumnInput>
-                <TwoColumnInput>
-                    <div className="flex flex-col gap-3">
-                        <Label>
-                            Year Level <Asterisk color="red" size={12} />
-                        </Label>
-                        <Select
-                            value={data.student.year_level}
-                            onValueChange={(value) => {
-                                setData('student.year_level', value);
-                            }}
-                            name="student.year_level"
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Choose an option" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {yearLevelsArr?.map((item, index) => (
-                                        <SelectItem key={index} value={item}>
-                                            {item}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                        <InputError message={errors['student.year_level']} />
                     </div>
                     <div className="flex flex-col gap-3">
                         <Label>
@@ -1802,16 +1679,18 @@ export default function Registrar() {
                                     description={`Please supply accurate and up-to-date information regarding the applicant's ${member.toLocaleLowerCase()} for official records.`}
                                 />
 
-                                {member !== 'Mother' && member !== 'Father' && (
-                                    <Button
-                                        type="button"
-                                        variant="destructive"
-                                        size="sm"
-                                        onClick={() => deleteMember(member)}
-                                    >
-                                        <Trash2Icon />
-                                    </Button>
-                                )}
+                                {member !== 'Mother' &&
+                                    member !== 'Father' &&
+                                    member !== 'Spouse' && (
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="sm"
+                                            onClick={() => deleteMember(member)}
+                                        >
+                                            <Trash2Icon />
+                                        </Button>
+                                    )}
                             </div>
 
                             <TwoColumnInput>
@@ -1951,62 +1830,6 @@ export default function Registrar() {
                                 )}
                             </TwoColumnInput>
 
-                            <TwoColumnInput>
-                                <div className="flex flex-col gap-3">
-                                    <Label>
-                                        {member + "'s"} Birthdate
-                                        <Asterisk size={12} color="red" />
-                                    </Label>
-                                    <Input
-                                        type="date"
-                                        value={
-                                            data.guardians?.[index]
-                                                ?.birthdate ?? ''
-                                        }
-                                        onChange={(e) =>
-                                            setData(
-                                                `guardians.${index}.birthdate`,
-                                                e.target.value,
-                                            )
-                                        }
-                                        placeholder="Enter Birthdate"
-                                    />
-                                    <InputError
-                                        message={
-                                            errors[
-                                                `guardians.${index}.birthdate`
-                                            ]
-                                        }
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-3">
-                                    <Label>{member + "'s"} Birthplace</Label>
-                                    <Input
-                                        type="text"
-                                        value={
-                                            data.guardians?.[index]
-                                                ?.birthplace ?? ''
-                                        }
-                                        onChange={(e) =>
-                                            setData(
-                                                `guardians.${index}.birthplace`,
-                                                capitalizeString(
-                                                    e.target.value,
-                                                ),
-                                            )
-                                        }
-                                        placeholder="Enter Birthplace"
-                                    />
-                                    <InputError
-                                        message={
-                                            errors[
-                                                `guardians.${index}.birthplace`
-                                            ]
-                                        }
-                                    />
-                                </div>
-                            </TwoColumnInput>
-
                             <div className="flex flex-col gap-3">
                                 <LabelExample
                                     title={member + "'s Mobile Number"}
@@ -2048,369 +1871,68 @@ export default function Registrar() {
                                 />
                             </div>
 
-                            <TwoColumnInput>
-                                <div className="flex flex-col gap-3">
-                                    <Label>
-                                        {member + "'s"} Religion{' '}
-                                        <Asterisk size={12} color="red" />
-                                    </Label>
-                                    <Select
-                                        value={data.guardians[index]?.religion}
-                                        onValueChange={(value) =>
-                                            setData(
-                                                `guardians.${index}.religion`,
-                                                value,
-                                            )
-                                        }
-                                        name={data.guardians[index]?.religion}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Choose an option" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                {religionArr?.map(
-                                                    (item, index) => (
-                                                        <SelectItem
-                                                            key={index}
-                                                            value={item}
-                                                        >
-                                                            {item}
-                                                        </SelectItem>
-                                                    ),
-                                                )}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError
-                                        message={
-                                            errors[
-                                                `guardians.${index}.religion`
-                                            ]
-                                        }
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-3">
-                                    <Label>
-                                        {member + "'s"} Citizenship{' '}
-                                        <Asterisk size={12} color="red" />
-                                    </Label>
-                                    <Input
-                                        type="hidden"
-                                        name={
-                                            data.guardians?.[index]
-                                                ?.citizenship ?? ''
-                                        }
-                                    />
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                variant="outline"
-                                                role="combobox"
-                                                className="w-full justify-between"
-                                            >
-                                                {data.guardians?.[index]
-                                                    ?.citizenship ||
-                                                    'Choose an option'}
-                                                <ChevronsUpDown className="opacity-50" />
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent
-                                            className="p-0"
-                                            align="start"
-                                        >
-                                            <Command>
-                                                <CommandInput
-                                                    placeholder="Search citizenship..."
-                                                    className="h-9"
-                                                />
-                                                <CommandList>
-                                                    <CommandEmpty>
-                                                        No citizenship found.
-                                                    </CommandEmpty>
-                                                    <CommandGroup>
-                                                        {citizenshipArr.map(
-                                                            (
-                                                                item,
-                                                                itemIndex,
-                                                            ) => (
-                                                                <CommandItem
-                                                                    key={
-                                                                        itemIndex
-                                                                    }
-                                                                    onSelect={() => {
-                                                                        setData(
-                                                                            `guardians.${index}.citizenship`,
-                                                                            item,
-                                                                        );
-                                                                    }}
-                                                                >
-                                                                    {item}
-                                                                </CommandItem>
-                                                            ),
-                                                        )}
-                                                    </CommandGroup>
-                                                </CommandList>
-                                            </Command>
-                                        </PopoverContent>
-                                    </Popover>
-                                    <InputError
-                                        message={
-                                            errors[
-                                                `guardians.${index}.citizenship`
-                                            ]
-                                        }
-                                    />
-                                </div>
-                            </TwoColumnInput>
-
-                            <TwoColumnInput>
-                                <div className="flex flex-col gap-3">
-                                    <Label>
-                                        {member + "'s"} Highest Educational
-                                        Attainment{' '}
-                                        <Asterisk size={12} color="red" />
-                                    </Label>
-                                    <Select
-                                        value={
-                                            data.guardians[index]
-                                                ?.highest_educ_attainment
-                                        }
-                                        onValueChange={(value) =>
-                                            setData(
-                                                `guardians.${index}.highest_educ_attainment`,
-                                                value,
-                                            )
-                                        }
-                                        name={
-                                            data.guardians?.[index]
-                                                ?.highest_educ_attainment ?? ''
-                                        }
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Choose an option" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                {educAttainmentArr?.map(
-                                                    (item, index) => (
-                                                        <SelectItem
-                                                            key={index}
-                                                            value={item}
-                                                        >
-                                                            {item}
-                                                        </SelectItem>
-                                                    ),
-                                                )}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError
-                                        message={
-                                            errors[
-                                                `guardians.${index}.highest_educ_attainment`
-                                            ]
-                                        }
-                                    />
-                                </div>
-                                <div className="flex flex-col gap-3">
-                                    <Label>
-                                        {member + "'s"} Life Status{' '}
-                                        <Asterisk size={12} color="red" />
-                                    </Label>
-                                    <Select
-                                        value={
-                                            data.guardians?.[index]?.life_status
-                                        }
-                                        onValueChange={(value) => {
-                                            if (value === 'Deceased') {
-                                                setData(
-                                                    `guardians.${index}.is_contact_person`,
-                                                    false,
-                                                );
-                                                setData(
-                                                    `guardians.${index}.occupation`,
-                                                    null,
-                                                );
-                                            }
-                                            setData(
-                                                `guardians.${index}.life_status`,
-                                                value,
-                                            );
-                                        }}
-                                        name={
-                                            data.guardians?.[index]
-                                                ?.life_status ?? ''
-                                        }
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Choose an option" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                {lifeStatusArr?.map(
-                                                    (item, index) => (
-                                                        <SelectItem
-                                                            key={index}
-                                                            value={item}
-                                                        >
-                                                            {item}
-                                                        </SelectItem>
-                                                    ),
-                                                )}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-
-                                    <InputError
-                                        message={
-                                            errors[
-                                                `guardians.${index}.life_status`
-                                            ]
-                                        }
-                                    />
-
-                                    {data.guardians[index]?.life_status ===
-                                        'Deceased' && (
-                                        <>
-                                            <div className="flex flex-col gap-3">
-                                                <Label>
-                                                    {member + "'s"} Cause of
-                                                    Death
-                                                </Label>
-                                                <Input
-                                                    type="text"
-                                                    maxLength={100}
-                                                    value={
-                                                        data.guardians?.[index]
-                                                            ?.cause_of_death ??
-                                                        ''
-                                                    }
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            `guardians.${index}.cause_of_death`,
-                                                            capitalizeString(
-                                                                e.target.value,
-                                                            ),
-                                                        )
-                                                    }
-                                                    name={
-                                                        data.guardians?.[index]
-                                                            ?.cause_of_death ??
-                                                        ''
-                                                    }
-                                                    placeholder="Enter Cause of Death"
-                                                />
-                                                <InputError
-                                                    message={
-                                                        errors[
-                                                            `guardians.${index}.cause_of_death`
-                                                        ]
-                                                    }
-                                                />
-                                            </div>
-
-                                            <div className="flex flex-col gap-3">
-                                                <LabelExample
-                                                    title={
-                                                        member +
-                                                        "'s Year of Death"
-                                                    }
-                                                    isRequired={false}
-                                                    example="2012, 2015"
-                                                />
-                                                <Input
-                                                    type="number"
-                                                    maxLength={100}
-                                                    value={
-                                                        data.guardians?.[index]
-                                                            ?.year_of_death ??
-                                                        ''
-                                                    }
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            `guardians.${index}.year_of_death`,
-                                                            e.target.value.slice(
-                                                                0,
-                                                                4,
-                                                            ),
-                                                        )
-                                                    }
-                                                    placeholder="Enter Year of Death"
-                                                    name={
-                                                        data.guardians?.[index]
-                                                            ?.year_of_death ??
-                                                        ''
-                                                    }
-                                                />
-                                                <InputError
-                                                    message={
-                                                        errors[
-                                                            `guardians.${index}.year_of_death`
-                                                        ]
-                                                    }
-                                                />
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            </TwoColumnInput>
-
                             <div className="flex flex-col gap-3">
-                                <Label>{member + "'s"} Occupation</Label>
-                                <Input
-                                    type="text"
-                                    maxLength={100}
-                                    disabled={
-                                        data.guardians?.[index]?.life_status ===
-                                        'Deceased'
-                                    }
+                                <Label>
+                                    {member + "'s"} Highest Educational
+                                    Attainment{' '}
+                                    <Asterisk size={12} color="red" />
+                                </Label>
+                                <Select
                                     value={
-                                        data.guardians?.[index]?.occupation ??
-                                        ''
+                                        data.guardians[index]
+                                            ?.highest_educ_attainment
                                     }
-                                    onChange={(e) =>
+                                    onValueChange={(value) =>
                                         setData(
-                                            `guardians.${index}.occupation`,
-                                            capitalizeString(e.target.value),
+                                            `guardians.${index}.highest_educ_attainment`,
+                                            value,
                                         )
                                     }
-                                    placeholder="Enter Occupation"
                                     name={
-                                        data.guardians?.[index]?.occupation ??
-                                        ''
+                                        data.guardians?.[index]
+                                            ?.highest_educ_attainment ?? ''
                                     }
-                                />
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Choose an option" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {educAttainmentArr?.map(
+                                                (item, index) => (
+                                                    <SelectItem
+                                                        key={index}
+                                                        value={item}
+                                                    >
+                                                        {item}
+                                                    </SelectItem>
+                                                ),
+                                            )}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
                                 <InputError
                                     message={
-                                        errors[`guardians.${index}.occupation`]
+                                        errors[
+                                            `guardians.${index}.highest_educ_attainment`
+                                        ]
                                     }
                                 />
                             </div>
 
                             <div className="flex flex-col gap-3">
                                 <FieldLabel
-                                    className={`${
-                                        isSelectedAsContactPerson(
-                                            member,
-                                            data.guardians,
-                                        ) ||
-                                        data.guardians?.[index]?.life_status ===
-                                            'Deceased'
-                                            ? 'cursor-not-allowed opacity-50'
-                                            : 'cursor-pointer'
-                                    }`}
+                                    className={`${isSelectedAsContactPerson(
+                                        member,
+                                        data.guardians,
+                                    )}`}
                                 >
                                     <Field orientation="horizontal">
                                         <Checkbox
-                                            disabled={
-                                                isSelectedAsContactPerson(
-                                                    member,
-                                                    data.guardians,
-                                                ) ||
-                                                data.guardians?.[index]
-                                                    ?.life_status === 'Deceased'
-                                            }
+                                            disabled={isSelectedAsContactPerson(
+                                                member,
+                                                data.guardians,
+                                            )}
                                             checked={
                                                 data.guardians?.[index]
                                                     ?.is_contact_person ?? false
@@ -2457,368 +1979,399 @@ export default function Registrar() {
                                 description={`Provide the complete address details of your ${member.toLocaleLowerCase()}, including island group, region, province, city/municipality, barangay and zip code.`}
                             />
 
-                            <div
-                                className={`space-y-5 ${isUsingAddress && 'opacity-60'}`}
-                            >
-                                <TwoColumnInput>
-                                    <div className="flex flex-col gap-3">
-                                        <Label>
-                                            {member + "'s"} Island Group
-                                            <Asterisk color="red" size={12} />
-                                        </Label>
-                                        <Select
-                                            value={
-                                                data.guardians?.[index]?.address
-                                                    ?.island
-                                            }
-                                            onValueChange={(value) => {
-                                                const selectedIsland =
-                                                    islandGroup.find(
-                                                        (island) =>
-                                                            island.island_name ===
-                                                            value,
-                                                    );
-                                                if (selectedIsland) {
-                                                    handleIslandSelect(
-                                                        index,
-                                                        value,
-                                                        Number(
-                                                            selectedIsland.island_id,
-                                                        ),
-                                                    );
+                            <FieldLabel className="cursor-pointer">
+                                <Field orientation="horizontal">
+                                    <Checkbox
+                                        checked={
+                                            !!guardianUseSameAddress[index]
+                                        }
+                                        onCheckedChange={(checked) =>
+                                            handleGuardianSameAddress(
+                                                index,
+                                                !!checked,
+                                            )
+                                        }
+                                    />
+                                    <FieldContent>
+                                        <FieldTitle>
+                                            Same as student's current address
+                                        </FieldTitle>
+                                    </FieldContent>
+                                </Field>
+                            </FieldLabel>
+
+                            {!guardianUseSameAddress[index] && (
+                                <div className="space-y-5">
+                                    <TwoColumnInput>
+                                        <div className="flex flex-col gap-3">
+                                            <Label>
+                                                {member + "'s"} Island Group
+                                                <Asterisk
+                                                    color="red"
+                                                    size={12}
+                                                />
+                                            </Label>
+                                            <Select
+                                                value={
+                                                    data.guardians?.[index]
+                                                        ?.address?.island
                                                 }
-                                            }}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Choose an option" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {islandGroup.map(
-                                                        (item, idx) => (
+                                                onValueChange={(value) => {
+                                                    const selectedIsland =
+                                                        islandGroup.find(
+                                                            (island) =>
+                                                                island.island_name ===
+                                                                value,
+                                                        );
+                                                    if (selectedIsland) {
+                                                        handleIslandSelect(
+                                                            index,
+                                                            value,
+                                                            Number(
+                                                                selectedIsland.island_id,
+                                                            ),
+                                                        );
+                                                    }
+                                                }}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Choose an option" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        {islandGroup.map(
+                                                            (item, idx) => (
+                                                                <SelectItem
+                                                                    key={idx}
+                                                                    value={
+                                                                        item.island_name
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        item.island_name
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError
+                                                message={
+                                                    errors[
+                                                        `guardians.${index}.address.island`
+                                                    ]
+                                                }
+                                            />
+                                        </div>
+                                        <div className="flex flex-col gap-3">
+                                            <Label>
+                                                {member + "'s"} Region
+                                                <Asterisk
+                                                    color="red"
+                                                    size={12}
+                                                />
+                                            </Label>
+                                            <Select
+                                                value={
+                                                    data.guardians?.[index]
+                                                        ?.address?.region
+                                                }
+                                                onValueChange={(value) => {
+                                                    const regionData =
+                                                        guardianRegions[
+                                                            index
+                                                        ]?.find(
+                                                            (r) =>
+                                                                `${r.region_name} - ${r.region_description}` ===
+                                                                value,
+                                                        );
+                                                    if (regionData) {
+                                                        handleRegionSelect(
+                                                            index,
+                                                            value,
+                                                            Number(
+                                                                regionData.region_id,
+                                                            ),
+                                                        );
+                                                    }
+                                                }}
+                                                disabled={
+                                                    !data.guardians?.[index]
+                                                        ?.address?.island
+                                                }
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Choose an option" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        {guardianRegions[
+                                                            index
+                                                        ]?.map((item, idx) => (
+                                                            <SelectItem
+                                                                key={idx}
+                                                                value={`${item.region_name} - ${item.region_description}`}
+                                                            >
+                                                                {`${item.region_name} - ${item.region_description}`}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError
+                                                message={
+                                                    errors[
+                                                        `guardians.${index}.address.region`
+                                                    ]
+                                                }
+                                            />
+                                        </div>
+                                    </TwoColumnInput>
+
+                                    <TwoColumnInput>
+                                        <div className="flex flex-col gap-3">
+                                            <Label>
+                                                {member + "'s"} Province
+                                                <Asterisk
+                                                    color="red"
+                                                    size={12}
+                                                />
+                                            </Label>
+                                            <Select
+                                                value={
+                                                    data.guardians?.[index]
+                                                        ?.address?.province
+                                                }
+                                                onValueChange={(value) => {
+                                                    const provinceData =
+                                                        guardianProvinces[
+                                                            index
+                                                        ]?.find(
+                                                            (p) =>
+                                                                p.province_name ===
+                                                                value,
+                                                        );
+                                                    if (provinceData) {
+                                                        handleProvinceSelect(
+                                                            index,
+                                                            value,
+                                                            Number(
+                                                                provinceData.province_id,
+                                                            ),
+                                                        );
+                                                    }
+                                                }}
+                                                disabled={
+                                                    !data.guardians?.[index]
+                                                        ?.address?.region
+                                                }
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Choose an option" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        {(
+                                                            guardianProvinces[
+                                                                index
+                                                            ] || []
+                                                        ).map((item, idx) => (
                                                             <SelectItem
                                                                 key={idx}
                                                                 value={
-                                                                    item.island_name
+                                                                    item.province_name
                                                                 }
                                                             >
                                                                 {
-                                                                    item.island_name
+                                                                    item.province_name
                                                                 }
                                                             </SelectItem>
-                                                        ),
-                                                    )}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                        <InputError
-                                            message={
-                                                errors[
-                                                    `guardians.${index}.address.island`
-                                                ]
-                                            }
-                                        />
-                                    </div>
-                                    <div className="flex flex-col gap-3">
-                                        <Label>
-                                            {member + "'s"} Region
-                                            <Asterisk color="red" size={12} />
-                                        </Label>
-                                        <Select
-                                            value={
-                                                data.guardians?.[index]?.address
-                                                    ?.region
-                                            }
-                                            onValueChange={(value) => {
-                                                const regionData =
-                                                    guardianRegions[
-                                                        index
-                                                    ]?.find(
-                                                        (r) =>
-                                                            `${r.region_name} - ${r.region_description}` ===
-                                                            value,
-                                                    );
-                                                if (regionData) {
-                                                    handleRegionSelect(
-                                                        index,
-                                                        value,
-                                                        Number(
-                                                            regionData.region_id,
-                                                        ),
-                                                    );
+                                                        ))}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError
+                                                message={
+                                                    errors[
+                                                        `guardians.${index}.address.province`
+                                                    ]
                                                 }
-                                            }}
-                                            disabled={
-                                                !data.guardians?.[index]
-                                                    ?.address?.island
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Choose an option" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {guardianRegions[
-                                                        index
-                                                    ]?.map((item, idx) => (
-                                                        <SelectItem
-                                                            key={idx}
-                                                            value={`${item.region_name} - ${item.region_description}`}
-                                                        >
-                                                            {`${item.region_name} - ${item.region_description}`}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                        <InputError
-                                            message={
-                                                errors[
-                                                    `guardians.${index}.address.region`
-                                                ]
-                                            }
-                                        />
-                                    </div>
-                                </TwoColumnInput>
-
-                                <TwoColumnInput>
-                                    <div className="flex flex-col gap-3">
-                                        <Label>
-                                            {member + "'s"} Province
-                                            <Asterisk color="red" size={12} />
-                                        </Label>
-                                        <Select
-                                            value={
-                                                data.guardians?.[index]?.address
-                                                    ?.province
-                                            }
-                                            onValueChange={(value) => {
-                                                const provinceData =
-                                                    guardianProvinces[
-                                                        index
-                                                    ]?.find(
-                                                        (p) =>
-                                                            p.province_name ===
-                                                            value,
-                                                    );
-                                                if (provinceData) {
-                                                    handleProvinceSelect(
-                                                        index,
-                                                        value,
-                                                        Number(
-                                                            provinceData.province_id,
-                                                        ),
-                                                    );
+                                            />
+                                        </div>
+                                        <div className="flex flex-col gap-3">
+                                            <Label>
+                                                {member + "'s"} City /
+                                                Municipality
+                                                <Asterisk
+                                                    color="red"
+                                                    size={12}
+                                                />
+                                            </Label>
+                                            <Select
+                                                value={
+                                                    data.guardians?.[index]
+                                                        ?.address?.city ?? ''
                                                 }
-                                            }}
-                                            disabled={
-                                                !data.guardians?.[index]
-                                                    ?.address?.region
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Choose an option" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {(
-                                                        guardianProvinces[
-                                                            index
-                                                        ] || []
-                                                    ).map((item, idx) => (
-                                                        <SelectItem
-                                                            key={idx}
-                                                            value={
-                                                                item.province_name
-                                                            }
-                                                        >
-                                                            {item.province_name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                        <InputError
-                                            message={
-                                                errors[
-                                                    `guardians.${index}.address.province`
-                                                ]
-                                            }
-                                        />
-                                    </div>
-                                    <div className="flex flex-col gap-3">
-                                        <Label>
-                                            {member + "'s"} City / Municipality
-                                            <Asterisk color="red" size={12} />
-                                        </Label>
-                                        <Select
-                                            value={
-                                                data.guardians?.[index]?.address
-                                                    ?.city ?? ''
-                                            }
-                                            onValueChange={(value) => {
-                                                const cityData = (
-                                                    guardianCities[index] || []
-                                                ).find(
-                                                    (c) =>
-                                                        c.municipality_name ===
-                                                        value,
-                                                );
-                                                if (cityData) {
-                                                    handleCitySelect(
-                                                        index,
-                                                        cityData.municipality_name,
-                                                        Number(
-                                                            cityData.municipality_id,
-                                                        ),
-                                                    );
-                                                } else {
-                                                    setData(
-                                                        `guardians.${index}.address.city`,
-                                                        value,
-                                                    );
-                                                }
-                                            }}
-                                            disabled={
-                                                !data.guardians?.[index]
-                                                    ?.address?.province
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Choose an option" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {(
+                                                onValueChange={(value) => {
+                                                    const cityData = (
                                                         guardianCities[index] ||
                                                         []
-                                                    ).map((c, cIdx) => (
-                                                        <SelectItem
-                                                            key={cIdx}
-                                                            value={
-                                                                c.municipality_name
-                                                            }
-                                                        >
-                                                            {
-                                                                c.municipality_name
-                                                            }
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                        <InputError
-                                            message={
-                                                errors[
-                                                    `guardians.${index}.address.city`
-                                                ]
-                                            }
-                                        />
-                                    </div>
-                                </TwoColumnInput>
+                                                    ).find(
+                                                        (c) =>
+                                                            c.municipality_name ===
+                                                            value,
+                                                    );
+                                                    if (cityData) {
+                                                        handleCitySelect(
+                                                            index,
+                                                            cityData.municipality_name,
+                                                            Number(
+                                                                cityData.municipality_id,
+                                                            ),
+                                                        );
+                                                    } else {
+                                                        setData(
+                                                            `guardians.${index}.address.city`,
+                                                            value,
+                                                        );
+                                                    }
+                                                }}
+                                                disabled={
+                                                    !data.guardians?.[index]
+                                                        ?.address?.province
+                                                }
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Choose an option" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        {(
+                                                            guardianCities[
+                                                                index
+                                                            ] || []
+                                                        ).map((c, cIdx) => (
+                                                            <SelectItem
+                                                                key={cIdx}
+                                                                value={
+                                                                    c.municipality_name
+                                                                }
+                                                            >
+                                                                {
+                                                                    c.municipality_name
+                                                                }
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError
+                                                message={
+                                                    errors[
+                                                        `guardians.${index}.address.city`
+                                                    ]
+                                                }
+                                            />
+                                        </div>
+                                    </TwoColumnInput>
 
-                                <TwoColumnInput>
-                                    <div className="flex flex-col gap-3">
-                                        <Label>
-                                            {member + "'s"} Barangay
-                                            <Asterisk color="red" size={12} />
-                                        </Label>
-                                        <Select
-                                            value={
-                                                data.guardians?.[index]?.address
-                                                    ?.brgy ?? ''
-                                            }
-                                            onValueChange={(value) =>
-                                                setData(
-                                                    `guardians.${index}.address.brgy`,
-                                                    value,
-                                                )
-                                            }
-                                            disabled={
-                                                !data.guardians?.[index]
-                                                    ?.address?.city
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Choose an option" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectGroup>
-                                                    {(
-                                                        guardianBrgys[index] ||
-                                                        []
-                                                    ).map((b, bIdx) => (
-                                                        <SelectItem
-                                                            key={bIdx}
-                                                            value={
-                                                                b.barangay_name
-                                                            }
-                                                        >
-                                                            {b.barangay_name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectGroup>
-                                            </SelectContent>
-                                        </Select>
-                                        <InputError
-                                            message={
-                                                errors[
-                                                    `guardians.${index}.address.brgy`
-                                                ]
-                                            }
-                                        />
-                                    </div>
-                                    <div className="flex flex-col gap-3">
-                                        <Label>
-                                            {member + "'s"} Zip Code
-                                            <Asterisk color="red" size={12} />
-                                        </Label>
-                                        <Input
-                                            type="number"
-                                            value={
-                                                data.guardians?.[index]?.address
-                                                    ?.zip_code ?? ''
-                                            }
-                                            onChange={(e) => {
-                                                const value =
-                                                    e.target.value.slice(0, 4);
-                                                setData(
-                                                    `guardians.${index}.address.zip_code`,
-                                                    value ? value : null,
-                                                );
-                                            }}
-                                            placeholder="Enter Zip Code"
-                                        />
-                                        <InputError
-                                            message={
-                                                errors[
-                                                    `guardians.${index}.address.zip_code`
-                                                ]
-                                            }
-                                        />
-                                    </div>
-                                </TwoColumnInput>
-                            </div>
-
-                            <Button
-                                disabled={
-                                    isUsingAddress || !canUseStudentAddress()
-                                }
-                                className="w-full"
-                                type="button"
-                                variant="secondary"
-                                onClick={() => useStudentAddress(index)}
-                            >
-                                {isUsingAddress ? (
-                                    <>
-                                        <Spinner /> Loading...
-                                    </>
-                                ) : (
-                                    <>
-                                        <MapPinHouseIcon /> Use Current Address
-                                    </>
-                                )}
-                            </Button>
+                                    <TwoColumnInput>
+                                        <div className="flex flex-col gap-3">
+                                            <Label>
+                                                {member + "'s"} Barangay
+                                                <Asterisk
+                                                    color="red"
+                                                    size={12}
+                                                />
+                                            </Label>
+                                            <Select
+                                                value={
+                                                    data.guardians?.[index]
+                                                        ?.address?.brgy ?? ''
+                                                }
+                                                onValueChange={(value) =>
+                                                    setData(
+                                                        `guardians.${index}.address.brgy`,
+                                                        value,
+                                                    )
+                                                }
+                                                disabled={
+                                                    !data.guardians?.[index]
+                                                        ?.address?.city
+                                                }
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Choose an option" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        {(
+                                                            guardianBrgys[
+                                                                index
+                                                            ] || []
+                                                        ).map((b, bIdx) => (
+                                                            <SelectItem
+                                                                key={bIdx}
+                                                                value={
+                                                                    b.barangay_name
+                                                                }
+                                                            >
+                                                                {
+                                                                    b.barangay_name
+                                                                }
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError
+                                                message={
+                                                    errors[
+                                                        `guardians.${index}.address.brgy`
+                                                    ]
+                                                }
+                                            />
+                                        </div>
+                                        <div className="flex flex-col gap-3">
+                                            <Label>
+                                                {member + "'s"} Zip Code
+                                                <Asterisk
+                                                    color="red"
+                                                    size={12}
+                                                />
+                                            </Label>
+                                            <Input
+                                                type="number"
+                                                value={
+                                                    data.guardians?.[index]
+                                                        ?.address?.zip_code ??
+                                                    ''
+                                                }
+                                                onChange={(e) => {
+                                                    const value =
+                                                        e.target.value.slice(
+                                                            0,
+                                                            4,
+                                                        );
+                                                    setData(
+                                                        `guardians.${index}.address.zip_code`,
+                                                        value ? value : null,
+                                                    );
+                                                }}
+                                                placeholder="Enter Zip Code"
+                                            />
+                                            <InputError
+                                                message={
+                                                    errors[
+                                                        `guardians.${index}.address.zip_code`
+                                                    ]
+                                                }
+                                            />
+                                        </div>
+                                    </TwoColumnInput>
+                                </div>
+                            )}
                         </div>
                     ))}
 
@@ -2884,7 +2437,7 @@ export default function Registrar() {
                     >
                         <HeadingSmall
                             title={`${item.education_level} Information`}
-                            description="Enter your school details including year graduated and general average."
+                            description="Enter your school information"
                         />
 
                         <TwoColumnInput>
@@ -3018,246 +2571,102 @@ export default function Registrar() {
                             </div>
                         )}
 
-                        <TwoColumnInput>
-                            <div className="flex flex-col gap-3">
-                                <LabelExample
-                                    title="Year Graduated"
-                                    isRequired
-                                    example="2020"
-                                />
-                                <Input
-                                    type="number"
-                                    value={
-                                        data.educations[index].year_graduated
-                                    }
-                                    name={`educations.${index}.year_graduated`}
-                                    onChange={(e) =>
-                                        setData(
-                                            `educations.${index}.year_graduated`,
-                                            e.target.value.slice(0, 4),
-                                        )
-                                    }
-                                    className="py-2"
-                                    placeholder="Enter Year Graduated"
-                                />
-                                <InputError
-                                    message={
-                                        errors[
-                                            `educations.${index}.year_graduated`
-                                        ]
-                                    }
-                                />
-                            </div>
-                            <div className="flex flex-col gap-3">
-                                <LabelExample
-                                    title="General Average"
-                                    isRequired
-                                    example="85.80"
-                                />
-                                <Input
-                                    type="number"
-                                    placeholder="Enter General Average"
-                                    value={
-                                        data.educations[index]
-                                            .general_average ?? ''
-                                    }
-                                    name={`educations.${index}.general_average`}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        if (value === '') {
-                                            setData(
-                                                `educations.${index}.general_average`,
-                                                null,
-                                            );
-                                            return;
-                                        }
-                                        setData(
-                                            `educations.${index}.general_average`,
-                                            value.replaceAll(' ', ''),
-                                        );
-                                    }}
-                                    className="py-2"
-                                />
-                                <InputError
-                                    message={
-                                        errors[
-                                            `educations.${index}.general_average`
-                                        ]
-                                    }
-                                />
-                            </div>
-                        </TwoColumnInput>
-
-                        {/* College / Grad School extra fields */}
-                        {(item.education_level === 'College' ||
-                            item.education_level === 'Grad School') && (
-                            <>
-                                <TwoColumnInput>
-                                    <div className="flex flex-col gap-3">
-                                        <Label>Course</Label>
-                                        <Input
-                                            type="text"
-                                            maxLength={150}
-                                            value={
-                                                data.educations[index].course ??
-                                                ''
-                                            }
-                                            name={`educations.${index}.course`}
-                                            onChange={(e) =>
-                                                setData(
-                                                    `educations.${index}.course`,
-                                                    capitalizeString(
-                                                        e.target.value,
-                                                    ),
-                                                )
-                                            }
-                                            className="py-2"
-                                            placeholder="Enter Course"
-                                        />
-                                        <InputError
-                                            message={
-                                                errors[
-                                                    `educations.${index}.course`
-                                                ]
-                                            }
-                                        />
-                                    </div>
-                                    <div className="flex flex-col gap-3">
-                                        <LabelExample
-                                            title="Academic Year"
-                                            isRequired={false}
-                                            example="2024-2025"
-                                        />
-                                        <Input
-                                            type="text"
-                                            maxLength={150}
-                                            value={
-                                                data.educations[index]
-                                                    .academic_year ?? ''
-                                            }
-                                            name={`educations.${index}.academic_year`}
-                                            onChange={(e) =>
-                                                setData(
-                                                    `educations.${index}.academic_year`,
-                                                    capitalizeString(
-                                                        e.target.value,
-                                                    ),
-                                                )
-                                            }
-                                            className="py-2"
-                                            placeholder="Enter Academic Year"
-                                        />
-                                        <InputError
-                                            message={
-                                                errors[
-                                                    `educations.${index}.academic_year`
-                                                ]
-                                            }
-                                        />
-                                    </div>
-                                </TwoColumnInput>
-
-                                <TwoColumnInput>
-                                    <div className="flex flex-col gap-3">
-                                        <Label>Scholarship Program</Label>
-                                        <Input
-                                            type="text"
-                                            maxLength={150}
-                                            value={
-                                                data.educations[index]
-                                                    ?.scholarship_program ?? ''
-                                            }
-                                            name={`educations.${index}.scholarship_program`}
-                                            onChange={(e) =>
-                                                setData(
-                                                    `educations.${index}.scholarship_program`,
-                                                    capitalizeString(
-                                                        e.target.value,
-                                                    ),
-                                                )
-                                            }
-                                            className="py-2"
-                                            placeholder="Enter Scholarship Program"
-                                        />
-                                        <InputError
-                                            message={
-                                                errors[
-                                                    `educations.${index}.scholarship_program`
-                                                ]
-                                            }
-                                        />
-                                    </div>
-                                    <div className="flex flex-col gap-3">
-                                        <Label>Scholarship Mobile Number</Label>
-                                        <div className="relative flex items-center">
-                                            <span className="absolute start-3 text-sm">
-                                                +63
-                                            </span>
-                                            <Input
-                                                type="number"
-                                                value={
-                                                    data.educations[index]
-                                                        ?.scholarship_mobile_num ??
-                                                    ''
-                                                }
-                                                name={`educations.${index}.scholarship_mobile_num`}
-                                                onChange={(e) => {
-                                                    const value =
-                                                        e.target.value.slice(
-                                                            0,
-                                                            10,
-                                                        );
-                                                    setData(
-                                                        `educations.${index}.scholarship_mobile_num`,
-                                                        value ? value : null,
-                                                    );
-                                                }}
-                                                className="py-2 ps-11"
-                                                placeholder="Enter Scholarship Mobile Number"
-                                            />
-                                        </div>
-                                        <InputError
-                                            message={
-                                                errors[
-                                                    `educations.${index}.scholarship_mobile_num`
-                                                ]
-                                            }
-                                        />
-                                    </div>
-                                </TwoColumnInput>
-
-                                <div className="flex flex-col gap-3">
-                                    <Label>Scholarship Office Address</Label>
-                                    <Textarea
-                                        maxLength={150}
-                                        value={
-                                            data.educations[index]
-                                                ?.scholarship_address ?? ''
-                                        }
-                                        name={`educations.${index}.scholarship_address`}
-                                        onChange={(e) =>
-                                            setData(
-                                                `educations.${index}.scholarship_address`,
-                                                capitalizeString(
-                                                    e.target.value,
-                                                ),
-                                            )
-                                        }
-                                        className="py-2"
-                                        placeholder="Enter Scholarship Office Address"
-                                    />
-                                    <InputError
-                                        message={
-                                            errors[
-                                                `educations.${index}.scholarship_address`
-                                            ]
-                                        }
-                                    />
-                                </div>
-                            </>
-                        )}
+                        <div className="flex flex-col gap-3">
+                            <LabelExample
+                                title="Year Graduated"
+                                isRequired={false}
+                                example="2020"
+                            />
+                            <Input
+                                type="number"
+                                value={
+                                    data.educations[index].year_graduated ?? ''
+                                }
+                                name={`educations.${index}.year_graduated`}
+                                onChange={(e) =>
+                                    setData(
+                                        `educations.${index}.year_graduated`,
+                                        e.target.value.slice(0, 4),
+                                    )
+                                }
+                                className="py-2"
+                                placeholder="Enter Year Graduated"
+                            />
+                            <InputError
+                                message={
+                                    errors[`educations.${index}.year_graduated`]
+                                }
+                            />
+                        </div>
                     </div>
                 ))}
+                <TwoColumnInput>
+                    <div className="flex flex-col gap-3">
+                        <Label>Scholarship Program</Label>
+                        <Input
+                            type="text"
+                            maxLength={150}
+                            value={data.student.scholarship_program ?? ''}
+                            name={`student.scholarship_program`}
+                            onChange={(e) =>
+                                setData(
+                                    `student.scholarship_program`,
+                                    capitalizeString(e.target.value),
+                                )
+                            }
+                            className="py-2"
+                            placeholder="Enter Scholarship Program"
+                        />
+                        <InputError
+                            message={errors[`student.scholarship_program`]}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <Label>Scholarship Mobile Number</Label>
+                        <div className="relative flex items-center">
+                            <span className="absolute start-3 text-sm">
+                                +63
+                            </span>
+                            <Input
+                                type="number"
+                                value={data.student.scholarship_contact ?? ''}
+                                name={`student.scholarship_contact`}
+                                onChange={(e) => {
+                                    const value = e.target.value.slice(0, 10);
+                                    setData(
+                                        `student.scholarship_contact`,
+                                        value,
+                                    );
+                                }}
+                                className="py-2 ps-11"
+                                placeholder="Enter Scholarship Mobile Number"
+                            />
+                        </div>
+                        <InputError
+                            message={errors[`student.scholarship_contact`]}
+                        />
+                    </div>
+                </TwoColumnInput>
+
+                <div className="flex flex-col gap-3">
+                    <Label>Scholarship Office Address</Label>
+                    <Textarea
+                        maxLength={150}
+                        value={data.student.scholarship_address ?? ''}
+                        name={`student.scholarship_address`}
+                        onChange={(e) =>
+                            setData(
+                                `student.scholarship_address`,
+                                capitalizeString(e.target.value),
+                            )
+                        }
+                        className="py-2"
+                        placeholder="Enter Scholarship Office Address"
+                    />
+                    <InputError
+                        message={errors[`student.scholarship_address`]}
+                    />
+                </div>
 
                 <div className="flex justify-end">
                     <div className="flex w-full gap-3 md:w-auto">

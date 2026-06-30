@@ -12,10 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Students — columns NOT in registrar form that were originally NOT NULL
-        // Registrar submits: fname, lname, birthdate, birthplace, sexual_orient, civil_status,
-        //   email, date_admitted, campus, year_level, course, student_type,
-        //   is_first_generation_student, is_indigenous_people  → those stay NOT NULL
+
         Schema::table('students', function (Blueprint $table) {
             $table->text('equity_indicator')->nullable()->change();
             $table->text('weekly_allowance')->nullable()->change();
@@ -25,24 +22,19 @@ return new class extends Migration
             $table->text('citizenship')->nullable()->change();
             $table->text('height')->nullable()->change();
             $table->text('weight')->nullable()->change();
+            $table->text('student_type')->nullable()->change();
+            $table->text('student_type_hash')->nullable()->change();
+            $table->text('year_level')->nullable()->change();
+            $table->text('year_level_hash')->nullable()->change();
+            $table->text('sexual_orient')->nullable()->change();
+            $table->text('sexual_orient_hash')->nullable()->change();
         });
 
-        // Addresses — zip_code is optional (null) in the registrar form
+
         Schema::table('addresses', function (Blueprint $table) {
             $table->text('zip_code')->nullable()->change();
         });
 
-        // Guardians — all registrar-required fields (role, fname, lname, religion,
-        //   citizenship, highest_educ_attainment, life_status) are already NOT NULL.
-        //   Optional fields (mname, suffix, birthdate, birthplace, mobile_num, occupation,
-        //   cause_of_death, year_of_death) are already nullable — nothing to change.
-
-        // Education — optional fields (strand, course, academic_year, scholarship_*)
-        //   are already nullable in the original migration — nothing to change.
-        //   Required fields (education_level, school_name, school_address, school_type,
-        //   year_graduated, general_average) stay NOT NULL.
-
-        // Family Info — entire table is outside the registrar form
         Schema::table('family_infos', function (Blueprint $table) {
             $table->text('family_size')->nullable()->change();
             $table->text('parent_martial_status')->nullable()->change();
@@ -61,6 +53,25 @@ return new class extends Migration
             $table->text('fname')->nullable()->change();
             $table->text('lname')->nullable()->change();
         });
+        Schema::table('guardians', function (Blueprint $table) {
+            $table->text('birthdate')->nullable()->change();
+            $table->text('birthdate_hash')->nullable()->change();
+            $table->text('birthplace')->nullable()->change();
+            $table->text('birthplace_hash')->nullable()->change();
+            $table->text('religion')->nullable()->change();
+            $table->text('religion_hash')->nullable()->change();
+            $table->text('citizenship')->nullable()->change();
+            $table->text('citizenship_hash')->nullable()->change();
+            $table->text('life_status')->nullable()->change();
+            $table->text('life_status_hash')->nullable()->change();
+            $table->text('occupation')->nullable()->change();
+            $table->text('occupation_hash')->nullable()->change();
+        });
+
+        Schema::table('education', function (Blueprint $table) {
+            $table->text('general_average')->nullable()->change();
+            $table->text('general_average_hash')->nullable()->change();
+        });
     }
 
     /**
@@ -77,6 +88,12 @@ return new class extends Migration
             $table->text('citizenship')->nullable(false)->change();
             $table->text('height')->nullable(false)->change();
             $table->text('weight')->nullable(false)->change();
+            $table->text('student_type')->nullable(false)->change();
+            $table->text('student_type_hash')->nullable(false)->change();
+            $table->text('year_level')->nullable(false)->change();
+            $table->text('year_level_hash')->nullable(false)->change();
+            $table->text('sexual_orient')->nullable(false)->change();
+            $table->text('sexual_orient_hash')->nullable(false)->change();
         });
 
         Schema::table('addresses', function (Blueprint $table) {
@@ -99,6 +116,26 @@ return new class extends Migration
         Schema::table('siblings', function (Blueprint $table) {
             $table->text('fname')->nullable(false)->change();
             $table->text('lname')->nullable(false)->change();
+        });
+
+        Schema::table('guardians', function (Blueprint $table) {
+            $table->text('birthdate')->nullable(false)->change();
+            $table->text('birthdate_hash')->nullable(false)->change();
+            $table->text('birthplace')->nullable(false)->change();
+            $table->text('birthplace_hash')->nullable(false)->change();
+            $table->text('religion')->nullable(false)->change();
+            $table->text('religion_hash')->nullable(false)->change();
+            $table->text('citizenship')->nullable(false)->change();
+            $table->text('citizenship_hash')->nullable(false)->change();
+            $table->text('life_status')->nullable(false)->change();
+            $table->text('life_status_hash')->nullable(false)->change();
+            $table->text('occupation')->nullable(false)->change();
+            $table->text('occupation_hash')->nullable(false)->change();
+        });
+
+        Schema::table('education', function (Blueprint $table) {
+            $table->text('general_average')->nullable(false)->change();
+            $table->text('general_average_hash')->nullable(false)->change();
         });
     }
 };

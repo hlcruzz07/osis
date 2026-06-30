@@ -416,9 +416,7 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                     </TwoColumnInput>
                     <TwoColumnInput>
                         <div className="flex flex-col gap-3">
-                            <Label>
-                                Year Level <Asterisk color="red" size={12} />
-                            </Label>
+                            <Label>Year Level</Label>
                             <Select
                                 value={data.year_level}
                                 disabled={!isEditMode}

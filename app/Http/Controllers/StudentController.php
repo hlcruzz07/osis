@@ -369,19 +369,22 @@ class StudentController extends Controller
                 ], 400);
             }
 
-            // Ensure the export directory exists before the job tries to write the ZIP
-            $exportDir = storage_path('app/exports');
-            if (!is_dir($exportDir)) {
-                mkdir($exportDir, 0755, true);
-            }
-
-            ExportStudentsZipJob::dispatch($students);
+            // Load relations
+            $students->load([
+                'guardians.address',
+                'address',
+                'educations',
+                'siblings',
+                'familyInfo',
+            ]);
 
             ActivityLog::log('export', 'Exported (' . count($students) . ') students data', Auth::user()->email, request(), 'success');
 
-            return response()->json([
-                'status' => 'success',
-            ]);
+            // Return direct download instead of storing to disk
+            return Excel::download(
+                new \App\Exports\StudentsCollectionExport($students),
+                'students.xlsx'
+            );
         } catch (Exception $e) {
 
             Log::error("Failed to export students: " . $e->getMessage());

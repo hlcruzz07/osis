@@ -242,16 +242,12 @@ class EntityDropdownSeeder extends Seeder
             ],
 
             'Civil Status' => [
-                'None',
                 'Single',
                 'Married',
-                'Widow',
-                'Divorced',
+                'Widow/Widower',
             ],
 
             'Sexual Orientation' => [
-                'Male',
-                'Female',
                 'Heterosexual',
                 'Lesbian',
                 'Gay',

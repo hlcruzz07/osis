@@ -38,27 +38,9 @@ Route::middleware(['throttle:60,1'])->group(function () {
 
     Route::post('/student/store', [StudentController::class, 'store'])->name('storeStudent');
 
-    Route::get('/student/success', [StudentController::class, 'success'])->name('success');
+    Route::get('/registrar/success', [StudentController::class, 'success'])->name('success');
 });
 
-// Admin Routes
-Route::get('/test-pdf', function () {
-
-    $students = collect();
-
-    for ($i = 1; $i <= 200; $i++) {
-        $students->push((object) [
-            'fname' => "First$i",
-            'mname' => "M$i",
-            'lname' => "Last$i",
-            'course' => ['BSIT', 'BSCS', 'BSECE'][array_rand(['BSIT', 'BSCS', 'BSECE'])],
-            'year_level' => rand(1, 4),
-            'status' => ['Enrolled', 'Pending', 'Graduating'][array_rand(['Enrolled', 'Pending', 'Graduating'])],
-        ]);
-    }
-
-    return view('pdf.students', ['students' => $students]);
-});
 
 // Auth
 Route::middleware(['custom.auth', 'throttle:60,1'])->group(function () {

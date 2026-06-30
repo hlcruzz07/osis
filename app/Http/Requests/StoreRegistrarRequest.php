@@ -32,13 +32,11 @@ class StoreRegistrarRequest extends FormRequest
             'student.birthdate' => 'required|date|before_or_equal:today',
             'student.birthplace' => 'required|string|max:100',
             'student.civil_status' => 'required|string|max:50',
-            'student.sexual_orient' => 'required|string|max:25',
+            'student.gender' => 'required|string|max:25',
             'student.email' => 'required|email|max:50',
             'student.mobile_num' => 'nullable|numeric|starts_with:9|digits:10',
             'student.date_admitted' => 'required|date|before_or_equal:today',
-            'student.student_type' => 'required|string|max:50',
             'student.campus' => 'required|string|max:100',
-            'student.year_level' => 'required|string|max:100',
             'student.course' => 'required|string|max:100',
             'student.major' => [
                 'required_if:student.has_major,true'
@@ -46,6 +44,9 @@ class StoreRegistrarRequest extends FormRequest
             'student.is_first_generation_student' => 'boolean',
             'student.is_indigenous_people' => 'boolean',
             'student.ethnic_group' => 'required_if:student.is_indigenous_people,true|nullable|string|max:100',
+            'student.scholarship_program' => 'nullable|string|max:150',
+            'student.scholarship_contact' => ['nullable', 'numeric', 'starts_with:9', 'digits:10'],
+            'student.scholarship_address' => 'nullable|string|max:150',
 
             // ADDRESS INFORMATION
             'address.island' => 'required|string',
@@ -62,8 +63,6 @@ class StoreRegistrarRequest extends FormRequest
             'guardians.*.mname' => 'nullable|string|max:50',
             'guardians.*.lname' => 'required|string|max:50',
             'guardians.*.suffix' => 'nullable|string|max:10',
-            'guardians.*.birthdate' => 'required|date',
-            'guardians.*.birthplace' => 'nullable|string|max:100',
             'guardians.*.mobile_num' => [
                 'nullable',
                 'required_if:guardians.*.is_contact_person,true',
@@ -71,13 +70,7 @@ class StoreRegistrarRequest extends FormRequest
                 'starts_with:9',
                 'digits:10',
             ],
-            'guardians.*.religion' => 'required|string|max:50',
-            'guardians.*.citizenship' => 'required|string|max:50',
             'guardians.*.highest_educ_attainment' => 'required|string|max:50',
-            'guardians.*.life_status' => 'required|string|max:50',
-            'guardians.*.occupation' => 'nullable|string|max:100',
-            'guardians.*.cause_of_death' => 'nullable|string|max:100|required_if:guardians.*.life_status,Deceased',
-            'guardians.*.year_of_death' => 'nullable|numeric|digits:4|required_if:guardians.*.life_status,Deceased',
             'guardians.*.is_contact_person' => 'boolean',
 
             // GUARDIAN ADDRESS
@@ -94,15 +87,21 @@ class StoreRegistrarRequest extends FormRequest
             'educations.*.school_name' => 'required|string|max:150',
             'educations.*.school_address' => 'required|string|max:250',
             'educations.*.school_type' => 'required|string|max:50',
-            'educations.*.year_graduated' => 'required|numeric|digits:4',
-            'educations.*.general_average' => 'required|numeric|max:100|min:75',
+            'educations.*.year_graduated' => 'nullable|numeric|digits:4',
             'educations.*.strand' => 'nullable|string|max:50|required_if:educations.*.education_level,Senior High School',
-            'educations.*.course' => 'nullable|string|max:50',
-            'educations.*.academic_year' => 'nullable|string',
-            'educations.*.scholarship_program' => 'nullable|string|max:50',
-            'educations.*.scholarship_address' => 'nullable|string|max:150',
-            'educations.*.scholarship_mobile_num' => 'nullable|numeric|starts_with:9|digits:10',
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $guardians = $this->input('guardians', []);
+            $hasContactPerson = collect($guardians)->contains(fn($g) => !empty($g['is_contact_person']));
+
+            if (!$hasContactPerson) {
+                $validator->errors()->add('guardians', 'Please designate at least one guardian as a contact person.');
+            }
+        });
     }
 
     public function messages(): array
@@ -121,8 +120,8 @@ class StoreRegistrarRequest extends FormRequest
             'student.birthplace.max' => 'Birthplace may not exceed 100 characters.',
             'student.civil_status.required' => 'Civil status is required.',
             'student.civil_status.in' => 'Selected civil status is invalid.',
-            'student.sexual_orient.required' => 'Sexual orientation is required.',
-            'student.sexual_orient.max' => 'Sexual orientation may not exceed 25 characters.',
+            'student.gender.required' => 'Sexual orientation is required.',
+            'student.gender.max' => 'Sexual orientation may not exceed 25 characters.',
             'student.email.required' => 'Email is required.',
             'student.email.email' => 'Email must be a valid email address.',
             'student.email.max' => 'Email may not exceed 50 characters.',
@@ -134,6 +133,7 @@ class StoreRegistrarRequest extends FormRequest
             'student.date_admitted.before_or_equal' => 'Date admitted must be today or earlier.',
             'student.student_type.required' => 'Student type is required.',
             'student.student_type.in' => 'Selected student type is invalid.',
+            'student.campus.required' => 'Campus is required.',
             'student.course.required' => 'Course is required.',
             'student.course.in' => 'Selected course is invalid.',
             'student.major' => 'Major field is required for the selected course.',

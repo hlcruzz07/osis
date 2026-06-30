@@ -93,13 +93,7 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
             school_address: edu.school_address || '',
             school_type: edu.school_type || '',
             year_graduated: edu.year_graduated || '',
-            general_average: edu.general_average || '',
-            course: edu.course || '',
             strand: edu.strand || '',
-            academic_year: edu.academic_year || '',
-            scholarship_program: edu.scholarship_program || '',
-            scholarship_address: edu.scholarship_address || '',
-            scholarship_mobile_num: edu.scholarship_mobile_num || '',
         })),
     });
 
@@ -131,13 +125,7 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                 school_address: edu.school_address || '',
                 school_type: edu.school_type || '',
                 year_graduated: edu.year_graduated || '',
-                general_average: edu.general_average || '',
-                course: edu.course || '',
                 strand: edu.strand || '',
-                academic_year: edu.academic_year || '',
-                scholarship_program: edu.scholarship_program || '',
-                scholarship_address: edu.scholarship_address || '',
-                scholarship_mobile_num: edu.scholarship_mobile_num || '',
             })),
         });
     };
@@ -321,7 +309,7 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                                             disabled={!isEditMode}
                                             value={
                                                 data.educations[index]
-                                                    .year_graduated
+                                                    .year_graduated ?? ''
                                             }
                                             name={`educations.${index}.year_graduated`}
                                             onChange={(e) =>

@@ -156,54 +156,35 @@ export default function TableFilters({
         setRange(undefined);
     };
     const handleExportExcel = async () => {
-        let interval: any;
-
         const exportPromise = new Promise(async (resolve, reject) => {
             try {
-                const res = await apiService.post(
+                const response = await apiService.post(
                     exportStudentsZip().url,
                     data,
+                    {
+                        responseType: 'blob',
+                    },
                 );
 
-                if (res.data.status === 'error') {
-                    return reject(res.data.message);
-                }
+                // Create blob and download
+                const url = window.URL.createObjectURL(
+                    new Blob([response.data]),
+                );
 
-                interval = setInterval(async () => {
-                    try {
-                        const response = await apiService.get(
-                            downloadExcel().url,
-                            {
-                                responseType: 'blob',
-                            },
-                        );
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute(
+                    'download',
+                    `students_${new Date().getTime()}.xlsx`,
+                );
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
 
-                        const url = window.URL.createObjectURL(
-                            new Blob([response.data]),
-                        );
-
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.setAttribute(
-                            'download',
-                            `students_${new Date().getTime()}.zip`,
-                        );
-                        document.body.appendChild(link);
-                        link.click();
-
-                        clearInterval(interval);
-                        resolve('Download complete');
-                    } catch (err: any) {
-                        if (err?.response?.status === 404) return;
-                        clearInterval(interval);
-                        reject('Export failed');
-                    }
-                }, 3000);
+                window.URL.revokeObjectURL(url);
+                resolve('Download complete');
             } catch (err: any) {
-                clearInterval(interval);
-                reject(
-                    err?.response?.data?.message || 'Failed to start export',
-                );
+                reject(err?.response?.data?.message || 'Failed to export');
             }
         });
 

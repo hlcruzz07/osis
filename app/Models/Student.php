@@ -28,7 +28,6 @@ class Student extends Model
         'last_attended_school',
         'email',
         'mobile_num',
-        'religion',
         'citizenship',
         'civil_status',
         'sexual_orient',
@@ -37,7 +36,17 @@ class Student extends Model
         'status',
         'major',
         'major_hash',
+        'gender',
+        'gender_hash',
 
+        'scholarship_program',
+        'scholarship_program_hash',
+
+        'scholarship_address',
+        'scholarship_address_hash',
+
+        'scholarship_contact',
+        'scholarship_contact_hash',
 
         'academic_year_hash',
         'semester_hash',

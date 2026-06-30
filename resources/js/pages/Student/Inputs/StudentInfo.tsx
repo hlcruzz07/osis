@@ -775,7 +775,7 @@ export default function StudentInfo({
                 </div>
                 <div className="flex flex-col gap-3">
                     <Label>
-                        Sex Orientation
+                        Gender
                         <Asterisk color="red" size={12} />
                     </Label>
                     <Select
