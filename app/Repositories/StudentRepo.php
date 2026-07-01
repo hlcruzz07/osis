@@ -18,7 +18,9 @@ class StudentRepo
     /**
      * Create a new class instance.
      */
-    public function __construct(protected Student $model, protected Sibling $sibling, protected Guardian $guardian, protected Education $education, protected AnswerRepo $answerRepo, protected FamilyInfo $familyInfo, protected HashingService $hashingService, protected ReferenceNumberService $referenceNumberService) {}
+    public function __construct(protected Student $model, protected Sibling $sibling, protected Guardian $guardian, protected Education $education, protected AnswerRepo $answerRepo, protected FamilyInfo $familyInfo, protected HashingService $hashingService, protected ReferenceNumberService $referenceNumberService)
+    {
+    }
 
 
     // CREATE QUERIES
@@ -29,6 +31,17 @@ class StudentRepo
         );
 
         return $student->id;
+    }
+
+    public function updateStudentByReferenceNumber(array $data, string $ref_number)
+    {
+        $student = $this->model->where('ref_number_hash', $this->hashingService->hashValue($ref_number))->firstOrFail();
+
+        $student->update(
+            $this->hashingService->appendHashValues($data)
+        );
+
+        return $student;
     }
 
     // FETCH QUERIES
@@ -377,5 +390,29 @@ class StudentRepo
         );
 
         return $student;
+    }
+
+    public function isValidReferenceNumber(string $ref_number): bool
+    {
+        $hashedRefNumber = $this->hashingService->hashValue($ref_number);
+
+        return $this->model->where('ref_number_hash', $hashedRefNumber)->exists();
+    }
+
+    public function hasUpdatedScholarshipByReferenceNumber(string $ref_number): bool
+    {
+        $hashedRefNumber = $this->hashingService->hashValue($ref_number);
+
+        return $this->model->where('ref_number_hash', $hashedRefNumber)->whereNotNull('year_level')->exists();
+    }
+
+    public function getStudentByReferenceNumber(string $ref_number)
+    {
+        $hashedRefNumber = $this->hashingService->hashValue($ref_number);
+
+        return $this->model
+            ->with(['guardians.address', 'address', 'educations', 'siblings', 'answers.question', 'subAnswers.subQuestion', 'familyInfo'])
+            ->where('ref_number_hash', $hashedRefNumber)
+            ->firstOrFail();
     }
 }

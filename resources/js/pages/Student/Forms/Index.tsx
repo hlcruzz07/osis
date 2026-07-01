@@ -9,7 +9,7 @@ import { FlashMessages } from '@/types/flash';
 import { toast } from 'sonner';
 
 import { registrar } from '@/routes';
-import { Button } from '@/components/ui/button';
+import ScholarshipModal from '../Modal/ScholarshipModal';
 export default function Index() {
     const flash: FlashMessages = usePage().props.flash || {};
 
@@ -127,12 +127,7 @@ export default function Index() {
                                 first
                             </div>
 
-                            <button
-                                disabled
-                                className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-5 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 disabled:hover:bg-muted"
-                            >
-                                {/* Open Scholarship Form */}Coming Soon
-                            </button>
+                            <ScholarshipModal />
                         </div>
 
                         {/* GUIDANCE */}

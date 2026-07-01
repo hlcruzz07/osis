@@ -38,6 +38,12 @@ class Student extends Model
         'major_hash',
         'gender',
         'gender_hash',
+        'section',
+        'section_hash',
+        'street',
+        'street_hash',
+        'social_media_account',
+        'social_media_account_hash',
 
         'scholarship_program',
         'scholarship_program_hash',
@@ -79,37 +85,37 @@ class Student extends Model
 
     ];
     protected $casts
-    = [
-        'academic_year' => 'encrypted',
-        'semester' => 'encrypted',
-        'lrn' => 'encrypted',
-        'year_level' => 'encrypted',
-        'ref_number' => 'encrypted',
-        'campus' => 'encrypted',
-        'course' => 'encrypted',
-        'date_admitted' => 'encrypted',
-        'student_type' => 'encrypted',
-        'equity_indicator' => 'encrypted',
-        'fname' => 'encrypted',
-        'mname' => 'encrypted',
-        'lname' => 'encrypted',
-        'suffix' => 'encrypted',
-        'birthdate' => 'encrypted',
-        'birthplace' => 'encrypted',
-        'weekly_allowance' => 'encrypted',
-        'financer' => 'encrypted',
-        'last_attended_school' => 'encrypted',
-        'email' => 'encrypted',
-        'mobile_num' => 'encrypted',
-        'religion' => 'encrypted',
-        'citizenship' => 'encrypted',
-        'civil_status' => 'encrypted',
-        'sexual_orient' => 'encrypted',
-        'height' => 'encrypted',
-        'weight' => 'encrypted',
-        'status' => 'encrypted',
-        'major' => 'encrypted',
-    ];
+        = [
+            'academic_year' => 'encrypted',
+            'semester' => 'encrypted',
+            'lrn' => 'encrypted',
+            'year_level' => 'encrypted',
+            'ref_number' => 'encrypted',
+            'campus' => 'encrypted',
+            'course' => 'encrypted',
+            'date_admitted' => 'encrypted',
+            'student_type' => 'encrypted',
+            'equity_indicator' => 'encrypted',
+            'fname' => 'encrypted',
+            'mname' => 'encrypted',
+            'lname' => 'encrypted',
+            'suffix' => 'encrypted',
+            'birthdate' => 'encrypted',
+            'birthplace' => 'encrypted',
+            'weekly_allowance' => 'encrypted',
+            'financer' => 'encrypted',
+            'last_attended_school' => 'encrypted',
+            'email' => 'encrypted',
+            'mobile_num' => 'encrypted',
+            'religion' => 'encrypted',
+            'citizenship' => 'encrypted',
+            'civil_status' => 'encrypted',
+            'sexual_orient' => 'encrypted',
+            'height' => 'encrypted',
+            'weight' => 'encrypted',
+            'status' => 'encrypted',
+            'major' => 'encrypted',
+        ];
 
     protected function castAttribute($key, $value)
     {
@@ -153,5 +159,10 @@ class Student extends Model
     public function subAnswers()
     {
         return $this->hasMany(StudentSubAnswer::class, 'student_id');
+    }
+
+    public function scholarships()
+    {
+        return $this->hasMany(Scholarship::class, 'student_id');
     }
 }

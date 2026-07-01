@@ -174,5 +174,71 @@ class QuestionSeeder extends Seeder
             'is_active' => true,
 
         ]);
+
+
+        $question11 = Question::create([
+            'user_id' => $user->id,
+            'question' => "Are you 4P's Beneficiary?",
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+
+        ]);
+
+        $question12 = Question::create([
+            'user_id' => $user->id,
+            'question' => "Homeless Individual",
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+
+        ]);
+
+
+        $question13 = Question::create([
+            'user_id' => $user->id,
+            'question' => "Orphan (no living parent/s)",
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+
+        ]);
+
+        $question14 = Question::create([
+            'user_id' => $user->id,
+            'question' => "Raised by a Senior Citizen/Guardian",
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+
+        ]);
+
+        $question15 = Question::create([
+            'user_id' => $user->id,
+            'question' => "Raised by a Solo Parent",
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+
+        ]);
+
+        $question16 = Question::create([
+            'user_id' => $user->id,
+            'question' => "Rebel Returnee",
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+
+        ]);
+
+
+        $question17 = Question::create([
+            'user_id' => $user->id,
+            'question' => "Residing in and currently studying in a city/municipality wihtout access to a State University or College (SUC) or Local University or College (LUC)",
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+
+        ]);
     }
 }

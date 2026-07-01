@@ -29,6 +29,10 @@ Route::middleware(['throttle:60,1'])->group(function () {
 
     Route::get('/registrar', [StudentController::class, 'registrar'])->name('registrar');
     Route::post('/registrar/store', [StudentController::class, 'storeRegistrar'])->name('storeRegistrar');
+    Route::get('/registrar/success', [StudentController::class, 'success'])->name('success');
+
+    Route::get('scholarship/{ref_number}', [StudentController::class, 'scholarship'])->name('scholarship');
+    Route::post('/scholarship/store/{ref_number}', [StudentController::class, 'storeScholarship'])->name('storeScholarship');
 
     Route::post('/student/validate/student-info', [StudentController::class, 'validateStudentInfo'])->name('validateStudentInfo');
     Route::post('/student/validate/student-address', [StudentController::class, 'validateAddress'])->name('validateAddress');
@@ -38,7 +42,7 @@ Route::middleware(['throttle:60,1'])->group(function () {
 
     Route::post('/student/store', [StudentController::class, 'store'])->name('storeStudent');
 
-    Route::get('/registrar/success', [StudentController::class, 'success'])->name('success');
+
 });
 
 

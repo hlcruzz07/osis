@@ -321,7 +321,36 @@ class EntityDropdownSeeder extends Seeder
                 'Friend',
             ],
 
-
+            'Scholarships' => [
+                [
+                    'name' => 'CHED Merit Scholarship Program (CMSP)',
+                    'type' => ['Full', 'Half'],
+                ],
+                [
+                    'name' => 'Tertiary Education Subsidy (TES)',
+                    'type' => [],
+                ],
+                [
+                    'name' => 'Tulong-Dunong Program (TDP)',
+                    'type' => [],
+                ],
+                [
+                    'name' => 'NOSP',
+                    'type' => [],
+                ],
+                [
+                    'name' => 'SGS',
+                    'type' => [],
+                ],
+                [
+                    'name' => 'DOST',
+                    'type' => [],
+                ],
+                [
+                    'name' => 'Others',
+                    'type' => [],
+                ],
+            ]
         ];
 
         foreach ($dropdowns as $title => $values) {

@@ -2,6 +2,7 @@ import { AddressProps } from './address';
 import { EducationProps } from './education';
 import { FamilyProps } from './family';
 import { GuardianProps } from './guardian';
+import { ScholarshipProps } from './scholarship';
 import { SiblingProps } from './sibling';
 
 export type StudentProps = {
@@ -42,14 +43,15 @@ export type StudentProps = {
     created_at?: string;
     updated_at?: string;
 
-    siblings: SiblingProps[];
+    siblings?: SiblingProps[];
 
-    guardians: GuardianProps[];
+    guardians?: GuardianProps[];
 
-    educations: EducationProps[];
+    educations?: EducationProps[];
 
-    answers: any[];
-    sub_answers: any[];
+    answers?: any[];
+    schoarship?: ScholarshipProps[];
+    sub_answers?: any[];
 
-    address: AddressProps;
+    address?: AddressProps;
 };

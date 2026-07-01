@@ -10,6 +10,7 @@ use App\Http\Requests\EducationInfoRequest;
 use App\Http\Requests\ExportStudentsRequest;
 use App\Http\Requests\FamilyInfoRequest;
 use App\Http\Requests\StoreRegistrarRequest;
+use App\Http\Requests\StoreScholarshipRequest;
 use App\Http\Requests\StudentAddressInfo;
 use App\Http\Requests\StudentContactAddressInfo;
 use App\Http\Requests\StudentInfoRequest;
@@ -52,7 +53,9 @@ class StudentController extends Controller
      * Display a listing of the resource.
      */
 
-    public function __construct(protected StudentRepo $studentRepo, protected QuestionRepo $questionRepo, protected AcademicYearAndSemesterRepo $academicYearAndSemesterRepo, protected AnswerRepo $answerRepo, protected ReferenceNumberService $referenceNumberService, protected GuardianRepo $guardianRepo, protected EducationRepo $educationRepo, protected FamilyInfoRepo $familyInfoRepo, protected AddressRepo $addressRepo, protected SiblingRepo $siblingRepo) {}
+    public function __construct(protected StudentRepo $studentRepo, protected QuestionRepo $questionRepo, protected AcademicYearAndSemesterRepo $academicYearAndSemesterRepo, protected AnswerRepo $answerRepo, protected ReferenceNumberService $referenceNumberService, protected GuardianRepo $guardianRepo, protected EducationRepo $educationRepo, protected FamilyInfoRepo $familyInfoRepo, protected AddressRepo $addressRepo, protected SiblingRepo $siblingRepo)
+    {
+    }
 
     // STUDENT SIDE
 
@@ -94,6 +97,33 @@ class StudentController extends Controller
         ]);
     }
 
+    public function scholarship(string $ref_number)
+    {
+        if (!$this->studentRepo->isValidReferenceNumber($ref_number)) {
+            return redirect()->back()->with('error', 'Invalid reference number');
+        }
+
+        if ($this->studentRepo->hasUpdatedScholarshipByReferenceNumber($ref_number)) {
+            return redirect()->back()->with('error', 'Scholarship Information already submitted');
+        }
+
+        $questions = $this->questionRepo->getActive();
+
+        $student = $this->studentRepo->getStudentByReferenceNumber($ref_number);
+
+        $dropdowns = cache()->remember('entity_dropdowns_all', 600, function () {
+            return EntityDropdown::all();
+        });
+
+        return Inertia::render('Student/Forms/Scholarship', [
+            'questions' => $questions,
+            'student' => $student,
+
+            'dropdowns' => $dropdowns,
+        ]);
+    }
+
+
     public function validateStudentInfo(StudentInfoRequest $request)
     {
         return back()->with('success', "Student's information validated");
@@ -124,6 +154,7 @@ class StudentController extends Controller
         try {
 
             $data = $request->all();
+
 
             $randNumber = $this->referenceNumberService->generate();
             $academic_year = AcademicYearAndSemester::pluck('academic_year')->toArray()[0];
@@ -290,6 +321,54 @@ class StudentController extends Controller
         } catch (Exception $e) {
 
             Log::error("Failed to insert registrar student: " . $e->getMessage());
+
+            return back()->with('error', 'Something went wrong, please try again');
+        }
+    }
+
+    public function storeScholarship(StoreScholarshipRequest $request, string $ref_number)
+    {
+        try {
+            $data = $request->all();
+
+            $student_data = data_get($data, 'student');
+            $scholarships_data = data_get($data, 'scholarships');
+
+            $answers_data = data_get($data, 'answers');
+
+            $student_main_answers = collect($answers_data)
+                ->filter(fn($item) => is_null($item['sub_question_id']))
+                ->values()
+                ->toArray();
+
+            $student_sub_answers = collect($answers_data)
+                ->filter(fn($item) => !is_null($item['sub_question_id']) && !is_null($item['answer']))
+                ->values()
+                ->toArray();
+
+            DB::transaction(function () use ($student_data, $student_main_answers, $student_sub_answers, $scholarships_data, $ref_number) {
+
+                $student = $this->studentRepo->updateStudentByReferenceNumber($student_data, $ref_number);
+
+                $this->answerRepo->updateAnswers(
+                    $student_main_answers,
+                    $student->id
+                );
+
+                if (!empty($student_sub_answers)) {
+                    $this->answerRepo->updateSubAnswers(
+                        $student_sub_answers,
+                        $student->id
+                    );
+                }
+
+                $student->scholarships()->createMany($scholarships_data);
+            });
+
+            return redirect()->route('home')->with('success', 'Student Scholarship Information Submitted!');
+        } catch (Exception $e) {
+
+            Log::error("Failed to update scholarship student: " . $e->getMessage());
 
             return back()->with('error', 'Something went wrong, please try again');
         }
