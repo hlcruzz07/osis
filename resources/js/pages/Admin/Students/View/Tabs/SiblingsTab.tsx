@@ -55,7 +55,7 @@ export default function SiblingsTab({ studentData, dropdowns }: PageProps) {
                             </tr>
                         </thead>
                         <tbody className="lg:border-b">
-                            {studentData.siblings.map((row, index) => (
+                            {studentData.siblings?.map((row, index) => (
                                 <tr key={index} className="hover:bg-muted/50">
                                     <td data-label="ID">{index + 1}</td>
 
@@ -101,7 +101,7 @@ export default function SiblingsTab({ studentData, dropdowns }: PageProps) {
                                     </td>
                                 </tr>
                             ))}
-                            {studentData.siblings.length === 0 ||
+                            {studentData.siblings?.length === 0 ||
                             !studentData.siblings ? (
                                 <>
                                     <tr>

@@ -3,6 +3,7 @@ import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import LabelExample from '@/components/LabelExample';
 import TwoColumnInput from '@/components/TwoColumnInput';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -315,883 +316,347 @@ export default function EditGuardian({
                             all fields before saving.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="no-scrollbar -mx-4 my-3 max-h-[50vh] space-y-5 overflow-y-auto p-5">
-                        <TwoColumnInput>
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    First Name{' '}
-                                    <Asterisk size={12} color="red" />
-                                </Label>
-                                <Input
-                                    type="text"
-                                    value={data?.fname}
-                                    onChange={(e) =>
-                                        setData(
-                                            `fname`,
-                                            capitalizeString(e.target.value),
-                                        )
-                                    }
-                                    placeholder="Enter First Name"
-                                />
-                                <InputError message={errors[`fname`]} />
-                            </div>
-                            <div className="flex flex-col gap-3">
-                                <Label>Middle Name</Label>
-                                <Input
-                                    type="text"
-                                    value={data?.mname ?? ''}
-                                    onChange={(e) =>
-                                        setData(
-                                            `mname`,
-                                            capitalizeString(e.target.value),
-                                        )
-                                    }
-                                    placeholder="Enter Middle Name"
-                                />
-                                <InputError message={errors[`mname`]} />
-                            </div>
-                        </TwoColumnInput>
-
-                        <TwoColumnInput>
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    Last Name <Asterisk size={12} color="red" />
-                                </Label>
-                                <Input
-                                    type="text"
-                                    value={data?.lname ?? ''}
-                                    onChange={(e) =>
-                                        setData(
-                                            `lname`,
-                                            capitalizeString(e.target.value),
-                                        )
-                                    }
-                                    placeholder="Enter Last Name"
-                                />
-                                <InputError message={errors[`lname`]} />
-                            </div>
-                            {data.suffix && (
+                    <fieldset disabled>
+                        <div className="no-scrollbar -mx-4 my-3 max-h-[50vh] space-y-5 overflow-y-auto p-5">
+                            <TwoColumnInput>
                                 <div className="flex flex-col gap-3">
-                                    <Label>Suffix</Label>
-                                    <Select
-                                        value={data?.suffix ?? ''}
-                                        onValueChange={(value) => {
-                                            if (value === 'None') {
-                                                setData(`suffix`, null);
-                                                return;
-                                            }
-
-                                            setData(`suffix`, value);
-                                        }}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Choose an option" />
-                                        </SelectTrigger>
-
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                {suffixArr?.map(
-                                                    (item, index) => (
-                                                        <SelectItem
-                                                            key={index}
-                                                            value={item}
-                                                        >
-                                                            {item}
-                                                        </SelectItem>
-                                                    ),
-                                                )}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors[`suffix`]} />
+                                    <Label>
+                                        First Name{' '}
+                                        <Asterisk size={12} color="red" />
+                                    </Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data?.fname || ''}
+                                    </p>
+                                    <InputError message={errors[`fname`]} />
                                 </div>
-                            )}
-                        </TwoColumnInput>
+                                <div className="flex flex-col gap-3">
+                                    <Label>Middle Name</Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data?.mname || ''}
+                                    </p>
+                                    <InputError message={errors[`mname`]} />
+                                </div>
+                            </TwoColumnInput>
 
-                        <div className="flex flex-col gap-3">
-                            <Label>
-                                Role
-                                <Asterisk size={12} color="red" />
-                            </Label>
-                            <Select
-                                value={data?.role ?? ''}
-                                onValueChange={(value) => {
-                                    setData(`role`, value);
-                                }}
-                                disabled={
-                                    data?.role === 'Father' ||
-                                    data?.role === 'Mother'
-                                }
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose an option" />
-                                </SelectTrigger>
-
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {roleArr?.map((item, index) => (
-                                            <SelectItem
-                                                key={index}
-                                                value={item}
-                                            >
-                                                {item}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            <InputError message={errors[`role`]} />
-                        </div>
-
-                        <TwoColumnInput>
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    Birthdate
-                                    <Asterisk size={12} color="red" />
-                                </Label>
-                                <Input
-                                    type="date"
-                                    value={data?.birthdate ?? ''}
-                                    onChange={(e) =>
-                                        setData(`birthdate`, e.target.value)
-                                    }
-                                    placeholder="Enter Birthdate"
-                                />
-                                <InputError message={errors[`birthdate`]} />
-                            </div>
-                            <div className="flex flex-col gap-3">
-                                <Label>Birthplace</Label>
-                                <Input
-                                    type="text"
-                                    value={data?.birthplace ?? ''}
-                                    onChange={(e) =>
-                                        setData(
-                                            `birthplace`,
-                                            capitalizeString(e.target.value),
-                                        )
-                                    }
-                                    placeholder="Enter Birthplace"
-                                />
-                                <InputError message={errors[`birthplace`]} />
-                            </div>
-                        </TwoColumnInput>
-
-                        <div className="flex flex-col gap-3">
-                            <LabelExample
-                                title="Mobile Number"
-                                isRequired={!!data?.is_contact_person}
-                                example="+639123456789"
-                            />
-                            <div className="relative flex items-center">
-                                <span className="absolute start-3 text-sm">
-                                    +63
-                                </span>
-                                <Input
-                                    type="number"
-                                    value={data?.mobile_num ?? ''}
-                                    name={data?.mobile_num ?? ''}
-                                    onChange={(e) => {
-                                        const value = e.target.value.slice(
-                                            0,
-                                            10,
-                                        );
-                                        setData(
-                                            `mobile_num`,
-                                            value ? value : null,
-                                        );
-                                    }}
-                                    className="py-2 ps-11"
-                                    placeholder="Enter Mobile Number"
-                                />
-                            </div>
-                            <InputError message={errors[`mobile_num`]} />
-                        </div>
-
-                        <TwoColumnInput>
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    Religion <Asterisk size={12} color="red" />
-                                </Label>
-                                <Select
-                                    value={data?.religion}
-                                    onValueChange={(value) =>
-                                        setData(`religion`, value)
-                                    }
-                                    name={data?.religion}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Choose an option" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {religionArr?.map((item, index) => (
-                                                <SelectItem
-                                                    key={index}
-                                                    value={item}
-                                                >
-                                                    {item}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors[`religion`]} />
-                            </div>
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    Citizenship{' '}
-                                    <Asterisk size={12} color="red" />
-                                </Label>
-                                <Input
-                                    type="hidden"
-                                    name={data?.citizenship ?? ''}
-                                />
-                                <Popover
-                                    open={popoverOpen}
-                                    onOpenChange={setPopoverOpen}
-                                >
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            role="combobox"
-                                            className="w-full justify-between"
-                                        >
-                                            {data?.citizenship ||
-                                                'Choose an option'}
-                                            <ChevronsUpDown className="opacity-50" />
-                                        </Button>
-                                    </PopoverTrigger>
-
-                                    <PopoverContent
-                                        className="p-0"
-                                        align="start"
-                                    >
-                                        <Command>
-                                            <CommandInput
-                                                placeholder="Search citizenship..."
-                                                className="h-9"
-                                            />
-                                            <CommandList>
-                                                <CommandEmpty>
-                                                    No citizenship found.
-                                                </CommandEmpty>
-
-                                                <CommandGroup>
-                                                    {citizenshipArr?.map(
-                                                        (item, itemIndex) => (
-                                                            <CommandItem
-                                                                key={itemIndex}
-                                                                onSelect={() => {
-                                                                    setData(
-                                                                        `citizenship`,
-                                                                        item,
-                                                                    );
-                                                                    setPopoverOpen(
-                                                                        false,
-                                                                    );
-                                                                }}
-                                                            >
-                                                                {item}
-                                                                {item ===
-                                                                    data.citizenship && (
-                                                                    <Check className="ml-auto h-4 w-4" />
-                                                                )}
-                                                            </CommandItem>
-                                                        ),
-                                                    )}
-                                                </CommandGroup>
-                                            </CommandList>
-                                        </Command>
-                                    </PopoverContent>
-                                </Popover>
-                                <InputError message={errors[`citizenship`]} />
-                            </div>
-                        </TwoColumnInput>
-
-                        <TwoColumnInput>
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    Highest Educational Attainment{' '}
-                                    <Asterisk size={12} color="red" />
-                                </Label>
-                                <Select
-                                    value={data?.highest_educ_attainment}
-                                    onValueChange={(value) =>
-                                        setData(
-                                            `highest_educ_attainment`,
-                                            value,
-                                        )
-                                    }
-                                    name={data?.highest_educ_attainment ?? ''}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Choose an option" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {educAttainmentArr?.map(
-                                                (item, index) => (
-                                                    <SelectItem
-                                                        key={index}
-                                                        value={item}
-                                                    >
-                                                        {item}
-                                                    </SelectItem>
-                                                ),
-                                            )}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                <InputError
-                                    message={errors[`highest_educ_attainment`]}
-                                />
-                            </div>
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    Life Status{' '}
-                                    <Asterisk size={12} color="red" />
-                                </Label>
-                                <Select
-                                    value={data?.life_status}
-                                    onValueChange={(value) => {
-                                        if (value === 'Deceased') {
-                                            setData(`is_contact_person`, false);
-                                            setData(`occupation`, null);
-                                        } else {
-                                            setData('cause_of_death', null);
-                                            setData('year_of_death', null);
-                                        }
-                                        setData(`life_status`, value);
-                                    }}
-                                    name={data?.life_status ?? ''}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Choose an option" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {lifeStatusArr?.map(
-                                                (item, index) => (
-                                                    <SelectItem
-                                                        key={index}
-                                                        value={item}
-                                                    >
-                                                        {item}
-                                                    </SelectItem>
-                                                ),
-                                            )}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-
-                                <InputError message={errors[`life_status`]} />
-
-                                {data?.life_status === 'Deceased' && (
-                                    <>
-                                        <div className="flex flex-col gap-3">
-                                            <Label>Cause of Death </Label>
-                                            <Input
-                                                type="text"
-                                                maxLength={100}
-                                                value={
-                                                    data?.cause_of_death ?? ''
-                                                }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        `cause_of_death`,
-                                                        capitalizeString(
-                                                            e.target.value,
-                                                        ),
-                                                    )
-                                                }
-                                                name={
-                                                    data?.cause_of_death ?? ''
-                                                }
-                                                placeholder="Enter Cause of death"
-                                            />
-                                            <InputError
-                                                message={
-                                                    errors[`cause_of_death`]
-                                                }
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col gap-3">
-                                            <LabelExample
-                                                title="Year of Death"
-                                                isRequired={false}
-                                                example="2012, 2015"
-                                            />
-                                            <Input
-                                                type="number"
-                                                maxLength={100}
-                                                value={
-                                                    data?.year_of_death ?? ''
-                                                }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        `year_of_death`,
-                                                        e.target.value.slice(
-                                                            0,
-                                                            4,
-                                                        ),
-                                                    )
-                                                }
-                                                placeholder="Enter Cause of death"
-                                                name={data?.year_of_death ?? ''}
-                                            />
-                                            <InputError
-                                                message={
-                                                    errors[`year_of_death`]
-                                                }
-                                            />
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </TwoColumnInput>
-
-                        <div className="flex flex-col gap-3">
-                            <Label>Occupation</Label>
-                            <Input
-                                type="text"
-                                maxLength={100}
-                                disabled={data?.life_status === 'Deceased'}
-                                value={data?.occupation ?? ''}
-                                onChange={(e) =>
-                                    setData(
-                                        `occupation`,
-                                        capitalizeString(e.target.value),
-                                    )
-                                }
-                                placeholder="Enter Occupation"
-                                name={data?.occupation ?? ''}
-                            />
-                            <InputError message={errors[`occupation`]} />
-                        </div>
-
-                        <div className="flex flex-col gap-3">
-                            <FieldLabel
-                                className={`${
-                                    data?.life_status === 'Deceased'
-                                        ? 'cursor-not-allowed opacity-50'
-                                        : 'cursor-pointer'
-                                }`}
-                            >
-                                <Field orientation="horizontal">
-                                    <Checkbox
-                                        disabled={
-                                            data?.life_status === 'Deceased'
-                                        }
-                                        checked={
-                                            data?.is_contact_person ?? false
-                                        }
-                                        onCheckedChange={(checked) => {
-                                            if (checked) {
-                                                setData(
-                                                    `is_contact_person`,
-                                                    true,
-                                                );
-                                            } else {
-                                                setData(
-                                                    `is_contact_person`,
-                                                    false,
-                                                );
-                                            }
-                                        }}
-                                    />
-                                    <FieldContent>
-                                        <FieldTitle>
-                                            Is he/she your contact person?
-                                        </FieldTitle>
+                            <TwoColumnInput>
+                                <div className="flex flex-col gap-3">
+                                    <Label>
+                                        Last Name{' '}
+                                        <Asterisk size={12} color="red" />
+                                    </Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data?.lname || ''}
+                                    </p>
+                                    <InputError message={errors[`lname`]} />
+                                </div>
+                                {data.suffix && (
+                                    <div className="flex flex-col gap-3">
+                                        <Label>Suffix</Label>
+                                        <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                            {data?.suffix || ''}
+                                        </p>
                                         <InputError
-                                            message={
-                                                errors['is_contact_person']
-                                            }
+                                            message={errors[`suffix`]}
                                         />
-                                    </FieldContent>
-                                </Field>
-                            </FieldLabel>
+                                    </div>
+                                )}
+                            </TwoColumnInput>
+
+                            <div className="flex flex-col gap-3">
+                                <Label>
+                                    Role
+                                    <Asterisk size={12} color="red" />
+                                </Label>
+                                <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                    {data?.role || ''}
+                                </p>
+                                <InputError message={errors[`role`]} />
+                            </div>
+
+                            <TwoColumnInput>
+                                <div className="flex flex-col gap-3">
+                                    <Label>
+                                        Birthdate
+                                        <Asterisk size={12} color="red" />
+                                    </Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data?.birthdate || ''}
+                                    </p>
+                                    <InputError message={errors[`birthdate`]} />
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                    <Label>Birthplace</Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data?.birthplace || ''}
+                                    </p>
+                                    <InputError
+                                        message={errors[`birthplace`]}
+                                    />
+                                </div>
+                            </TwoColumnInput>
+
+                            <div className="flex flex-col gap-3">
+                                <LabelExample
+                                    title="Mobile Number"
+                                    isRequired={!!data?.is_contact_person}
+                                    example="+639123456789"
+                                />
+                                <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                    {data?.mobile_num
+                                        ? `+63${data.mobile_num}`
+                                        : ''}
+                                </p>
+                                <InputError message={errors[`mobile_num`]} />
+                            </div>
+
+                            <TwoColumnInput>
+                                <div className="flex flex-col gap-3">
+                                    <Label>
+                                        Religion{' '}
+                                        <Asterisk size={12} color="red" />
+                                    </Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data?.religion || ''}
+                                    </p>
+                                    <InputError message={errors[`religion`]} />
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                    <Label>
+                                        Citizenship{' '}
+                                        <Asterisk size={12} color="red" />
+                                    </Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data?.citizenship || ''}
+                                    </p>
+                                    <InputError
+                                        message={errors[`citizenship`]}
+                                    />
+                                </div>
+                            </TwoColumnInput>
+
+                            <TwoColumnInput>
+                                <div className="flex flex-col gap-3">
+                                    <Label>
+                                        Highest Educational Attainment{' '}
+                                        <Asterisk size={12} color="red" />
+                                    </Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data?.highest_educ_attainment || ''}
+                                    </p>
+                                    <InputError
+                                        message={
+                                            errors[`highest_educ_attainment`]
+                                        }
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                    <Label>
+                                        Life Status{' '}
+                                        <Asterisk size={12} color="red" />
+                                    </Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data?.life_status || ''}
+                                    </p>
+
+                                    <InputError
+                                        message={errors[`life_status`]}
+                                    />
+
+                                    {data?.life_status === 'Deceased' && (
+                                        <>
+                                            <div className="flex flex-col gap-3">
+                                                <Label>Cause of Death </Label>
+                                                <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                                    {data?.cause_of_death || ''}
+                                                </p>
+                                                <InputError
+                                                    message={
+                                                        errors[`cause_of_death`]
+                                                    }
+                                                />
+                                            </div>
+
+                                            <div className="flex flex-col gap-3">
+                                                <LabelExample
+                                                    title="Year of Death"
+                                                    isRequired={false}
+                                                    example="2012, 2015"
+                                                />
+                                                <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                                    {data?.year_of_death || ''}
+                                                </p>
+                                                <InputError
+                                                    message={
+                                                        errors[`year_of_death`]
+                                                    }
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </TwoColumnInput>
+
+                            <div className="flex flex-col gap-3">
+                                <Label>Occupation</Label>
+                                <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                    {data?.occupation || ''}
+                                </p>
+                                <InputError message={errors[`occupation`]} />
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                                <FieldLabel
+                                    className={`${
+                                        data?.life_status === 'Deceased'
+                                            ? 'cursor-not-allowed opacity-50'
+                                            : 'cursor-pointer'
+                                    }`}
+                                >
+                                    <Field orientation="horizontal">
+                                        <Checkbox
+                                            disabled={
+                                                data?.life_status === 'Deceased'
+                                            }
+                                            checked={
+                                                data?.is_contact_person ?? false
+                                            }
+                                            onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                    setData(
+                                                        `is_contact_person`,
+                                                        true,
+                                                    );
+                                                } else {
+                                                    setData(
+                                                        `is_contact_person`,
+                                                        false,
+                                                    );
+                                                }
+                                            }}
+                                        />
+                                        <FieldContent>
+                                            <FieldTitle>
+                                                Is he/she your contact person?
+                                            </FieldTitle>
+                                            <InputError
+                                                message={
+                                                    errors['is_contact_person']
+                                                }
+                                            />
+                                        </FieldContent>
+                                    </Field>
+                                </FieldLabel>
+                            </div>
+
+                            <Heading
+                                title="Address"
+                                description="This section displays your current address, including your island group, region, province, city/municipality, barangay, and zip code."
+                            />
+
+                            <div className="flex flex-col gap-3">
+                                <Label>Full Student Address</Label>
+                                <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                    {[
+                                        data.address.street,
+                                        data.address.brgy &&
+                                            `Brgy. ${data.address.brgy}`,
+                                        data.address.city,
+                                        data.address.province,
+                                        data.address.zip_code,
+                                    ]
+                                        .filter(Boolean)
+                                        .join(', ')}
+                                </p>
+                            </div>
+
+                            <TwoColumnInput>
+                                <div className="flex flex-col gap-3">
+                                    <Label>
+                                        Island Group
+                                        <Asterisk color="red" size={12} />
+                                    </Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data.address.island || ''}
+                                    </p>
+
+                                    <InputError
+                                        message={errors['address.island']}
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                    <Label>
+                                        Region
+                                        <Asterisk color="red" size={12} />
+                                    </Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data.address.region || ''}
+                                    </p>
+
+                                    <InputError
+                                        message={errors['address.region']}
+                                    />
+                                </div>
+                            </TwoColumnInput>
+
+                            <TwoColumnInput>
+                                <div className="flex flex-col gap-3">
+                                    <Label>
+                                        Province
+                                        <Asterisk color="red" size={12} />
+                                    </Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data.address.province || ''}
+                                    </p>
+
+                                    <InputError
+                                        message={errors['address.province']}
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                    <Label>
+                                        City / Municipality
+                                        <Asterisk color="red" size={12} />
+                                    </Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data.address.city || ''}
+                                    </p>
+
+                                    <InputError
+                                        message={errors['address.city']}
+                                    />
+                                </div>
+                            </TwoColumnInput>
+
+                            <TwoColumnInput>
+                                <div className="flex flex-col gap-3">
+                                    <Label>
+                                        Barangay
+                                        <Asterisk color="red" size={12} />
+                                    </Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data.address.brgy || ''}
+                                    </p>
+
+                                    <InputError
+                                        message={errors['address.brgy']}
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                    <Label>
+                                        Zip Code
+                                        <Asterisk color="red" size={12} />
+                                    </Label>
+                                    <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                        {data.address.zip_code || ''}
+                                    </p>
+
+                                    <InputError
+                                        message={errors['address.zip_code']}
+                                    />
+                                </div>
+                            </TwoColumnInput>
                         </div>
-
-                        <Heading
-                            title="Address"
-                            description="This section displays your current address, including your island group, region, province, city/municipality, barangay, and zip code."
-                        />
-
-                        <TwoColumnInput>
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    Island Group
-                                    <Asterisk color="red" size={12} />
-                                </Label>
-                                <Select
-                                    value={data.address.island}
-                                    name={data.address.island}
-                                    onValueChange={(value) => {
-                                        setData('address.island', value);
-
-                                        const selectedIsland = islandGroup.find(
-                                            (i) => i.island_name === value,
-                                        );
-
-                                        if (
-                                            selectedIsland &&
-                                            selectedIsland.island_id
-                                        ) {
-                                            fetchRegionsByIslandId(
-                                                Number(
-                                                    selectedIsland.island_id,
-                                                ),
-                                            ).then(setRegionArr);
-                                        }
-
-                                        resetForIsland();
-                                    }}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Choose an option" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {islandGroup.map((item, index) => (
-                                                <SelectItem
-                                                    key={index}
-                                                    value={item.island_name}
-                                                    data-id={item.island_id}
-                                                >
-                                                    {item.island_name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-
-                                <InputError
-                                    message={errors['address.island']}
-                                />
-                            </div>
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    Region
-                                    <Asterisk color="red" size={12} />
-                                </Label>
-                                <Select
-                                    value={data.address.region}
-                                    name={data.address.region}
-                                    onValueChange={(value) => {
-                                        setData('address.region', value);
-
-                                        const selectedRegion = regionArr.find(
-                                            (r) =>
-                                                `${r.region_name} - ${r.region_description}` ===
-                                                value,
-                                        );
-
-                                        if (selectedRegion) {
-                                            fetchProvinceByRegionId(
-                                                Number(
-                                                    selectedRegion.region_id,
-                                                ),
-                                            ).then(setProvinceArr);
-                                        }
-
-                                        resetForRegion();
-                                    }}
-                                    disabled={!data.address.island}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Choose an option" />
-                                    </SelectTrigger>
-
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {regionArr.map((item, index) => (
-                                                <SelectItem
-                                                    key={index}
-                                                    value={`${item.region_name} - ${item.region_description}`}
-                                                >
-                                                    {`${item.region_name} - ${item.region_description}`}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-
-                                <InputError
-                                    message={errors['address.region']}
-                                />
-                            </div>
-                        </TwoColumnInput>
-
-                        <TwoColumnInput>
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    Province
-                                    <Asterisk color="red" size={12} />
-                                </Label>
-                                <Select
-                                    value={data.address.province}
-                                    name={data.address.province}
-                                    onValueChange={(value) => {
-                                        setData('address.province', value);
-                                        resetForProvince();
-
-                                        const selectedProvince =
-                                            provinceArr.find(
-                                                (p) =>
-                                                    p.province_name === value,
-                                            );
-
-                                        if (selectedProvince) {
-                                            fetchCitiesByProvinceId(
-                                                Number(
-                                                    selectedProvince.province_id,
-                                                ),
-                                            ).then(setCitiesArr);
-                                        }
-                                    }}
-                                    disabled={!data.address.region}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Choose a province" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {provinceArr.map((item) => (
-                                                <SelectItem
-                                                    key={item.province_id}
-                                                    value={item.province_name}
-                                                >
-                                                    {item.province_name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-
-                                <InputError
-                                    message={errors['address.province']}
-                                />
-                            </div>
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    City / Municipality
-                                    <Asterisk color="red" size={12} />
-                                </Label>
-                                <Popover
-                                    open={cityPopover}
-                                    onOpenChange={(open) =>
-                                        setCityPopover(open)
-                                    }
-                                >
-                                    <PopoverTrigger
-                                        asChild
-                                        disabled={!data.address.province}
-                                    >
-                                        <Button
-                                            variant="outline"
-                                            role="combobox"
-                                            name={data.address.city}
-                                            aria-expanded={cityPopover}
-                                            disabled={!data.address.province}
-                                            className="justify-between"
-                                        >
-                                            {citiesArr.length > 0 &&
-                                            data.address.city
-                                                ? data.address.city
-                                                : 'Choose an option'}
-                                            <ChevronsUpDown className="opacity-50" />
-                                        </Button>
-                                    </PopoverTrigger>
-
-                                    <PopoverContent
-                                        className="p-0"
-                                        align="start"
-                                    >
-                                        <Command>
-                                            <CommandInput
-                                                placeholder="Search city / municipality..."
-                                                className="h-9"
-                                            />
-                                            <CommandList>
-                                                <CommandEmpty>
-                                                    No city / municipality
-                                                    found.
-                                                </CommandEmpty>
-
-                                                <CommandGroup>
-                                                    {citiesArr.map(
-                                                        (item, index) => (
-                                                            <CommandItem
-                                                                key={index}
-                                                                value={
-                                                                    item.municipality_name
-                                                                }
-                                                                data-id={
-                                                                    item.municipality_id
-                                                                }
-                                                                onSelect={() => {
-                                                                    setData(
-                                                                        'address.city',
-                                                                        item.municipality_name,
-                                                                    );
-                                                                    fetchBrgyByCityId(
-                                                                        Number(
-                                                                            item.municipality_id,
-                                                                        ),
-                                                                    ).then(
-                                                                        setBrgyArr,
-                                                                    );
-                                                                    setCityPopover(
-                                                                        false,
-                                                                    );
-                                                                    resetForCity();
-                                                                }}
-                                                            >
-                                                                {
-                                                                    item.municipality_name
-                                                                }
-
-                                                                <Check
-                                                                    className={cn(
-                                                                        'ml-auto',
-                                                                        item.municipality_name ===
-                                                                            data
-                                                                                .address
-                                                                                .city
-                                                                            ? 'opacity-100'
-                                                                            : 'opacity-0',
-                                                                    )}
-                                                                />
-                                                            </CommandItem>
-                                                        ),
-                                                    )}
-                                                </CommandGroup>
-                                            </CommandList>
-                                        </Command>
-                                    </PopoverContent>
-                                </Popover>
-
-                                <InputError message={errors['address.city']} />
-                            </div>
-                        </TwoColumnInput>
-
-                        <TwoColumnInput>
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    Barangay
-                                    <Asterisk color="red" size={12} />
-                                </Label>
-                                <Popover
-                                    open={brgyPopover}
-                                    onOpenChange={(open) =>
-                                        setBrgyPopover(open)
-                                    }
-                                >
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            role="combobox"
-                                            aria-expanded={brgyPopover}
-                                            disabled={!data.address.city}
-                                            name={data.address.brgy}
-                                            className="justify-between"
-                                        >
-                                            {brgyArr.length > 0 &&
-                                            data.address.brgy
-                                                ? data.address.brgy
-                                                : 'Choose an option'}
-                                            <ChevronsUpDown className="opacity-50" />
-                                        </Button>
-                                    </PopoverTrigger>
-
-                                    <PopoverContent
-                                        className="p-0"
-                                        align="start"
-                                    >
-                                        <Command>
-                                            <CommandInput
-                                                placeholder="Search barangay..."
-                                                className="h-9"
-                                            />
-                                            <CommandList>
-                                                <CommandEmpty>
-                                                    No barangay found.
-                                                </CommandEmpty>
-
-                                                <CommandGroup>
-                                                    {brgyArr.map(
-                                                        (item, index) => (
-                                                            <CommandItem
-                                                                key={index}
-                                                                value={
-                                                                    item.barangay_name
-                                                                }
-                                                                onSelect={() => {
-                                                                    setData(
-                                                                        'address.brgy',
-                                                                        item.barangay_name,
-                                                                    );
-                                                                    setBrgyPopover(
-                                                                        false,
-                                                                    );
-                                                                }}
-                                                            >
-                                                                {
-                                                                    item.barangay_name
-                                                                }
-
-                                                                <Check
-                                                                    className={cn(
-                                                                        'ml-auto',
-                                                                        item.barangay_name ===
-                                                                            data
-                                                                                .address
-                                                                                .brgy
-                                                                            ? 'opacity-100'
-                                                                            : 'opacity-0',
-                                                                    )}
-                                                                />
-                                                            </CommandItem>
-                                                        ),
-                                                    )}
-                                                </CommandGroup>
-                                            </CommandList>
-                                        </Command>
-                                    </PopoverContent>
-                                </Popover>
-
-                                <InputError message={errors['address.brgy']} />
-                            </div>
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    Zip Code
-                                    <Asterisk color="red" size={12} />
-                                </Label>
-                                <Input
-                                    type="number"
-                                    name={data.address.zip_code ?? 'zipcode'}
-                                    value={data.address.zip_code ?? ''}
-                                    onChange={(e) => {
-                                        const value = e.target.value.slice(
-                                            0,
-                                            4,
-                                        );
-                                        setData(
-                                            'address.zip_code',
-                                            value ? value : null,
-                                        );
-                                    }}
-                                    placeholder="Enter Zip Code"
-                                />
-
-                                <InputError
-                                    message={errors['address.zip_code']}
-                                />
-                            </div>
-                        </TwoColumnInput>
-                    </div>
+                    </fieldset>
                     <DialogFooter>
                         <DialogClose asChild>
                             <Button
@@ -1202,7 +667,7 @@ export default function EditGuardian({
                                 Cancel
                             </Button>
                         </DialogClose>
-                        <Button type="submit" disabled={processing}>
+                        {/* <Button type="submit" disabled={processing}>
                             {processing ? (
                                 <>
                                     <Spinner /> Loading...
@@ -1210,7 +675,7 @@ export default function EditGuardian({
                             ) : (
                                 'Save changes'
                             )}
-                        </Button>
+                        </Button> */}
                     </DialogFooter>
                 </form>
             </DialogContent>

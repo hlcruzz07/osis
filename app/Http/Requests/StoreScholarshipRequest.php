@@ -129,7 +129,6 @@ class StoreScholarshipRequest extends FormRequest
 
         return array_merge($rules, [
             'student.year_level' => ['required', 'string', 'max:50'],
-            'student.street' => ['required', 'string', 'max:150'],
             'student.social_media_account' => ['required', 'string', 'max:150'],
             'student.section' => ['required', 'string', 'max:10'],
             'student.house_monthly_income' => ['required', 'string'],
@@ -150,10 +149,6 @@ class StoreScholarshipRequest extends FormRequest
             'student.year_level.required' => 'Please select your year level.',
             'student.year_level.string' => 'Year level must be valid text.',
             'student.year_level.max' => 'Year level must not exceed :max characters.',
-
-            'student.street.required' => 'Please enter your street.',
-            'student.street.string' => 'Street must be valid text.',
-            'student.street.max' => 'Street must not exceed :max characters.',
 
             'student.social_media_account.required' => 'Please enter your social media account.',
             'student.social_media_account.string' => 'Social media account must be valid text.',

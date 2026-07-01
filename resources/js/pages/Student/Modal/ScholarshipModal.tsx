@@ -14,15 +14,13 @@ import { Label } from '@/components/ui/label';
 import { DialogClose } from '@radix-ui/react-dialog';
 import InputError from '@/components/input-error';
 import { scholarship } from '@/routes';
-import { handleErrors } from '@/lib/utils';
-import { useForm } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { Spinner } from '@/components/ui/spinner';
 
 export default function ScholarshipModal() {
-    const { data, setData, get, processing, errors } = useForm({
-        reference_number: '',
-    });
-
+    const [referenceNumber, setReferenceNumber] = useState('');
+    const [processing, setProcessing] = useState(false);
+    const [error, setError] = useState<string | undefined>(undefined);
     const [isOpen, setIsOpen] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -30,13 +28,25 @@ export default function ScholarshipModal() {
 
         if (processing) return;
 
-        get(scholarship(data.reference_number).url, {
-            preserveState: true,
-            preserveScroll: true,
-            onError: () => {
-                setIsOpen(true);
+        setError(undefined);
+        setProcessing(true);
+
+        router.get(
+            scholarship(referenceNumber).url,
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onError: (errors) => {
+                    setError(
+                        (errors as Record<string, string>).reference_number ??
+                            'Something went wrong. Please try again.',
+                    );
+                    setIsOpen(true);
+                },
+                onFinish: () => setProcessing(false),
             },
-        });
+        );
     };
 
     return (
@@ -67,12 +77,9 @@ export default function ScholarshipModal() {
                         <Input
                             id="reference_number"
                             placeholder="e.g. A7K9X2M4QP"
-                            value={data.reference_number}
+                            value={referenceNumber}
                             onChange={(e) =>
-                                setData(
-                                    'reference_number',
-                                    e.target.value.toUpperCase(),
-                                )
+                                setReferenceNumber(e.target.value.toUpperCase())
                             }
                             maxLength={10}
                             autoComplete="off"
@@ -80,7 +87,7 @@ export default function ScholarshipModal() {
                             spellCheck={false}
                         />
 
-                        <InputError message={errors.reference_number} />
+                        <InputError message={error} />
 
                         <p className="text-xs text-muted-foreground">
                             Enter the 10-character reference number (letters and

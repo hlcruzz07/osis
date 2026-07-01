@@ -108,6 +108,10 @@ export default function Registrar() {
         (item) => item.title === 'School Type',
     )?.dropdowns;
 
+    const religionArr = dropdowns.find(
+        (item) => item.title === 'Religion',
+    )?.dropdowns;
+
     const schoolShadows = [
         'shadow-green-500',
         'shadow-blue-500',
@@ -165,6 +169,7 @@ export default function Registrar() {
             gender: '',
             civil_status: '',
             email: '',
+            religion: null as null | string,
             mobile_num: null as null | string,
             date_admitted: '',
             campus: '',
@@ -187,6 +192,7 @@ export default function Registrar() {
             city: '',
             brgy: '',
             zip_code: null as string | null,
+            street: '',
         },
 
         guardians: [] as GuardianProps[],
@@ -196,7 +202,6 @@ export default function Registrar() {
         answers: [],
     });
 
-    console.log(data);
     const educAttainmentArr = dropdowns.find(
         (item) => item.title === 'Educational Attainment',
     )?.dropdowns;
@@ -204,7 +209,7 @@ export default function Registrar() {
     const familyRoleArr = dropdowns.find(
         (item) => item.title === 'Family Role',
     )?.dropdowns;
-
+    const [religionPopover, setReligionPopover] = useState(false);
     const [selectedGuardian, setSelectedGuardian] = useState<string>('');
     const [selectedGuardians, setSelectedGuardians] = useState<string[]>([]);
 
@@ -247,6 +252,7 @@ export default function Registrar() {
                     city: '',
                     brgy: '',
                     zip_code: null,
+                    street: '',
                 },
             },
             {
@@ -265,6 +271,7 @@ export default function Registrar() {
                     city: '',
                     brgy: '',
                     zip_code: null,
+                    street: '',
                 },
             },
         ];
@@ -288,6 +295,7 @@ export default function Registrar() {
                     city: '',
                     brgy: '',
                     zip_code: null,
+                    street: '',
                 },
             });
         }
@@ -562,6 +570,7 @@ export default function Registrar() {
                 city: data.address.city,
                 brgy: data.address.brgy,
                 zip_code: data.address.zip_code,
+                street: data.address.street,
             });
         } else {
             setGuardianUseSameAddress((prev) => ({ ...prev, [index]: false }));
@@ -572,6 +581,7 @@ export default function Registrar() {
                 city: '',
                 brgy: '',
                 zip_code: null,
+                street: '',
             });
             setGuardianRegions((prev) => ({ ...prev, [index]: [] }));
             setGuardianProvinces((prev) => ({ ...prev, [index]: [] }));
@@ -587,7 +597,8 @@ export default function Registrar() {
             data.address.province &&
             data.address.city &&
             data.address.brgy &&
-            data.address.zip_code?.length === 4,
+            data.address.zip_code?.length === 4 &&
+            data.address.street,
         );
     };
 
@@ -924,7 +935,7 @@ export default function Registrar() {
                             <Asterisk color="red" size={12} />
                         </Label>
                         <Select
-                            value={data.gender}
+                            value={data.student.gender}
                             onValueChange={(value) => {
                                 setData('student.gender', value);
                             }}
@@ -1002,6 +1013,76 @@ export default function Registrar() {
                         <InputError message={errors['student.mobile_num']} />
                     </div>
                 </TwoColumnInput>
+
+                <div className="flex flex-col gap-3">
+                    <Label>
+                        Religion
+                        <Asterisk color="red" size={12} />
+                    </Label>
+                    <Popover
+                        open={religionPopover}
+                        onOpenChange={(open) => setReligionPopover(open)}
+                    >
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={religionPopover}
+                                className="justify-between"
+                            >
+                                {data.student.religion
+                                    ? data.student.religion
+                                    : 'Choose an option'}
+                                <ChevronsUpDown className="opacity-50" />
+                            </Button>
+                        </PopoverTrigger>
+
+                        <PopoverContent className="w-full p-0" align="start">
+                            <Command>
+                                <CommandInput
+                                    placeholder="Search religion..."
+                                    className="h-9"
+                                />
+                                <CommandList>
+                                    <CommandEmpty>
+                                        No religion found.
+                                    </CommandEmpty>
+
+                                    <CommandGroup>
+                                        {religionArr?.map((item, index) => (
+                                            <CommandItem
+                                                key={index}
+                                                value={item}
+                                                onSelect={() => {
+                                                    setData(
+                                                        'student.religion',
+                                                        item,
+                                                    );
+                                                    setReligionPopover(false);
+                                                }}
+                                            >
+                                                {item}
+
+                                                <Check
+                                                    className={cn(
+                                                        'ml-auto',
+                                                        item ===
+                                                            data.student
+                                                                .religion
+                                                            ? 'opacity-100'
+                                                            : 'opacity-0',
+                                                    )}
+                                                />
+                                            </CommandItem>
+                                        ))}
+                                    </CommandGroup>
+                                </CommandList>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
+
+                    <InputError message={errors['student.religion']} />
+                </div>
 
                 <TwoColumnInput>
                     <div className="flex flex-col gap-3">
@@ -1607,6 +1688,50 @@ export default function Registrar() {
                         <InputError message={errors['address.zip_code']} />
                     </div>
                 </TwoColumnInput>
+
+                <div className="flex flex-col gap-3">
+                    <Label>
+                        Street <Asterisk color="red" size={12} />
+                    </Label>
+                    <div>
+                        <Textarea
+                            name="address.street"
+                            value={data.address.street}
+                            maxLength={150}
+                            placeholder="Enter your street"
+                            onChange={(e) =>
+                                setData(
+                                    'address.street',
+                                    capitalizeString(e.target.value),
+                                )
+                            }
+                        />
+                        <small className="mt-2 ml-auto block text-right text-[10px] text-muted-foreground">
+                            {data.address.street.length} / 150
+                        </small>
+                    </div>
+
+                    <InputError message={errors['address.street']} />
+                </div>
+
+                {canUseStudentAddress() && (
+                    <div className="flex flex-col gap-3">
+                        <Label>Full Student Address</Label>
+                        <Input
+                            type="text"
+                            value={[
+                                data.address.street,
+                                `Brgy. ${data.address.brgy}`,
+                                data.address.city,
+                                data.address.province,
+                                data.address.zip_code,
+                            ]
+                                .filter(Boolean)
+                                .join(', ')}
+                            readOnly
+                        />
+                    </div>
+                )}
 
                 <div className="flex flex-col gap-3">
                     <Heading
@@ -2370,6 +2495,37 @@ export default function Registrar() {
                                             />
                                         </div>
                                     </TwoColumnInput>
+                                    <div className="flex flex-col gap-3">
+                                        <Label>
+                                            {member + "'s"} House No. / Street
+                                            <Asterisk color="red" size={12} />
+                                        </Label>
+                                        <Textarea
+                                            maxLength={150}
+                                            value={
+                                                data.guardians?.[index]?.address
+                                                    ?.street ?? ''
+                                            }
+                                            name={`guardians.${index}.address.street`}
+                                            onChange={(e) =>
+                                                setData(
+                                                    `guardians.${index}.address.street`,
+                                                    capitalizeString(
+                                                        e.target.value,
+                                                    ),
+                                                )
+                                            }
+                                            className="py-2"
+                                            placeholder="Enter Street"
+                                        />
+                                        <InputError
+                                            message={
+                                                errors[
+                                                    `guardians.${index}.address.street`
+                                                ]
+                                            }
+                                        />
+                                    </div>
                                 </div>
                             )}
                         </div>

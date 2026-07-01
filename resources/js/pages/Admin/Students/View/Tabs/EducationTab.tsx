@@ -163,19 +163,10 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                                         <Input
                                             type="text"
                                             maxLength={150}
-                                            disabled={!isEditMode}
+                                            readOnly
                                             value={
                                                 data.educations[index]
                                                     .school_name
-                                            }
-                                            name={`educations.${index}.school_name`}
-                                            onChange={(e) =>
-                                                setData(
-                                                    `educations.${index}.school_name`,
-                                                    capitalizeString(
-                                                        e.target.value,
-                                                    ),
-                                                )
                                             }
                                             className="py-2 ps-9"
                                             placeholder="Enter School Name"
@@ -194,37 +185,14 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                                         School Type
                                         <Asterisk color="red" size={12} />
                                     </Label>
-                                    <Select
+                                    <Input
+                                        readOnly
                                         value={
-                                            data.educations[index].school_type
+                                            data.educations[index]
+                                                .school_type ?? ''
                                         }
-                                        disabled={!isEditMode}
-                                        name={`educations.${index}.school_type`}
-                                        onValueChange={(value) =>
-                                            setData(
-                                                `educations.${index}.school_type`,
-                                                value,
-                                            )
-                                        }
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Choose an option" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                {schoolTypeArr?.map(
-                                                    (item, index) => (
-                                                        <SelectItem
-                                                            key={index}
-                                                            value={item}
-                                                        >
-                                                            {item}
-                                                        </SelectItem>
-                                                    ),
-                                                )}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
+                                        placeholder="No school type"
+                                    />
                                     <InputError
                                         message={
                                             errors[
@@ -244,15 +212,8 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                                     value={
                                         data.educations[index].school_address
                                     }
-                                    disabled={!isEditMode}
+                                    readOnly
                                     maxLength={250}
-                                    name={`educations.${index}.school_address`}
-                                    onChange={(e) =>
-                                        setData(
-                                            `educations.${index}.school_address`,
-                                            capitalizeString(e.target.value),
-                                        )
-                                    }
                                     placeholder="Enter School Address"
                                 />
 
@@ -276,15 +237,8 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                                         value={
                                             data.educations[index].strand ?? ''
                                         }
-                                        disabled={!isEditMode}
+                                        readOnly
                                         maxLength={250}
-                                        name={`educations.${index}.strand`}
-                                        onChange={(e) =>
-                                            setData(
-                                                `educations.${index}.strand`,
-                                                e.target.value.toUpperCase(),
-                                            )
-                                        }
                                         placeholder="Enter Strand"
                                     />
 
@@ -306,17 +260,10 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                                     <div className="relative flex items-center">
                                         <Input
                                             type="number"
-                                            disabled={!isEditMode}
+                                            readOnly
                                             value={
                                                 data.educations[index]
                                                     .year_graduated ?? ''
-                                            }
-                                            name={`educations.${index}.year_graduated`}
-                                            onChange={(e) =>
-                                                setData(
-                                                    `educations.${index}.year_graduated`,
-                                                    e.target.value.slice(0, 4),
-                                                )
                                             }
                                             className="py-2"
                                             placeholder="Enter Year Graduated"
@@ -339,30 +286,12 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                                     <div className="relative flex items-center">
                                         <Input
                                             type="number"
-                                            disabled={!isEditMode}
+                                            readOnly
                                             placeholder="Enter General Average"
                                             value={
                                                 data.educations[index]
                                                     .general_average ?? ''
                                             }
-                                            name={`educations.${index}.general_average`}
-                                            onChange={(e) => {
-                                                const value = e.target.value;
-
-                                                // Allow empty
-                                                if (value === '') {
-                                                    setData(
-                                                        `educations.${index}.general_average`,
-                                                        null,
-                                                    );
-                                                    return;
-                                                }
-
-                                                setData(
-                                                    `educations.${index}.general_average`,
-                                                    value.replaceAll(' ', ''),
-                                                );
-                                            }}
                                             className="py-2"
                                         />
                                     </div>
@@ -384,20 +313,11 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                                             <div className="relative flex items-center">
                                                 <Input
                                                     type="text"
-                                                    disabled={!isEditMode}
+                                                    readOnly
                                                     maxLength={150}
                                                     value={
                                                         data.educations[index]
                                                             .course ?? ''
-                                                    }
-                                                    name={`educations.${index}.course`}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            `educations.${index}.course`,
-                                                            capitalizeString(
-                                                                e.target.value,
-                                                            ),
-                                                        )
                                                     }
                                                     className="py-2"
                                                     placeholder="Enter Course"
@@ -420,19 +340,10 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                                             <Input
                                                 type="text"
                                                 maxLength={150}
-                                                disabled={!isEditMode}
+                                                readOnly
                                                 value={
                                                     data.educations[index]
                                                         .academic_year ?? ''
-                                                }
-                                                name={`educations.${index}.academic_year`}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        `educations.${index}.academic_year`,
-                                                        capitalizeString(
-                                                            e.target.value,
-                                                        ),
-                                                    )
                                                 }
                                                 className="py-2"
                                                 placeholder="Enter Academic Year"
@@ -454,20 +365,11 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                                                 <Input
                                                     type="text"
                                                     maxLength={150}
-                                                    disabled={!isEditMode}
+                                                    readOnly
                                                     value={
                                                         data.educations[index]
                                                             ?.scholarship_program ??
                                                         ''
-                                                    }
-                                                    name={`educations.${index}.scholarship_program`}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            `educations.${index}.scholarship_program`,
-                                                            capitalizeString(
-                                                                e.target.value,
-                                                            ),
-                                                        )
                                                     }
                                                     className="py-2"
                                                     placeholder="Enter Scholarship Program"
@@ -492,26 +394,12 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                                                 </span>
                                                 <Input
                                                     type="number"
-                                                    disabled={!isEditMode}
+                                                    readOnly
                                                     value={
                                                         data.educations[index]
                                                             ?.scholarship_mobile_num ??
                                                         ''
                                                     }
-                                                    name={`educations.${index}.scholarship_mobile_num`}
-                                                    onChange={(e) => {
-                                                        const value =
-                                                            e.target.value.slice(
-                                                                0,
-                                                                10,
-                                                            );
-                                                        setData(
-                                                            `educations.${index}.scholarship_mobile_num`,
-                                                            value
-                                                                ? value
-                                                                : null,
-                                                        );
-                                                    }}
                                                     className="py-2 ps-11"
                                                     placeholder="Enter Scholarship Mobile Number"
                                                 />
@@ -534,16 +422,7 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                                                 data.educations[index]
                                                     ?.scholarship_address ?? ''
                                             }
-                                            disabled={!isEditMode}
-                                            name={`educations.${index}.scholarship_address`}
-                                            onChange={(e) =>
-                                                setData(
-                                                    `educations.${index}.scholarship_address`,
-                                                    capitalizeString(
-                                                        e.target.value,
-                                                    ),
-                                                )
-                                            }
+                                            readOnly
                                             className="py-2"
                                             placeholder="Enter Scholarship Office Address"
                                         />
@@ -560,7 +439,7 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                         </div>
                     ))}
 
-                    <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
+                    {/* <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
                         {isEditMode ? (
                             <div>
                                 <Button
@@ -596,7 +475,7 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                                 <PencilIcon /> Edit
                             </Button>
                         )}
-                    </div>
+                    </div> */}
                 </form>
             </FormLayout>
         </>

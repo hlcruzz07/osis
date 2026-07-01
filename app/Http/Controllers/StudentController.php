@@ -262,6 +262,7 @@ class StudentController extends Controller
                 'semester' => $semester
             ]);
 
+
             $address_data = data_get($data, 'address');
             $educations_data = data_get($data, 'educations');
             $guardians_data = data_get($data, 'guardians');

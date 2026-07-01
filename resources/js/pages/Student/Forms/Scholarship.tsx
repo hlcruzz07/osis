@@ -123,7 +123,6 @@ export default function Scholarship() {
             student: {
                 year_level: '',
                 section: '',
-                street: '',
                 social_media_account: '',
                 house_monthly_income: '',
             },
@@ -132,8 +131,6 @@ export default function Scholarship() {
 
             scholarships: [] as SelectedScholarship[],
         });
-
-    console.log(data);
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -503,47 +500,6 @@ export default function Scholarship() {
                     <InputError
                         message={errors['student.social_media_account']}
                     />
-                </div>
-
-                <div className="flex flex-col gap-3">
-                    <Label>Province</Label>
-                    <Input value={student.address?.province} readOnly />
-                </div>
-
-                <TwoColumnInput>
-                    <div className="flex flex-col gap-3">
-                        <Label>City / Municipality</Label>
-                        <Input value={student.address?.city} readOnly />
-                    </div>
-                    <div className="flex flex-col gap-3">
-                        <Label>Barangay</Label>
-                        <Input value={student.address?.brgy} readOnly />
-                    </div>
-                </TwoColumnInput>
-
-                <div className="flex flex-col gap-3">
-                    <Label>
-                        Street <Asterisk color="red" size={12} />
-                    </Label>
-                    <div>
-                        <Textarea
-                            name="street"
-                            value={data.student.street}
-                            maxLength={150}
-                            placeholder="Enter your street"
-                            onChange={(e) =>
-                                setData(
-                                    'student.street',
-                                    capitalizeString(e.target.value),
-                                )
-                            }
-                        />
-                        <small className="mt-2 ml-auto block text-right text-[10px] text-muted-foreground">
-                            {data.student.street.length} / 150
-                        </small>
-                    </div>
-
-                    <InputError message={errors['student.street']} />
                 </div>
 
                 <div className="flex flex-col gap-3">

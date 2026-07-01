@@ -30,6 +30,7 @@ class Student extends Model
         'mobile_num',
         'citizenship',
         'civil_status',
+        'religion',
         'sexual_orient',
         'height',
         'weight',
@@ -40,8 +41,7 @@ class Student extends Model
         'gender_hash',
         'section',
         'section_hash',
-        'street',
-        'street_hash',
+
         'social_media_account',
         'social_media_account_hash',
 

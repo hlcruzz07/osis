@@ -24,7 +24,7 @@ class StoreRegistrarRequest extends FormRequest
 
         return [
             // STUDENT INFORMATION
-            'student.lrn' => 'nullable|digits:10|numeric',
+            'student.lrn' => 'nullable|digits:12|numeric',
             'student.fname' => 'required|string|max:50',
             'student.mname' => 'nullable|string|max:50',
             'student.lname' => 'required|string|max:50',
@@ -34,6 +34,7 @@ class StoreRegistrarRequest extends FormRequest
             'student.civil_status' => 'required|string|max:50',
             'student.gender' => 'required|string|max:25',
             'student.email' => 'required|email|max:50',
+            'student.religion' => 'required|string',
             'student.mobile_num' => 'nullable|numeric|starts_with:9|digits:10',
             'student.date_admitted' => 'required|date|before_or_equal:today',
             'student.campus' => 'required|string|max:100',
@@ -55,6 +56,7 @@ class StoreRegistrarRequest extends FormRequest
             'address.city' => 'required|string',
             'address.brgy' => 'required|string',
             'address.zip_code' => 'required|numeric|digits:4',
+            'address.street' => 'required|string|max:150',
 
             // GUARDIANS
             'guardians' => 'required|array|min:2',
@@ -80,6 +82,7 @@ class StoreRegistrarRequest extends FormRequest
             'guardians.*.address.city' => 'required|string',
             'guardians.*.address.brgy' => 'required|string',
             'guardians.*.address.zip_code' => 'required|numeric|digits:4',
+            'guardians.*.address.street' => 'required|string|max:150',
 
             // EDUCATION
             'educations' => 'required|array|min:3',
@@ -108,6 +111,7 @@ class StoreRegistrarRequest extends FormRequest
     {
         return [
             // STUDENT INFO
+            'student.lrn.digits' => 'LRN must be exactly 12 digits.',
             'student.fname.required' => 'First name is required.',
             'student.fname.max' => 'First name may not exceed 50 characters.',
             'student.lname.required' => 'Last name is required.',
@@ -124,6 +128,7 @@ class StoreRegistrarRequest extends FormRequest
             'student.gender.max' => 'Sexual orientation may not exceed 25 characters.',
             'student.email.required' => 'Email is required.',
             'student.email.email' => 'Email must be a valid email address.',
+            'student.religion.required' => 'Religion is required.',
             'student.email.max' => 'Email may not exceed 50 characters.',
             'student.mobile_num.numeric' => 'Mobile number must be numeric.',
             'student.mobile_num.starts_with' => 'Mobile number must start with 9.',
@@ -146,6 +151,8 @@ class StoreRegistrarRequest extends FormRequest
             'address.province.required' => 'Province is required.',
             'address.city.required' => 'City/Municipality is required.',
             'address.brgy.required' => 'Barangay is required.',
+            'address.street.required' => 'Street is required.',
+            'address.street.max' => 'Street may not exceed 150 characters.',
             'address.zip_code.required' => 'Zip code is required.',
             'address.zip_code.numeric' => 'Zip code must be numeric.',
             'address.zip_code.digits' => 'Zip code must be exactly 4 digits.',
@@ -183,6 +190,8 @@ class StoreRegistrarRequest extends FormRequest
             'guardians.*.address.zip_code.required' => 'Guardian zip code is required.',
             'guardians.*.address.zip_code.numeric' => 'Guardian zip code must be numeric.',
             'guardians.*.address.zip_code.digits' => 'Guardian zip code must be exactly 4 digits.',
+            'guardians.*.address.street.required' => 'Guardian street is required.',
+            'guardians.*.address.street.max' => 'Guardian street may not exceed 150 characters.',
 
             // EDUCATION
             'educations.required' => 'Education information is required.',

@@ -161,15 +161,8 @@ export default function FamilyTab({ studentData, dropdowns }: PageProps) {
                             />
                             <Input
                                 type="number"
-                                name="family_size"
                                 value={data.family_size ?? ''}
-                                disabled={!isEditMode}
-                                onChange={(e) =>
-                                    setData(
-                                        'family_size',
-                                        e.target.value.slice(0, 3),
-                                    )
-                                }
+                                readOnly
                                 placeholder="Enter family size"
                             />
                             <InputError message={errors['family_size']} />
@@ -179,58 +172,11 @@ export default function FamilyTab({ studentData, dropdowns }: PageProps) {
                                 Parent's Martial Status{' '}
                                 <Asterisk size={12} color="red" />
                             </Label>
-                            {selectedMartialStatus === 'Others' && (
-                                <Select
-                                    value={selectedMartialStatus ?? ''}
-                                    name="parent_martial_status"
-                                    disabled={!isEditMode}
-                                    onValueChange={(value) => {
-                                        setSelectedMaritalStatus(value);
-                                        if (value !== 'Others') {
-                                            setData(
-                                                'parent_martial_status',
-                                                value,
-                                            );
-                                            return;
-                                        }
-
-                                        setData('parent_martial_status', '');
-                                    }}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Choose an option" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {parentsMaritalStatusArr?.map(
-                                                (item, index) => (
-                                                    <SelectItem
-                                                        key={index}
-                                                        value={item}
-                                                    >
-                                                        {item}
-                                                    </SelectItem>
-                                                ),
-                                            )}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            )}
-
-                            {selectedMartialStatus !== 'Others' && (
-                                <Input
-                                    value={data.parent_martial_status ?? ''}
-                                    name="parent_martial_status"
-                                    disabled={!isEditMode}
-                                    onChange={(e) =>
-                                        setData(
-                                            'parent_martial_status',
-                                            capitalizeString(e.target.value),
-                                        )
-                                    }
-                                    placeholder="Please specify parent's martial status"
-                                />
-                            )}
+                            <Input
+                                readOnly
+                                value={data.parent_martial_status ?? ''}
+                                placeholder="No martial status"
+                            />
                             <InputError
                                 message={errors['parent_martial_status']}
                             />
@@ -243,32 +189,11 @@ export default function FamilyTab({ studentData, dropdowns }: PageProps) {
                                 Household Monthly Income{' '}
                                 <Asterisk size={12} color="red" />
                             </Label>
-                            <Select
-                                value={data.house_monthly_income}
-                                name="house_monthly_income"
-                                disabled={!isEditMode}
-                                onValueChange={(value) => {
-                                    setData('house_monthly_income', value);
-                                }}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose an option" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {houseMonthlyIncomeArr?.map(
-                                            (item, index) => (
-                                                <SelectItem
-                                                    key={index}
-                                                    value={item}
-                                                >
-                                                    {item}
-                                                </SelectItem>
-                                            ),
-                                        )}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                            <Input
+                                readOnly
+                                value={data.house_monthly_income ?? ''}
+                                placeholder="No income range"
+                            />
                             <InputError
                                 message={errors['house_monthly_income']}
                             />
@@ -281,14 +206,7 @@ export default function FamilyTab({ studentData, dropdowns }: PageProps) {
                             />
                             <Input
                                 value={data.ordinal_position}
-                                name="ordinal_position"
-                                disabled={!isEditMode}
-                                onChange={(e) =>
-                                    setData(
-                                        'ordinal_position',
-                                        capitalizeString(e.target.value),
-                                    )
-                                }
+                                readOnly
                                 placeholder="Enter ordinal position among siblings"
                             />
 
@@ -301,58 +219,14 @@ export default function FamilyTab({ studentData, dropdowns }: PageProps) {
                             Nature of Residence While Attendng School{' '}
                             <Asterisk size={12} color="red" />
                         </Label>
-                        {selectedNatureOfResidence === 'Other' && (
-                            <Select
-                                value={selectedNatureOfResidence ?? ''}
-                                name="nature_residence"
-                                disabled={!isEditMode}
-                                onValueChange={(value) => {
-                                    setSelectedNatureOfResidence(value);
-                                    if (value !== 'Others') {
-                                        setData('nature_residence', value);
-                                        return;
-                                    }
-
-                                    setData('nature_residence', '');
-                                }}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose an option" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {natureOfResidenceArr?.map(
-                                            (item, index) => (
-                                                <SelectItem
-                                                    key={index}
-                                                    value={item}
-                                                >
-                                                    {item}
-                                                </SelectItem>
-                                            ),
-                                        )}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                        )}
-
-                        {selectedNatureOfResidence !== 'Other' && (
-                            <Input
-                                value={data.nature_residence ?? ''}
-                                name="nature_residence"
-                                disabled={!isEditMode}
-                                onChange={(e) =>
-                                    setData(
-                                        'nature_residence',
-                                        capitalizeString(e.target.value),
-                                    )
-                                }
-                                placeholder="Please specify nature of residence"
-                            />
-                        )}
+                        <Input
+                            readOnly
+                            value={data.nature_residence ?? ''}
+                            placeholder="No nature of residence"
+                        />
                         <InputError message={errors['nature_residence']} />
                     </div>
-                    <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
+                    {/* <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
                         {isEditMode ? (
                             <div>
                                 <Button
@@ -388,7 +262,7 @@ export default function FamilyTab({ studentData, dropdowns }: PageProps) {
                                 <PencilIcon /> Edit
                             </Button>
                         )}
-                    </div>
+                    </div> */}
                 </form>
             </FormLayout>
         </>

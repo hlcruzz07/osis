@@ -110,14 +110,17 @@ export default function AddressTab({ studentData }: PageProps) {
         address.setData('brgy', '');
     };
 
-    const address = useForm<AddressProps>({
-        island: studentData.address.island,
-        region: studentData.address.region,
-        province: studentData.address.province,
-        city: studentData.address.city,
-        brgy: studentData.address.brgy,
-        zip_code: studentData.address.zip_code,
+    const address = useForm<any>({
+        island: studentData.address?.island,
+        region: studentData.address?.region,
+        province: studentData.address?.province,
+        city: studentData.address?.city,
+        brgy: studentData.address?.brgy,
+        zip_code: studentData.address?.zip_code,
+        street: studentData.address?.street,
     });
+
+    console.log(studentData);
 
     useEffect(() => {
         const loadInitialAddressData = async () => {
@@ -243,53 +246,34 @@ export default function AddressTab({ studentData }: PageProps) {
                         description="This section displays your current address, including your island group, region, province, city/municipality, barangay, and zip code."
                     />
 
+                    <div className="flex flex-col gap-3">
+                        <Label>Full Student Address</Label>
+                        <Input
+                            type="text"
+                            value={[
+                                address.data.street,
+                                `Brgy. ${address.data.brgy}`,
+                                address.data.city,
+                                address.data.province,
+                                address.data.zip_code,
+                            ]
+                                .filter(Boolean)
+                                .join(', ')}
+                            readOnly
+                        />
+                    </div>
+
                     <TwoColumnInput>
                         <div className="flex flex-col gap-3">
                             <Label>
                                 Island Group
                                 <Asterisk color="red" size={12} />
                             </Label>
-                            <Select
-                                value={address.data.island}
-                                name={address.data.island}
-                                disabled={!isEditMode}
-                                onValueChange={(value) => {
-                                    address.setData('island', value);
-
-                                    const selectedIsland = islandGroup.find(
-                                        (i) => i.island_name === value,
-                                    );
-
-                                    if (
-                                        selectedIsland &&
-                                        selectedIsland.island_id
-                                    ) {
-                                        fetchRegionsByIslandId(
-                                            Number(selectedIsland.island_id),
-                                        ).then(setRegionArr);
-                                    }
-
-                                    resetForIsland();
-                                }}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose an option" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {islandGroup.map((item, index) => (
-                                            <SelectItem
-                                                key={index}
-                                                value={item.island_name}
-                                                data-id={item.island_id}
-                                            >
-                                                {item.island_name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-
+                            <Input
+                                readOnly
+                                value={address.data.island ?? ''}
+                                placeholder="No island group"
+                            />
                             <InputError message={address.errors['island']} />
                         </div>
                         <div className="flex flex-col gap-3">
@@ -297,46 +281,11 @@ export default function AddressTab({ studentData }: PageProps) {
                                 Region
                                 <Asterisk color="red" size={12} />
                             </Label>
-                            <Select
-                                value={address.data.region}
-                                name={address.data.region}
-                                onValueChange={(value) => {
-                                    address.setData('region', value);
-
-                                    const selectedRegion = regionArr.find(
-                                        (r) =>
-                                            `${r.region_name} - ${r.region_description}` ===
-                                            value,
-                                    );
-
-                                    if (selectedRegion) {
-                                        fetchProvinceByRegionId(
-                                            Number(selectedRegion.region_id),
-                                        ).then(setProvinceArr);
-                                    }
-
-                                    resetForRegion();
-                                }}
-                                disabled={!address.data.island || !isEditMode}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose an option" />
-                                </SelectTrigger>
-
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {regionArr.map((item, index) => (
-                                            <SelectItem
-                                                key={index}
-                                                value={`${item.region_name} - ${item.region_description}`}
-                                            >
-                                                {`${item.region_name} - ${item.region_description}`}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-
+                            <Input
+                                readOnly
+                                value={address.data.region ?? ''}
+                                placeholder="No region"
+                            />
                             <InputError message={address.errors['region']} />
                         </div>
                     </TwoColumnInput>
@@ -347,44 +296,11 @@ export default function AddressTab({ studentData }: PageProps) {
                                 Province
                                 <Asterisk color="red" size={12} />
                             </Label>
-                            <Select
-                                value={address.data.province}
-                                name={address.data.province}
-                                onValueChange={(value) => {
-                                    address.setData('province', value);
-                                    resetForProvince();
-
-                                    const selectedProvince = provinceArr.find(
-                                        (p) => p.province_name === value,
-                                    );
-
-                                    if (selectedProvince) {
-                                        fetchCitiesByProvinceId(
-                                            Number(
-                                                selectedProvince.province_id,
-                                            ),
-                                        ).then(setCitiesArr);
-                                    }
-                                }}
-                                disabled={!address.data.region || !isEditMode}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose a province" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {provinceArr.map((item) => (
-                                            <SelectItem
-                                                key={item.province_id}
-                                                value={item.province_name}
-                                            >
-                                                {item.province_name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-
+                            <Input
+                                readOnly
+                                value={address.data.province ?? ''}
+                                placeholder="No province"
+                            />
                             <InputError message={address.errors['province']} />
                         </div>
                         <div className="flex flex-col gap-3">
@@ -392,97 +308,11 @@ export default function AddressTab({ studentData }: PageProps) {
                                 City / Municipality
                                 <Asterisk color="red" size={12} />
                             </Label>
-                            <Popover
-                                open={cityPopover}
-                                onOpenChange={(open) => setCityPopover(open)}
-                            >
-                                <PopoverTrigger
-                                    asChild
-                                    disabled={!address.data.province}
-                                >
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        name={address.data.city}
-                                        aria-expanded={cityPopover}
-                                        disabled={
-                                            !address.data.province ||
-                                            !isEditMode
-                                        }
-                                        className="justify-between"
-                                    >
-                                        {citiesArr.length > 0 &&
-                                        address.data.city
-                                            ? address.data.city
-                                            : 'Choose an option'}
-                                        <ChevronsUpDown className="opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-
-                                <PopoverContent className="p-0" align="start">
-                                    <Command>
-                                        <CommandInput
-                                            placeholder="Search city / municipality..."
-                                            className="h-9"
-                                        />
-                                        <CommandList>
-                                            <CommandEmpty>
-                                                No city / municipality found.
-                                            </CommandEmpty>
-
-                                            <CommandGroup>
-                                                {citiesArr.map(
-                                                    (item, index) => (
-                                                        <CommandItem
-                                                            key={index}
-                                                            value={
-                                                                item.municipality_name
-                                                            }
-                                                            data-id={
-                                                                item.municipality_id
-                                                            }
-                                                            onSelect={() => {
-                                                                address.setData(
-                                                                    'city',
-                                                                    item.municipality_name,
-                                                                );
-                                                                fetchBrgyByCityId(
-                                                                    Number(
-                                                                        item.municipality_id,
-                                                                    ),
-                                                                ).then(
-                                                                    setBrgyArr,
-                                                                );
-                                                                setCityPopover(
-                                                                    false,
-                                                                );
-                                                                resetForCity();
-                                                            }}
-                                                        >
-                                                            {
-                                                                item.municipality_name
-                                                            }
-
-                                                            <Check
-                                                                className={cn(
-                                                                    'ml-auto',
-                                                                    item.municipality_name ===
-                                                                        address
-                                                                            .data
-                                                                            .city
-                                                                        ? 'opacity-100'
-                                                                        : 'opacity-0',
-                                                                )}
-                                                            />
-                                                        </CommandItem>
-                                                    ),
-                                                )}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
-
+                            <Input
+                                readOnly
+                                value={address.data.city ?? ''}
+                                placeholder="No city / municipality"
+                            />
                             <InputError message={address.errors['city']} />
                         </div>
                     </TwoColumnInput>
@@ -493,76 +323,11 @@ export default function AddressTab({ studentData }: PageProps) {
                                 Barangay
                                 <Asterisk color="red" size={12} />
                             </Label>
-                            <Popover
-                                open={brgyPopover}
-                                onOpenChange={(open) => setBrgyPopover(open)}
-                            >
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        aria-expanded={brgyPopover}
-                                        disabled={
-                                            !address.data.city || !isEditMode
-                                        }
-                                        name={address.data.brgy}
-                                        className="justify-between"
-                                    >
-                                        {brgyArr.length > 0 && address.data.brgy
-                                            ? address.data.brgy
-                                            : 'Choose an option'}
-                                        <ChevronsUpDown className="opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-
-                                <PopoverContent className="p-0" align="start">
-                                    <Command>
-                                        <CommandInput
-                                            placeholder="Search barangay..."
-                                            className="h-9"
-                                        />
-                                        <CommandList>
-                                            <CommandEmpty>
-                                                No barangay found.
-                                            </CommandEmpty>
-
-                                            <CommandGroup>
-                                                {brgyArr.map((item, index) => (
-                                                    <CommandItem
-                                                        key={index}
-                                                        value={
-                                                            item.barangay_name
-                                                        }
-                                                        onSelect={() => {
-                                                            address.setData(
-                                                                'brgy',
-                                                                item.barangay_name,
-                                                            );
-                                                            setBrgyPopover(
-                                                                false,
-                                                            );
-                                                        }}
-                                                    >
-                                                        {item.barangay_name}
-
-                                                        <Check
-                                                            className={cn(
-                                                                'ml-auto',
-                                                                item.barangay_name ===
-                                                                    address.data
-                                                                        .brgy
-                                                                    ? 'opacity-100'
-                                                                    : 'opacity-0',
-                                                            )}
-                                                        />
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
-
+                            <Input
+                                readOnly
+                                value={address.data.brgy ?? ''}
+                                placeholder="No barangay"
+                            />
                             <InputError message={address.errors['brgy']} />
                         </div>
                         <div className="flex flex-col gap-3">
@@ -572,23 +337,15 @@ export default function AddressTab({ studentData }: PageProps) {
                             </Label>
                             <Input
                                 type="number"
-                                name={address.data.zip_code ?? 'zipcode'}
                                 value={address.data.zip_code ?? ''}
-                                disabled={!isEditMode}
-                                onChange={(e) => {
-                                    const value = e.target.value.slice(0, 4);
-                                    address.setData(
-                                        'zip_code',
-                                        value ? value : null,
-                                    );
-                                }}
-                                placeholder="Enter Zip Code"
+                                readOnly
+                                placeholder="No zip code"
                             />
 
                             <InputError message={address.errors['zip_code']} />
                         </div>
                     </TwoColumnInput>
-                    <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
+                    {/* <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
                         {isEditMode ? (
                             <div>
                                 <Button
@@ -618,7 +375,7 @@ export default function AddressTab({ studentData }: PageProps) {
                                 <PencilIcon /> Edit
                             </Button>
                         )}
-                    </div>
+                    </div> */}
                 </form>
             </FormLayout>
         </>

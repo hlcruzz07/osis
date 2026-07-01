@@ -11,12 +11,19 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('students', function (Blueprint $table) {
-            $table->string('section')->nullable();
-            $table->string('section_hash')->nullable();
-            $table->string('street')->nullable();
-            $table->string('street_hash')->nullable();
-            $table->string('social_media_account')->nullable();
-            $table->string('social_media_account_hash')->nullable();
+            $table->text('section')->nullable();
+            $table->text('section_hash')->nullable();
+            $table->text('street')->nullable();
+            $table->text('street_hash')->nullable();
+            $table->text('social_media_account')->nullable();
+            $table->text('social_media_account_hash')->nullable();
+        });
+
+        Schema::table('addresses', function (Blueprint $table) {
+
+            $table->text('street')->nullable();
+            $table->text('street_hash')->nullable();
+
         });
     }
 
@@ -34,6 +41,13 @@ return new class extends Migration {
                 'social_media_account',
                 'social_media_account_hash',
             ]);
+        });
+
+        Schema::table('addresses', function (Blueprint $table) {
+
+            $table->text('street')->nullable();
+            $table->text('street_hash')->nullable();
+
         });
     }
 };

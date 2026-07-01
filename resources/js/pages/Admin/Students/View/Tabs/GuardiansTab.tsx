@@ -100,7 +100,7 @@ export default function GuardiansTab({ studentData, dropdowns }: PageProps) {
                             </tr>
                         </thead>
                         <tbody className="lg:border-b">
-                            {studentData.guardians.map((row, index) => (
+                            {studentData.guardians?.map((row, index) => (
                                 <tr key={index} className="hover:bg-muted/50">
                                     <td data-label="ID">{index + 1}</td>
 
@@ -118,18 +118,22 @@ export default function GuardiansTab({ studentData, dropdowns }: PageProps) {
                                     <td data-label="Age">
                                         {row.birthdate
                                             ? calculateAge(row.birthdate)
-                                            : ''}
+                                            : 'N/A'}
                                     </td>
 
                                     <td data-label="Life Status">
-                                        {row.life_status === 'Living' ? (
-                                            <Badge variant="secondary">
-                                                {row.life_status}
-                                            </Badge>
+                                        {row.life_status !== null ? (
+                                            row.life_status === 'Living' ? (
+                                                <Badge variant="secondary">
+                                                    {row.life_status}
+                                                </Badge>
+                                            ) : (
+                                                <Badge variant="destructive">
+                                                    {row.life_status}
+                                                </Badge>
+                                            )
                                         ) : (
-                                            <Badge variant="destructive">
-                                                {row.life_status}
-                                            </Badge>
+                                            'N/A'
                                         )}
                                     </td>
 
@@ -167,7 +171,7 @@ export default function GuardiansTab({ studentData, dropdowns }: PageProps) {
                                     </td>
                                 </tr>
                             ))}
-                            {studentData.guardians.length === 0 ||
+                            {studentData.guardians?.length === 0 ||
                             !studentData.guardians ? (
                                 <>
                                     <tr>

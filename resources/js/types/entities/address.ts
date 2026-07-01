@@ -8,4 +8,5 @@ export type AddressProps = {
     city: string;
     brgy: string;
     zip_code: string | null;
+    street?: string;
 };

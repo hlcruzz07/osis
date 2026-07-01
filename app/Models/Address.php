@@ -15,6 +15,7 @@ class Address extends Model
         'city',
         'brgy',
         'zip_code',
+        'street',
 
         'island_hash',
         'region_hash',
@@ -22,6 +23,7 @@ class Address extends Model
         'city_hash',
         'brgy_hash',
         'zip_code_hash',
+        'street_hash',
     ];
 
 
@@ -33,6 +35,7 @@ class Address extends Model
             'city' => 'encrypted',
             'brgy' => 'encrypted',
             'zip_code' => 'encrypted',
+            'street' => 'encrypted',
         ];
     public function student()
     {

@@ -84,7 +84,7 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 type PageProps = {
-    studentData: StudentProps;
+    studentData: any;
     dropdowns: DropdownProps[];
 };
 
@@ -93,9 +93,6 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
         dropdowns.find((item) => item.title === 'Courses')?.dropdowns ?? [];
 
     const coursesArr = coursesDropdown.map((item: any) => item.name);
-
-    console.log('Student Data', studentData);
-    console.log('Courses', coursesArr);
 
     const equityIndicatorArr = dropdowns.find(
         (item) => item.title === 'Equity Indicator',
@@ -139,44 +136,54 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
 
     const [isEditMode, setIsEditMode] = useState(false);
 
-    const { data, setData, put, processing, clearErrors, errors } = useForm({
-        // Student Info
-        lrn: studentData.lrn,
-        year_level: studentData.year_level,
-        campus: studentData.campus,
-        course: studentData.course,
-        major: studentData.major || null,
-        date_admitted: studentData.date_admitted,
-        student_type: studentData.student_type,
-        equity_indicator: studentData.equity_indicator || '',
+    const { data, setData, put, processing, clearErrors, errors } =
+        useForm<any>({
+            // Student Info
+            lrn: studentData.lrn,
+            year_level: studentData.year_level,
+            campus: studentData.campus,
+            course: studentData.course,
+            major: studentData.major || null,
+            date_admitted: studentData.date_admitted,
+            student_type: studentData.student_type,
+            equity_indicator: studentData.equity_indicator || '',
 
-        fname: studentData.fname,
-        mname: studentData.mname || null,
-        lname: studentData.lname,
-        suffix: studentData.suffix || null,
+            fname: studentData.fname,
+            mname: studentData.mname || null,
+            lname: studentData.lname,
+            suffix: studentData.suffix || null,
 
-        birthdate: studentData.birthdate,
-        birthplace: studentData.birthplace,
+            birthdate: studentData.birthdate,
+            birthplace: studentData.birthplace,
 
-        // School & Finance Info
-        weekly_allowance: studentData.weekly_allowance ?? null,
-        financer: studentData.financer || '',
-        last_attended_school: studentData.last_attended_school || '',
+            // School & Finance Info
+            weekly_allowance: studentData.weekly_allowance ?? null,
+            financer: studentData.financer || '',
+            last_attended_school: studentData.last_attended_school || '',
 
-        // Contact Info
-        email: studentData.email || null,
-        mobile_num: studentData.mobile_num || null,
+            // Contact Info
+            email: studentData.email || null,
+            mobile_num: studentData.mobile_num || null,
 
-        // Demographics
-        religion: studentData.religion || '',
-        citizenship: studentData.citizenship || '',
-        civil_status: studentData.civil_status || '',
-        sexual_orient: studentData.sexual_orient || '',
+            // Demographics
+            religion: studentData.religion || '',
+            citizenship: studentData.citizenship || '',
+            civil_status: studentData.civil_status || '',
+            sexual_orient: studentData.sexual_orient || '',
 
-        // Physical Info
-        height: studentData.height ?? null,
-        weight: studentData.weight ?? null,
-    });
+            // Physical Info
+            height: studentData.height ?? null,
+            weight: studentData.weight ?? null,
+
+            // Additional
+            ref_number: studentData.ref_number || null,
+            gender: studentData.gender || null,
+            section: studentData.section || null,
+            social_media_account: studentData.social_media_account || null,
+            scholarship_program: studentData.scholarship_program || null,
+            scholarship_address: studentData.scholarship_address || null,
+            scholarship_contact: studentData.scholarship_contact || null,
+        });
 
     const [religionPopover, setReligionPopover] = useState(false);
     const [citizenshipPopover, setCitizenshipPopover] = useState(false);
@@ -387,7 +394,7 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                                 <Input
                                     type="text"
                                     className="ps-9"
-                                    disabled
+                                    readOnly
                                     value={
                                         studentData.semester ??
                                         'No Semester Found'
@@ -405,7 +412,7 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                                 <Input
                                     type="text"
                                     className="ps-9"
-                                    disabled
+                                    readOnly
                                     value={
                                         studentData.academic_year ??
                                         'No Academic Year Found'
@@ -417,110 +424,72 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                     <TwoColumnInput>
                         <div className="flex flex-col gap-3">
                             <Label>Year Level</Label>
-                            <Select
-                                value={data.year_level}
-                                disabled={!isEditMode}
-                                onValueChange={(value) => {
-                                    setData('year_level', value);
-                                }}
-                                name="year_level"
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose an option" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {yearLevelsArr?.map((item, index) => (
-                                            <SelectItem
-                                                key={index}
-                                                value={item}
-                                            >
-                                                {item}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                            <Input
+                                readOnly
+                                value={data.year_level ?? ''}
+                                placeholder="No year level"
+                            />
                             <InputError message={errors.year_level} />
                         </div>
                         <div className="flex flex-col gap-3">
                             <Label>
                                 Campus
-                                <Asterisk color="red" size={12} />
+                                {/* <Asterisk color="red" size={12} /> */}
                             </Label>
-                            <Select
-                                value={data.campus}
-                                name="campus"
-                                onValueChange={(value) => {
-                                    setData('campus', value);
-                                }}
-                                disabled={!isEditMode}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose an option" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {campusArr?.map((item, index) => (
-                                            <SelectItem
-                                                key={index}
-                                                value={item}
-                                            >
-                                                {item}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                            <Input
+                                readOnly
+                                value={data.campus ?? ''}
+                                placeholder="No campus"
+                            />
                             <InputError message={errors.campus} />
                         </div>
                     </TwoColumnInput>
 
                     <TwoColumnInput>
                         <div className="flex flex-col gap-3">
+                            <Label>Reference Number</Label>
+                            <Input
+                                readOnly
+                                value={data.ref_number ?? ''}
+                                placeholder="No reference number"
+                            />
+                            <InputError message={errors['ref_number']} />
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <Label>Section</Label>
+                            <Input
+                                readOnly
+                                value={data.section ?? ''}
+                                placeholder="No section"
+                            />
+                            <InputError message={errors['section']} />
+                        </div>
+                    </TwoColumnInput>
+
+                    <TwoColumnInput>
+                        <div className="flex flex-col gap-3">
                             <Label>
-                                Date Admitted <Asterisk color="red" size={12} />
+                                Date Admitted{' '}
+                                {/* <Asterisk color="red" size={12} /> */}
                             </Label>
                             <Input
                                 type="date"
                                 name="date_admitted"
-                                disabled={!isEditMode}
+                                readOnly={!isEditMode}
                                 value={data.date_admitted}
-                                onChange={(e) => {
-                                    setData('date_admitted', e.target.value);
-                                }}
                             />
                             <InputError message={errors.date_admitted} />
                         </div>
                         <div className="flex flex-col gap-3">
                             <Label>
                                 Student Type
-                                <Asterisk color="red" size={12} />
+                                {/* <Asterisk color="red" size={12} /> */}
                             </Label>
-                            <Select
-                                value={data.student_type}
-                                name="student_type"
-                                disabled={!isEditMode}
-                                onValueChange={(value) => {
-                                    setData('student_type', value);
-                                }}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose an option" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {studentTypeArr?.map((item, index) => (
-                                            <SelectItem
-                                                key={index}
-                                                value={item}
-                                            >
-                                                {item}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                            <Input
+                                readOnly
+                                value={data.student_type ?? ''}
+                                placeholder="No student type"
+                            />
                             <InputError message={errors.student_type} />
                         </div>
                     </TwoColumnInput>
@@ -528,35 +497,13 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                     <div className="flex flex-col gap-3">
                         <Label>
                             Course
-                            <Asterisk color="red" size={12} />
+                            {/* <Asterisk color="red" size={12} /> */}
                         </Label>
-                        <Select
-                            value={data.course}
-                            name="course"
-                            onValueChange={(value) => {
-                                setData('course', value);
-                                // Reset major when course changes
-                                const courseObj = coursesDropdown.find(
-                                    (c: any) => c.name === value,
-                                );
-                                if (!courseObj?.majors?.length)
-                                    setData('major', null);
-                            }}
-                            disabled={!isEditMode}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Choose an option" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {coursesArr?.map((item, index) => (
-                                        <SelectItem key={index} value={item}>
-                                            {item}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
+                        <Input
+                            readOnly
+                            value={data.course ?? ''}
+                            placeholder="No course"
+                        />
                         <InputError message={errors.course} />
                     </div>
 
@@ -570,41 +517,12 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         return (
                             <div className="flex flex-col gap-3">
                                 <Label>Major</Label>
-                                {majorsArr.length > 0 ? (
-                                    <Select
-                                        value={data.major ?? ''}
-                                        name="major"
-                                        onValueChange={(value) =>
-                                            setData('major', value || null)
-                                        }
-                                        disabled={!isEditMode}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Choose a major" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                {majorsArr.map(
-                                                    (item, index) => (
-                                                        <SelectItem
-                                                            key={index}
-                                                            value={item}
-                                                        >
-                                                            {item}
-                                                        </SelectItem>
-                                                    ),
-                                                )}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                ) : (
-                                    <Input
-                                        type="text"
-                                        value={data.major ?? ''}
-                                        disabled
-                                        placeholder="No major"
-                                    />
-                                )}
+                                <Input
+                                    type="text"
+                                    value={data.major ?? ''}
+                                    readOnly
+                                    placeholder="No major"
+                                />
                                 <InputError message={errors['major']} />
                             </div>
                         );
@@ -617,15 +535,9 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                                 type="text"
                                 name="lrn"
                                 inputMode="numeric"
-                                disabled={!isEditMode}
+                                readOnly={!isEditMode}
                                 maxLength={12}
                                 value={data.lrn ?? ''}
-                                onChange={(e) =>
-                                    setData(
-                                        'lrn',
-                                        e.target.value.replace(/\D/g, ''),
-                                    )
-                                }
                                 placeholder="Enter 12-digit LRN"
                             />
                             <InputError message={errors.lrn} />
@@ -633,34 +545,13 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         <div className="flex flex-col gap-3">
                             <Label>
                                 Equity Target Indicator{' '}
-                                <Asterisk color="red" size={12} />
+                                {/* <Asterisk color="red" size={12} /> */}
                             </Label>
-                            <Select
-                                value={data.equity_indicator}
-                                name="equity_indicator"
-                                onValueChange={(value) => {
-                                    setData('equity_indicator', value);
-                                }}
-                                disabled={!isEditMode}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose an option" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {equityIndicatorArr?.map(
-                                            (item, index) => (
-                                                <SelectItem
-                                                    key={index}
-                                                    value={item}
-                                                >
-                                                    {item}
-                                                </SelectItem>
-                                            ),
-                                        )}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                            <Input
+                                readOnly
+                                value={data.equity_indicator ?? ''}
+                                placeholder="No equity indicator"
+                            />
                             <InputError message={errors.equity_indicator} />
                         </div>
                     </TwoColumnInput>
@@ -678,12 +569,9 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                                 />
                                 <Input
                                     type="text"
-                                    disabled={!isEditMode}
+                                    readOnly={!isEditMode}
                                     name="email"
                                     value={data.email ?? ''}
-                                    onChange={(e) =>
-                                        setData('email', e.target.value)
-                                    }
                                     className="py-2 ps-9"
                                     placeholder="Enter Email Address"
                                     maxLength={50}
@@ -704,18 +592,8 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                                 <Input
                                     type="number"
                                     name="mobile_num"
-                                    disabled={!isEditMode}
+                                    readOnly={!isEditMode}
                                     value={data.mobile_num ?? ''}
-                                    onChange={(e) => {
-                                        const value = e.target.value.slice(
-                                            0,
-                                            10,
-                                        );
-                                        setData(
-                                            'mobile_num',
-                                            value ? value : null,
-                                        );
-                                    }}
                                     className="py-2 ps-11"
                                     placeholder="Enter Mobile Number"
                                 />
@@ -727,18 +605,12 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         <div className="flex flex-col gap-3">
                             <Label>
                                 First Name
-                                <Asterisk color="red" size={12} />
+                                {/* <Asterisk color="red" size={12} /> */}
                             </Label>
                             <Input
                                 value={data.fname}
                                 name="fname"
-                                disabled={!isEditMode}
-                                onChange={(e) =>
-                                    setData(
-                                        'fname',
-                                        capitalizeString(e.target.value),
-                                    )
-                                }
+                                readOnly={!isEditMode}
                                 maxLength={50}
                                 type="text"
                                 placeholder="Enter First Name"
@@ -751,41 +623,34 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                                 type="text"
                                 name="mname"
                                 value={data.mname ?? ''}
-                                disabled={!isEditMode}
-                                onChange={(e) => {
-                                    if (e.target.value === '') {
-                                        setData('mname', null);
-                                        return;
-                                    }
-                                    setData(
-                                        'mname',
-                                        capitalizeString(e.target.value),
-                                    );
-                                }}
+                                readOnly={!isEditMode}
                                 maxLength={50}
                                 placeholder="Enter Middle Name"
                             />
                             <InputError message={errors['mname']} />
                         </div>
                     </TwoColumnInput>
-
+                    <div className="flex flex-col gap-3">
+                        <Label>Social Media Account</Label>
+                        <Input
+                            type="text"
+                            readOnly
+                            value={data.social_media_account ?? ''}
+                            placeholder="No social media account"
+                        />
+                        <InputError message={errors['social_media_account']} />
+                    </div>
                     <TwoColumnInput>
                         <div className="flex flex-col gap-3">
                             <Label>
                                 Last Name
-                                <Asterisk color="red" size={12} />
+                                {/* <Asterisk color="red" size={12} /> */}
                             </Label>
                             <Input
                                 type="text"
                                 name="lname"
                                 value={data.lname}
-                                disabled={!isEditMode}
-                                onChange={(e) =>
-                                    setData(
-                                        'lname',
-                                        capitalizeString(e.target.value),
-                                    )
-                                }
+                                readOnly={!isEditMode}
                                 maxLength={50}
                                 placeholder="Enter Last Name"
                             />
@@ -793,34 +658,11 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         </div>
                         <div className="flex flex-col gap-3">
                             <Label>Suffix</Label>
-                            <Select
+                            <Input
+                                readOnly
                                 value={data.suffix ?? ''}
-                                disabled={!isEditMode}
-                                name="suffix"
-                                onValueChange={(value) => {
-                                    if (value === 'None') {
-                                        setData('suffix', null);
-                                        return;
-                                    }
-                                    setData('suffix', value);
-                                }}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose an option" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {suffixArr?.map((item, index) => (
-                                            <SelectItem
-                                                key={index}
-                                                value={item}
-                                            >
-                                                {item}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                                placeholder="No suffix"
+                            />
                             <InputError message={errors['suffix']} />
                         </div>
                     </TwoColumnInput>
@@ -829,36 +671,27 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         <div className="flex flex-col gap-3">
                             <Label>
                                 Birthdate
-                                <Asterisk color="red" size={12} />
+                                {/* <Asterisk color="red" size={12} /> */}
                             </Label>
                             <Input
                                 type="date"
                                 name="birthdate"
                                 value={data.birthdate}
-                                disabled={!isEditMode}
-                                onChange={(e) =>
-                                    setData('birthdate', e.target.value)
-                                }
+                                readOnly={!isEditMode}
                             />
                             <InputError message={errors['birthdate']} />
                         </div>
                         <div className="flex flex-col gap-3">
                             <Label>
                                 Birthplace
-                                <Asterisk color="red" size={12} />
+                                {/* <Asterisk color="red" size={12} /> */}
                             </Label>
                             <Input
                                 type="text"
                                 name="birthplace"
                                 value={data.birthplace}
-                                disabled={!isEditMode}
+                                readOnly={!isEditMode}
                                 maxLength={100}
-                                onChange={(e) =>
-                                    setData(
-                                        'birthplace',
-                                        capitalizeString(e.target.value),
-                                    )
-                                }
                                 placeholder="Enter Birthplace"
                             />
                             <InputError message={errors['birthplace']} />
@@ -869,7 +702,7 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         <div className="flex flex-col gap-3">
                             <LabelExample
                                 title="Height"
-                                isRequired
+                                isRequired={false}
                                 example="165cm"
                             />
                             <div className="relative flex items-center">
@@ -881,14 +714,7 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                                     type="number"
                                     name="height"
                                     value={data.height ?? ''}
-                                    disabled={!isEditMode}
-                                    onChange={(e) => {
-                                        const value = e.target.value.slice(
-                                            0,
-                                            3,
-                                        );
-                                        setData('height', value ? value : '');
-                                    }}
+                                    readOnly={!isEditMode}
                                     className="py-2 ps-9"
                                     placeholder="Enter Height"
                                 />
@@ -901,7 +727,7 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         <div className="flex flex-col gap-3">
                             <LabelExample
                                 title="Weight"
-                                isRequired
+                                isRequired={false}
                                 example="60kg"
                             />
                             <div className="relative flex items-center">
@@ -913,14 +739,7 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                                     type="number"
                                     name="weight"
                                     value={data.weight ?? ''}
-                                    disabled={!isEditMode}
-                                    onChange={(e) => {
-                                        const value = e.target.value.slice(
-                                            0,
-                                            3,
-                                        );
-                                        setData('weight', value ? value : '');
-                                    }}
+                                    readOnly={!isEditMode}
                                     className="py-2 ps-9"
                                     placeholder="Enter Weight"
                                 />
@@ -936,148 +755,25 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         <div className="flex flex-col gap-3">
                             <Label>
                                 Religion
-                                <Asterisk color="red" size={12} />
+                                {/* <Asterisk color="red" size={12} /> */}
                             </Label>
-                            <Popover
-                                open={religionPopover}
-                                onOpenChange={(open) =>
-                                    setReligionPopover(open)
-                                }
-                            >
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        aria-expanded={religionPopover}
-                                        disabled={!isEditMode}
-                                        className="justify-between"
-                                    >
-                                        {data.religion
-                                            ? data.religion
-                                            : 'Choose an option'}
-                                        <ChevronsUpDown className="opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-
-                                <PopoverContent className="p-0" align="start">
-                                    <Command>
-                                        <CommandInput
-                                            placeholder="Search religion..."
-                                            className="h-9"
-                                        />
-                                        <CommandList>
-                                            <CommandEmpty>
-                                                No religion found.
-                                            </CommandEmpty>
-
-                                            <CommandGroup>
-                                                {religionArr?.map(
-                                                    (item, index) => (
-                                                        <CommandItem
-                                                            key={index}
-                                                            value={item}
-                                                            onSelect={() => {
-                                                                setData(
-                                                                    'religion',
-                                                                    item,
-                                                                );
-                                                                setReligionPopover(
-                                                                    false,
-                                                                );
-                                                            }}
-                                                        >
-                                                            {item}
-
-                                                            <Check
-                                                                className={cn(
-                                                                    'ml-auto',
-                                                                    item ===
-                                                                        data.religion
-                                                                        ? 'opacity-100'
-                                                                        : 'opacity-0',
-                                                                )}
-                                                            />
-                                                        </CommandItem>
-                                                    ),
-                                                )}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
-
+                            <Input
+                                readOnly
+                                value={data.religion ?? ''}
+                                placeholder="No religion"
+                            />
                             <InputError message={errors['religion']} />
                         </div>
                         <div className="flex flex-col gap-3">
                             <Label>
                                 Citizenship
-                                <Asterisk color="red" size={12} />
+                                {/* <Asterisk color="red" size={12} /> */}
                             </Label>
-                            <Popover
-                                open={citizenshipPopover}
-                                onOpenChange={(open) =>
-                                    setCitizenshipPopover(open)
-                                }
-                            >
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        aria-expanded={citizenshipPopover}
-                                        disabled={!isEditMode}
-                                        className="justify-between"
-                                    >
-                                        {data.citizenship || 'Choose an option'}
-                                        <ChevronsUpDown className="opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-
-                                <PopoverContent className="p-0" align="start">
-                                    <Command>
-                                        <CommandInput
-                                            placeholder="Search citizenship..."
-                                            className="h-9"
-                                        />
-                                        <CommandList>
-                                            <CommandEmpty>
-                                                No citizenship found.
-                                            </CommandEmpty>
-
-                                            <CommandGroup>
-                                                {citizenArr?.map(
-                                                    (item, index) => (
-                                                        <CommandItem
-                                                            key={index}
-                                                            value={item}
-                                                            onSelect={() => {
-                                                                setData(
-                                                                    'citizenship',
-                                                                    item,
-                                                                );
-                                                                setCitizenshipPopover(
-                                                                    false,
-                                                                );
-                                                            }}
-                                                        >
-                                                            {item}
-
-                                                            <Check
-                                                                className={cn(
-                                                                    'ml-auto',
-                                                                    item ===
-                                                                        data.citizenship
-                                                                        ? 'opacity-100'
-                                                                        : 'opacity-0',
-                                                                )}
-                                                            />
-                                                        </CommandItem>
-                                                    ),
-                                                )}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
+                            <Input
+                                readOnly
+                                value={data.citizenship ?? ''}
+                                placeholder="No citizenship"
+                            />
                             <InputError message={errors['citizenship']} />
                         </div>
                     </TwoColumnInput>
@@ -1086,89 +782,43 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         <div className="flex flex-col gap-3">
                             <Label>
                                 Civil Status
-                                <Asterisk color="red" size={12} />
+                                {/* <Asterisk color="red" size={12} /> */}
                             </Label>
-                            <Select
-                                value={data.civil_status}
-                                disabled={!isEditMode}
-                                onValueChange={(value) =>
-                                    setData('civil_status', value)
-                                }
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose an option" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {civilStatusArr?.map((item, index) => (
-                                            <SelectItem
-                                                key={index}
-                                                value={item}
-                                            >
-                                                {item}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                            <Input
+                                readOnly
+                                value={data.civil_status ?? ''}
+                                placeholder="No civil status"
+                            />
                             <InputError message={errors['civil_status']} />
                         </div>
                         <div className="flex flex-col gap-3">
                             <Label>
                                 Sex Orientation
-                                <Asterisk color="red" size={12} />
+                                {/* <Asterisk color="red" size={12} /> */}
                             </Label>
-                            <Select
-                                value={selectedSexOrient || ''}
-                                disabled={!isEditMode}
-                                onValueChange={(value) => {
-                                    setSelectedOrient(value);
-                                    if (value !== 'Others') {
-                                        setData('sexual_orient', value);
-                                        return;
-                                    }
-                                    setData('sexual_orient', '');
-                                }}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose an option" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {sexualOrientArr?.map((item, index) => (
-                                            <SelectItem
-                                                key={index}
-                                                value={item}
-                                            >
-                                                {item}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-
-                            {selectedSexOrient === 'Others' && (
-                                <Input
-                                    value={data.sexual_orient}
-                                    maxLength={25}
-                                    disabled={!isEditMode}
-                                    onChange={(e) =>
-                                        setData(
-                                            'sexual_orient',
-                                            capitalizeString(e.target.value),
-                                        )
-                                    }
-                                    placeholder="Please specify your sex orientation"
-                                />
-                            )}
+                            <Input
+                                readOnly
+                                value={data.sexual_orient ?? ''}
+                                placeholder="No sex orientation"
+                            />
                             <InputError message={errors['sexual_orient']} />
                         </div>
                     </TwoColumnInput>
 
                     <div className="flex flex-col gap-3">
+                        <Label>Gender</Label>
+                        <Input
+                            readOnly
+                            value={data.gender ?? ''}
+                            placeholder="No gender"
+                        />
+                        <InputError message={errors['gender']} />
+                    </div>
+
+                    <div className="flex flex-col gap-3">
                         <LabelExample
                             title="Weekly Allowance"
-                            isRequired={true}
+                            isRequired={false}
                             example="₱1500, ₱2000, ₱5000, etc."
                         />
                         <div className="relative flex items-center">
@@ -1179,17 +829,10 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                             <Input
                                 type="text"
                                 inputMode="numeric"
-                                disabled={!isEditMode}
+                                readOnly={!isEditMode}
                                 pattern="[0-9]*"
                                 maxLength={5}
                                 value={data.weekly_allowance ?? ''}
-                                onChange={(e) => {
-                                    const value = e.target.value.replace(
-                                        /\D/g,
-                                        '',
-                                    );
-                                    setData('weekly_allowance', value);
-                                }}
                                 className="py-2 ps-8"
                                 placeholder="Enter Weekly Allowance"
                             />
@@ -1201,72 +844,26 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         <div className="flex flex-col gap-3">
                             <Label>
                                 Who finances your education?
-                                <Asterisk color="red" size={12} />
+                                {/* <Asterisk color="red" size={12} /> */}
                             </Label>
-                            <Select
-                                value={selectedFinancer || ''}
-                                disabled={!isEditMode}
-                                onValueChange={(value) => {
-                                    setSelectedFinancer(value);
-
-                                    if (value !== 'Others') {
-                                        setData('financer', value);
-                                        return;
-                                    }
-                                    setData('financer', '');
-                                }}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Choose an option" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {financerArr?.map((item, index) => (
-                                            <SelectItem
-                                                key={index}
-                                                value={item}
-                                            >
-                                                {item}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            {selectedFinancer === 'Others' && (
-                                <Input
-                                    type="text"
-                                    value={data.financer}
-                                    disabled={!isEditMode}
-                                    maxLength={50}
-                                    onChange={(e) =>
-                                        setData(
-                                            'financer',
-                                            capitalizeString(e.target.value),
-                                        )
-                                    }
-                                    placeholder="Please specify your financer"
-                                />
-                            )}
-
+                            <Input
+                                readOnly
+                                value={data.financer ?? ''}
+                                placeholder="No financer"
+                            />
                             <InputError message={errors['financer']} />
                         </div>
                         <div className="flex flex-col gap-3">
                             <LabelExample
                                 title="Last school attended"
-                                isRequired
+                                isRequired={false}
                                 example="University of St. Lasalle - Liceo"
                             />
                             <Input
                                 type="text"
                                 value={data.last_attended_school}
-                                disabled={!isEditMode}
+                                readOnly={!isEditMode}
                                 maxLength={100}
-                                onChange={(e) =>
-                                    setData(
-                                        'last_attended_school',
-                                        capitalizeString(e.target.value),
-                                    )
-                                }
                                 placeholder="Enter Last school attended"
                             />
                             <InputError
@@ -1274,7 +871,43 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                             />
                         </div>
                     </TwoColumnInput>
-                    <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
+
+                    <TwoColumnInput>
+                        <div className="flex flex-col gap-3">
+                            <Label>Scholarship Program</Label>
+                            <Input
+                                readOnly
+                                value={data.scholarship_program ?? ''}
+                                placeholder="No scholarship program"
+                            />
+                            <InputError
+                                message={errors['scholarship_program']}
+                            />
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <Label>Scholarship Contact</Label>
+                            <Input
+                                readOnly
+                                value={data.scholarship_contact ?? ''}
+                                placeholder="No scholarship contact"
+                            />
+                            <InputError
+                                message={errors['scholarship_contact']}
+                            />
+                        </div>
+                    </TwoColumnInput>
+
+                    <div className="flex flex-col gap-3">
+                        <Label>Scholarship Address</Label>
+                        <Textarea
+                            readOnly
+                            value={data.scholarship_address ?? ''}
+                            placeholder="No scholarship address"
+                        />
+                        <InputError message={errors['scholarship_address']} />
+                    </div>
+
+                    {/* <div className="flex w-full flex-col gap-3 lg:ml-auto lg:w-max lg:flex-row">
                         {isEditMode ? (
                             <div>
                                 <Button
@@ -1310,7 +943,7 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                                 <PencilIcon /> Edit
                             </Button>
                         )}
-                    </div>
+                    </div> */}
                 </form>
             </FormLayout>
         </>

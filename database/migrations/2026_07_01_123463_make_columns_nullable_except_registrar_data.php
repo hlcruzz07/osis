@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      * Make columns nullable ONLY for fields NOT submitted by the registrar form.
@@ -71,6 +70,8 @@ return new class extends Migration
         Schema::table('education', function (Blueprint $table) {
             $table->text('general_average')->nullable()->change();
             $table->text('general_average_hash')->nullable()->change();
+            $table->text('year_graduated')->nullable()->change();
+            $table->text('year_graduated_hash')->nullable()->change();
         });
     }
 
@@ -136,6 +137,8 @@ return new class extends Migration
         Schema::table('education', function (Blueprint $table) {
             $table->text('general_average')->nullable(false)->change();
             $table->text('general_average_hash')->nullable(false)->change();
+            $table->text('year_graduated')->nullable(false)->change();
+            $table->text('year_graduated_hash')->nullable(false)->change();
         });
     }
 };
