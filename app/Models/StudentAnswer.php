@@ -31,4 +31,9 @@ class StudentAnswer extends Model
     {
         return $this->belongsTo(Question::class, 'question_id');
     }
+
+    public function attachments()
+    {
+        return $this->hasMany(AnswerAttachment::class, 'student_answer_id');
+    }
 }

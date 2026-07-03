@@ -77,7 +77,6 @@ import { FormEvent, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 type PageProps = {
-    questions: QuestionProps[];
     student: StudentProps;
     dropdowns: DropdownProps[];
 };
@@ -97,37 +96,21 @@ type SelectedScholarship = {
 };
 
 const OTHERS_LABEL = 'Others';
+const LGU_LABEL = 'LGU';
 
 export default function Scholarship() {
-    const { questions, dropdowns, student } = usePage<PageProps>().props;
-
-    const yearLevelsArr = dropdowns.find(
-        (item) => item.title === 'Year Levels',
-    )?.dropdowns;
-
-    const houseMonthlyIncomeArr = dropdowns.find(
-        (item) => item.title === 'Household Monthly Income',
-    )?.dropdowns;
+    const { dropdowns, student } = usePage<PageProps>().props;
 
     const scholarshipsArr = dropdowns.find(
         (item) => item.title === 'Scholarships',
     )?.dropdowns as unknown as { name: string; type: string[] }[] | undefined;
 
-    // Filtered + ordered list of questions we actually want to render
-    const filteredQuestions = ALLOWED_QUESTION_IDS.map((id) =>
-        questions.find((q) => q.id === id),
-    ).filter((q): q is QuestionProps => q !== undefined);
-
     const { data, setData, errors, setError, clearErrors, post, processing } =
         useForm({
             student: {
-                year_level: '',
-                section: '',
                 social_media_account: '',
-                house_monthly_income: '',
+                mobile_num: null as null | string,
             },
-
-            answers: [] as any[],
 
             scholarships: [] as SelectedScholarship[],
         });
@@ -143,7 +126,7 @@ export default function Scholarship() {
         // has type options (e.g. CMSP requires Full/Half), and require
         // a custom name to be entered for "Others"
         let hasMissingType = false;
-        let hasMissingOthersName = false;
+        let hasMissingCustomName = false;
 
         data.scholarships.forEach((entry, index) => {
             const scholarship = scholarshipsArr?.find(
@@ -160,16 +143,21 @@ export default function Scholarship() {
                 );
             }
 
-            if (entry.key === OTHERS_LABEL && !entry.name.trim()) {
-                hasMissingOthersName = true;
+            const requiresCustomName =
+                entry.key === OTHERS_LABEL || entry.key === LGU_LABEL;
+
+            if (requiresCustomName && !entry.name.trim()) {
+                hasMissingCustomName = true;
                 setError(
                     `scholarships.${index}.name` as any,
-                    'Please specify the scholarship name.',
+                    entry.key === LGU_LABEL
+                        ? 'Please specify city/municipality.'
+                        : 'Please specify the scholarship name.',
                 );
             }
         });
 
-        if (hasMissingType || hasMissingOthersName) return;
+        if (hasMissingType || hasMissingCustomName) return;
 
         post(storeScholarship(student.ref_number).url, {
             preserveScroll: true,
@@ -179,141 +167,7 @@ export default function Scholarship() {
         });
     };
 
-    useEffect(() => {
-        // initialize answers array when questions are loaded
-        // only populate if there aren't any answers yet to avoid wiping user input
-        if (filteredQuestions.length === 0 || data.answers.length > 0) {
-            return;
-        }
-
-        const formatted: any[] = [];
-
-        // Only initialize parent questions, sub-questions will be added on-demand
-        filteredQuestions.forEach((q) => {
-            formatted.push({
-                question_id: q.id,
-                sub_question_id: null,
-                answer_type: q.answer_type,
-                answer: null,
-            });
-        });
-
-        setData('answers', formatted);
-    }, [questions, data.answers.length]);
-
-    // helper to find index for a given question/sub-question pair
-    const findAnswerIndex = (
-        question_id: number,
-        sub_question_id: number | null,
-    ) => {
-        return data.answers.findIndex(
-            (a) =>
-                a.question_id === question_id &&
-                a.sub_question_id === sub_question_id,
-        );
-    };
-
-    // helper to format date for input display
-    const formatDateForInput = (value: any): string => {
-        if (!value) return '';
-        if (value instanceof Date) {
-            return value.toISOString().split('T')[0];
-        }
-        if (typeof value === 'string') {
-            return value.split('T')[0];
-        }
-        return '';
-    };
-
-    const handleAnswerChange = (
-        question_id: number,
-        sub_question_id: number | null,
-        value: string | number | boolean | Date,
-    ) => {
-        const question = questions.find((q) => q.id === question_id);
-        let processedValue: any = value;
-        let answerType = '';
-
-        if (question) {
-            if (sub_question_id) {
-                const subQ = question.sub_questions?.find(
-                    (sq) => sq.id === sub_question_id,
-                );
-                answerType = subQ?.answer_type || '';
-            } else {
-                answerType = question.answer_type;
-            }
-
-            if (answerType === 'number') {
-                processedValue = Number(value);
-            } else if (answerType === 'boolean') {
-                processedValue = Boolean(value);
-            } else if (answerType === 'date') {
-                processedValue = new Date(value as string);
-            } else {
-                processedValue = value;
-            }
-        }
-
-        let updatedAnswers = [...data.answers];
-        const idx = findAnswerIndex(question_id, sub_question_id);
-
-        if (idx !== -1) {
-            updatedAnswers[idx].answer = processedValue;
-        } else {
-            // if entry doesn't exist yet, append it
-            updatedAnswers.push({
-                question_id,
-                sub_question_id,
-                answer_type: answerType,
-                answer: processedValue,
-            });
-        }
-
-        // If changing a parent question answer, auto-initialize sub-questions if needed
-        if (sub_question_id === null && question) {
-            const shouldShow =
-                question.sub_expected_answer !== null &&
-                question.sub_expected_answer !== undefined
-                    ? String(processedValue).toLowerCase() ===
-                      String(question.sub_expected_answer).toLowerCase()
-                    : true;
-
-            if (
-                shouldShow &&
-                question.sub_questions &&
-                question.sub_questions.length > 0
-            ) {
-                // Initialize sub-questions if they don't exist
-                question.sub_questions.forEach((sub) => {
-                    const subIdx = updatedAnswers.findIndex(
-                        (a) =>
-                            a.question_id === question_id &&
-                            a.sub_question_id === sub.id,
-                    );
-                    if (subIdx === -1) {
-                        updatedAnswers.push({
-                            question_id,
-                            sub_question_id: sub.id,
-                            answer_type: sub.answer_type,
-                            answer: null,
-                        });
-                    }
-                });
-            } else {
-                // Remove sub-questions if the condition no longer matches
-                updatedAnswers = updatedAnswers.filter(
-                    (a) =>
-                        !(
-                            a.question_id === question_id &&
-                            a.sub_question_id !== null
-                        ),
-                );
-            }
-        }
-
-        setData('answers', updatedAnswers);
-    };
+    console.log(data);
 
     // --- Scholarship checkbox + type-dropdown helpers ---
 
@@ -332,11 +186,11 @@ export default function Scholarship() {
         if (checked) {
             // avoid duplicates
             if (!updated.some((s) => s.key === key)) {
-                // "Others" starts out with an empty name until the user
-                // types their own; everyone else defaults name === key
+                // Scholarships that need extra details start with an empty name
+                // until the user types one; everyone else defaults name === key
                 updated.push({
                     key,
-                    name: key === OTHERS_LABEL ? '' : key,
+                    name: key === OTHERS_LABEL || key === LGU_LABEL ? '' : key,
                     type: null,
                 });
             }
@@ -355,12 +209,11 @@ export default function Scholarship() {
         setData('scholarships', updated);
     };
 
-    // Updates the free-text name for the "Others" scholarship entry.
-    // It's stored without a type, and only ends up in the submitted
-    // data under whatever custom name the user specifies.
-    const handleOthersNameChange = (text: string) => {
+    // Updates the free-text name for scholarship entries that require
+    // custom details (e.g. Others, LGU city/municipality).
+    const handleCustomScholarshipNameChange = (key: string, text: string) => {
         const updated = data.scholarships.map((s) =>
-            s.key === OTHERS_LABEL ? { ...s, name: text, type: null } : s,
+            s.key === key ? { ...s, name: text, type: null } : s,
         );
 
         setData('scholarships', updated);
@@ -430,339 +283,63 @@ export default function Scholarship() {
                         readOnly
                     />
                 </div>
-
                 <TwoColumnInput>
                     <div className="flex flex-col gap-3">
-                        <Label>
-                            Year Level <Asterisk color="red" size={12} />
-                        </Label>
-                        <Select
-                            value={data.student.year_level}
-                            onValueChange={(value) => {
-                                setData('student.year_level', value);
-                            }}
-                            name="year_level"
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Choose an option" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {yearLevelsArr?.map((item, index) => (
-                                        <SelectItem key={index} value={item}>
-                                            {item}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                        <InputError message={errors['student.year_level']} />
+                        <LabelExample
+                            title="Mobile Number"
+                            isRequired={false}
+                            example="+639123456789"
+                        />
+                        <div className="relative flex items-center">
+                            <span className="absolute start-3 text-sm">
+                                +63
+                            </span>
+                            <Input
+                                type="number"
+                                name="student.mobile_num"
+                                value={data.student.mobile_num ?? ''}
+                                onChange={(e) => {
+                                    const value = e.target.value.slice(0, 10);
+                                    setData(
+                                        'student.mobile_num',
+                                        value ? value : null,
+                                    );
+                                }}
+                                className="py-2 ps-11"
+                                placeholder="Enter Mobile Number"
+                            />
+                        </div>
+                        <InputError message={errors['student.mobile_num']} />
                     </div>
                     <div className="flex flex-col gap-3">
-                        <Label>
-                            Section <Asterisk color="red" size={12} />
-                        </Label>
+                        <LabelExample
+                            title="Social Media Account Link"
+                            isRequired={false}
+                            example="Facebook, Instagram, Tiktok etc."
+                        />
+
                         <Input
-                            type="text"
-                            name="section"
-                            value={data.student.section}
-                            maxLength={10}
-                            placeholder="Enter your section"
+                            type="url"
+                            name="social_media_account"
+                            value={data.student.social_media_account}
+                            placeholder="https://facebook.com/username"
+                            maxLength={150}
                             onChange={(e) =>
                                 setData(
-                                    'student.section',
-                                    capitalizeString(e.target.value),
+                                    'student.social_media_account',
+                                    e.target.value,
                                 )
                             }
                         />
 
-                        <InputError message={errors['student.section']} />
+                        <InputError
+                            message={errors['student.social_media_account']}
+                        />
                     </div>
                 </TwoColumnInput>
-                <div className="flex flex-col gap-3">
-                    <Label>
-                        Social Media Account <Asterisk color="red" size={12} />
-                    </Label>
-                    <Input
-                        type="text"
-                        name="social_media_account"
-                        value={data.student.social_media_account}
-                        maxLength={150}
-                        placeholder="Enter your social media account"
-                        onChange={(e) =>
-                            setData(
-                                'student.social_media_account',
-                                capitalizeString(e.target.value),
-                            )
-                        }
-                    />
-
-                    <InputError
-                        message={errors['student.social_media_account']}
-                    />
-                </div>
-
-                <div className="flex flex-col gap-3">
-                    <Label>
-                        Household Monthly Income{' '}
-                        <Asterisk size={12} color="red" />
-                    </Label>
-                    <Select
-                        value={data.student.house_monthly_income}
-                        name="house_monthly_income"
-                        onValueChange={(value) => {
-                            setData('student.house_monthly_income', value);
-                        }}
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Choose an option" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                {houseMonthlyIncomeArr?.map((item, index) => (
-                                    <SelectItem key={index} value={item}>
-                                        {item}
-                                    </SelectItem>
-                                ))}
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                    <InputError
-                        message={errors['student.house_monthly_income']}
-                    />
-                </div>
 
                 <Heading
-                    title="Socio-Economic and Scholarship Information"
-                    description="Provide the necessary information below to help us understand your socio-economic background and scholarship needs. This information will be kept confidential and will be used solely for the purpose of assessing your eligibility for scholarships and financial aid."
-                />
-
-                {filteredQuestions.map((q, i) => (
-                    <div key={i} className="space-y-3">
-                        {q.answer_type === 'boolean' ? (
-                            <>
-                                <FieldLabel>
-                                    <Field orientation="horizontal">
-                                        {/** boolean answers stored as string 'true'/'false' */}
-                                        <Checkbox
-                                            checked={Boolean(
-                                                q.id &&
-                                                data.answers[
-                                                    findAnswerIndex(q.id, null)
-                                                ]?.answer,
-                                            )}
-                                            onCheckedChange={(checked) => {
-                                                if (q.id) {
-                                                    handleAnswerChange(
-                                                        q.id,
-                                                        null,
-                                                        checked,
-                                                    );
-                                                }
-                                            }}
-                                        />
-                                        <FieldContent>
-                                            <FieldTitle>
-                                                {q.question}
-                                            </FieldTitle>
-                                        </FieldContent>
-                                    </Field>
-                                </FieldLabel>
-                                <InputError
-                                    message={
-                                        errors[
-                                            `answers.${q.id && findAnswerIndex(q.id, null)}.answer`
-                                        ]
-                                    }
-                                />
-                            </>
-                        ) : q.answer_type === 'select' ? (
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    {q.question}{' '}
-                                    <Asterisk size={12} color="red" />
-                                </Label>
-                                <Select
-                                    value={
-                                        (q.id &&
-                                            data.answers[
-                                                findAnswerIndex(q.id, null)
-                                            ]?.answer) ||
-                                        ''
-                                    }
-                                    name={`question_${q.id}`}
-                                    onValueChange={(val) =>
-                                        q.id &&
-                                        handleAnswerChange(q.id, null, val)
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Choose an option" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            {q.select_items?.map(
-                                                (item, selectIndex) => (
-                                                    <SelectItem
-                                                        key={selectIndex}
-                                                        value={item}
-                                                    >
-                                                        {item}
-                                                    </SelectItem>
-                                                ),
-                                            )}
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                                <InputError
-                                    message={
-                                        errors[
-                                            `answers.${q.id && findAnswerIndex(q.id, null)}.answer`
-                                        ]
-                                    }
-                                />
-                            </div>
-                        ) : (
-                            <div className="flex flex-col gap-3">
-                                <Label>
-                                    {q.question}{' '}
-                                    <Asterisk size={12} color="red" />
-                                </Label>
-                                <Input
-                                    type={q.answer_type}
-                                    name={`question_${q.id}`}
-                                    value={
-                                        q.answer_type === 'date'
-                                            ? formatDateForInput(
-                                                  q.id &&
-                                                      data.answers[
-                                                          findAnswerIndex(
-                                                              q.id,
-                                                              null,
-                                                          )
-                                                      ]?.answer,
-                                              )
-                                            : ((q.id &&
-                                                  data.answers[
-                                                      findAnswerIndex(
-                                                          q.id,
-                                                          null,
-                                                      )
-                                                  ]?.answer) ??
-                                              '')
-                                    }
-                                    onChange={(e) =>
-                                        q.id &&
-                                        handleAnswerChange(
-                                            q.id,
-                                            null,
-                                            e.target.value,
-                                        )
-                                    }
-                                />
-                                <InputError
-                                    message={
-                                        errors[
-                                            `answers.${q.id && findAnswerIndex(q.id, null)}.answer`
-                                        ]
-                                    }
-                                />
-                            </div>
-                        )}
-
-                        {q.sub_questions &&
-                            q.sub_questions.length > 0 &&
-                            (() => {
-                                const parentAnswer =
-                                    q.id &&
-                                    data.answers[findAnswerIndex(q.id, null)]
-                                        ?.answer;
-                                const shouldShow =
-                                    q.sub_expected_answer !== null &&
-                                    q.sub_expected_answer !== undefined
-                                        ? String(parentAnswer).toLowerCase() ===
-                                          String(
-                                              q.sub_expected_answer,
-                                          ).toLowerCase()
-                                        : true;
-                                if (!shouldShow) {
-                                    return null;
-                                }
-
-                                return q.sub_questions?.map(
-                                    (subQ, subIndex) => {
-                                        let idx: number | undefined = undefined;
-
-                                        if (q.id && subQ.id) {
-                                            idx = findAnswerIndex(
-                                                q.id,
-                                                subQ.id,
-                                            );
-                                        }
-
-                                        const value =
-                                            subQ.answer_type === 'date'
-                                                ? idx !== undefined
-                                                    ? formatDateForInput(
-                                                          data.answers[idx]
-                                                              ?.answer,
-                                                      )
-                                                    : ''
-                                                : idx !== undefined
-                                                  ? (data.answers[idx]
-                                                        ?.answer ?? '')
-                                                  : '';
-
-                                        return (
-                                            <div
-                                                key={subIndex}
-                                                className="ml-6 flex flex-col gap-3"
-                                            >
-                                                <Label>
-                                                    {subQ.sub_question}
-                                                    <Asterisk
-                                                        size={12}
-                                                        color="red"
-                                                    />
-                                                </Label>
-
-                                                <Input
-                                                    type={subQ.answer_type}
-                                                    name={`question_${q.id}_subquestion_${subQ.id}`}
-                                                    placeholder={
-                                                        subQ.sub_question
-                                                    }
-                                                    value={value}
-                                                    onChange={(e) => {
-                                                        if (q.id && subQ.id) {
-                                                            handleAnswerChange(
-                                                                q.id,
-                                                                subQ.id,
-                                                                e.target.value,
-                                                            );
-                                                        }
-                                                    }}
-                                                />
-
-                                                <InputError
-                                                    message={
-                                                        idx !== undefined
-                                                            ? errors[
-                                                                  `answers.${idx}.answer`
-                                                              ]
-                                                            : undefined
-                                                    }
-                                                />
-                                            </div>
-                                        );
-                                    },
-                                );
-                            })()}
-                    </div>
-                ))}
-
-                <Heading
-                    title="Scholarship Information"
+                    title="Scholarship Programs"
                     description="Select any scholarship(s) you are currently receiving or applying for. If a scholarship has multiple types, choose the applicable type from the dropdown."
                 />
 
@@ -773,6 +350,7 @@ export default function Scholarship() {
                         const hasTypes =
                             scholarship.type && scholarship.type.length > 0;
                         const isOthers = key === OTHERS_LABEL;
+                        const isLgu = key === LGU_LABEL;
                         const entryIndex = data.scholarships.findIndex(
                             (s) => s.key === key,
                         );
@@ -843,7 +421,7 @@ export default function Scholarship() {
                                     </div>
                                 )}
 
-                                {checked && isOthers && (
+                                {checked && (isOthers || isLgu) && (
                                     <div className="ml-6 flex flex-col gap-3">
                                         <Label>
                                             Please specify{' '}
@@ -851,13 +429,18 @@ export default function Scholarship() {
                                         </Label>
                                         <Input
                                             type="text"
-                                            placeholder="Enter scholarship name"
+                                            placeholder={
+                                                isLgu
+                                                    ? 'City/Municipality'
+                                                    : 'Enter scholarship name'
+                                            }
                                             value={
                                                 getScholarshipEntry(key)
                                                     ?.name ?? ''
                                             }
                                             onChange={(e) =>
-                                                handleOthersNameChange(
+                                                handleCustomScholarshipNameChange(
+                                                    key,
                                                     e.target.value,
                                                 )
                                             }

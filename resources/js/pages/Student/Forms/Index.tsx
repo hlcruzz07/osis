@@ -104,32 +104,6 @@ export default function Index() {
                             </Link>
                         </div>
 
-                        {/* SCHOLARSHIP */}
-                        <div className="group flex flex-col rounded-xl border bg-card p-8 text-card-foreground shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg">
-                            <div className="flex grow items-center gap-5">
-                                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl">
-                                    🎖️
-                                </div>
-
-                                <h3 className="text-xl font-semibold">
-                                    Scholarship Office
-                                </h3>
-                            </div>
-
-                            <p className="mt-4 mb-6 text-sm text-muted-foreground">
-                                Complete your Student Information Sheet for
-                                scholarship applications, renewals, and student
-                                assistance programs.
-                            </p>
-
-                            <div className="mb-4 rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-700 dark:text-yellow-300">
-                                ⚠ Requires completion of Registrar's Office
-                                first
-                            </div>
-
-                            <ScholarshipModal />
-                        </div>
-
                         {/* GUIDANCE */}
                         <div className="group flex flex-col rounded-xl border bg-card p-8 text-card-foreground shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg">
                             <div className="flex grow items-center gap-5">
@@ -159,6 +133,32 @@ export default function Index() {
                             >
                                 {/* Open Guidance Form */}Coming Soon
                             </button>
+                        </div>
+
+                        {/* SCHOLARSHIP */}
+                        <div className="group flex flex-col rounded-xl border bg-card p-8 text-card-foreground shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg">
+                            <div className="flex grow items-center gap-5">
+                                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl">
+                                    🎖️
+                                </div>
+
+                                <h3 className="text-xl font-semibold">
+                                    Scholarship Office
+                                </h3>
+                            </div>
+
+                            <p className="mt-4 mb-6 text-sm text-muted-foreground">
+                                Complete your Student Information Sheet for
+                                scholarship applications, renewals, and student
+                                assistance programs.
+                            </p>
+
+                            <div className="mb-4 rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-700 dark:text-yellow-300">
+                                ⚠ Requires completion of Registrar's Office
+                                first
+                            </div>
+
+                            <ScholarshipModal />
                         </div>
                     </div>
                 </div>

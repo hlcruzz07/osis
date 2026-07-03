@@ -13,12 +13,16 @@ class Question extends Model
         'sub_expected_answer',
         'is_required',
         'is_deleted',
+        'need_proof',
+        'is_active'
     ];
 
     protected $casts = [
         'question' => 'encrypted',
         'is_required' => 'boolean',
         'is_deleted' => 'boolean',
+        'need_proof' => 'boolean',
+        'is_active' => 'boolean'
     ];
 
 

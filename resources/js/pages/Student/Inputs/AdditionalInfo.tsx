@@ -295,9 +295,9 @@ export default function AdditionalInfo({
                                             (item, selectIndex) => (
                                                 <SelectItem
                                                     key={selectIndex}
-                                                    value={item}
+                                                    value={item.item}
                                                 >
-                                                    {item}
+                                                    {item.item}
                                                 </SelectItem>
                                             ),
                                         )}

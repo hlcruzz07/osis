@@ -19,13 +19,13 @@ class QuestionSeeder extends Seeder
     public function run(): void
     {
         $user = User::findOrFail(1);
-        // Question 1: Study Place at Home
+
         $question1 = Question::create([
             'user_id' => $user->id,
             'question' => 'Do you have a place to study at home?',
             'answer_type' => 'boolean',
             'is_required' => false,
-            'is_active' => true,
+            'is_active' => false,
 
         ]);
 
@@ -36,7 +36,7 @@ class QuestionSeeder extends Seeder
             'answer_type' => 'boolean',
             'sub_expected_answer' => 'true',
             'is_required' => false,
-            'is_active' => true,
+            'is_active' => false,
 
         ]);
 
@@ -50,12 +50,12 @@ class QuestionSeeder extends Seeder
         // Question 3: Person with Disability (PWD)
         $question3 = Question::create([
             'user_id' => $user->id,
-            'question' => 'Do you identify as a person with a disability (PWD)?',
+            'question' => 'Person with Disabilities (PWD)?',
             'answer_type' => 'boolean',
             'sub_expected_answer' => 'true',
             'is_required' => false,
             'is_active' => true,
-
+            'need_proof' => true
         ]);
 
         SubQuestion::create([
@@ -72,7 +72,7 @@ class QuestionSeeder extends Seeder
             'answer_type' => 'boolean',
             'sub_expected_answer' => 'true',
             'is_required' => false,
-            'is_active' => true,
+            'is_active' => false,
 
         ]);
 
@@ -90,7 +90,7 @@ class QuestionSeeder extends Seeder
             'answer_type' => 'boolean',
             'sub_expected_answer' => 'true',
             'is_required' => false,
-            'is_active' => true,
+            'is_active' => false,
 
         ]);
 
@@ -115,18 +115,19 @@ class QuestionSeeder extends Seeder
             'answer_type' => 'boolean',
             'is_required' => false,
             'is_active' => true,
+            'need_proof' => true
 
         ]);
 
         // Question 7: Indigenous Peoples
         $question7 = Question::create([
             'user_id' => $user->id,
-            'question' => 'Are a member of any Indigenous People (IP) or Indigenous Cultural Community (ICC)?',
+            'question' => 'Member of Indigenous Peoples (IP) or Indigenous Cultural Community (ICC)?',
             'answer_type' => 'boolean',
             'sub_expected_answer' => 'true',
             'is_required' => false,
             'is_active' => true,
-
+            'need_proof' => true
         ]);
 
         SubQuestion::create([
@@ -142,7 +143,7 @@ class QuestionSeeder extends Seeder
             'answer_type' => 'boolean',
             'sub_expected_answer' => 'true',
             'is_required' => false,
-            'is_active' => true,
+            'is_active' => false,
 
         ]);
 
@@ -153,7 +154,7 @@ class QuestionSeeder extends Seeder
             'answer_type' => 'boolean',
             'sub_expected_answer' => 'true',
             'is_required' => false,
-            'is_active' => true,
+            'is_active' => false,
 
         ]);
 
@@ -171,7 +172,7 @@ class QuestionSeeder extends Seeder
             'question' => 'If you have concerns, are you willing to discuss them with a guidance counselor?',
             'answer_type' => 'boolean',
             'is_required' => false,
-            'is_active' => true,
+            'is_active' => false,
 
         ]);
 
@@ -182,7 +183,7 @@ class QuestionSeeder extends Seeder
             'answer_type' => 'boolean',
             'is_required' => false,
             'is_active' => true,
-
+            'need_proof' => true
         ]);
 
         $question12 = Question::create([
@@ -191,7 +192,7 @@ class QuestionSeeder extends Seeder
             'answer_type' => 'boolean',
             'is_required' => false,
             'is_active' => true,
-
+            'need_proof' => true
         ]);
 
 
@@ -201,7 +202,7 @@ class QuestionSeeder extends Seeder
             'answer_type' => 'boolean',
             'is_required' => false,
             'is_active' => true,
-
+            'need_proof' => true
         ]);
 
         $question14 = Question::create([
@@ -210,17 +211,38 @@ class QuestionSeeder extends Seeder
             'answer_type' => 'boolean',
             'is_required' => false,
             'is_active' => true,
-
+            'need_proof' => true
         ]);
 
         $question15 = Question::create([
             'user_id' => $user->id,
-            'question' => "Raised by a Solo Parent",
+            'question' => "Child of a Solo Parent",
+            'sub_expected_answer' => 'true',
             'answer_type' => 'boolean',
             'is_required' => false,
             'is_active' => true,
-
+            'need_proof' => true
         ]);
+
+        $question15_sub = SubQuestion::create([
+            'question_id' => $question15->id,
+
+            'sub_question' => 'If yes, select the following:',
+            'answer_type' => 'select',
+            'is_required' => true,
+        ]);
+
+        $parent = ['Mother', 'Father'];
+
+        foreach ($parent as $item) {
+            QuestionSelection::create([
+                'question_id' => null,
+                'sub_question_id' => $question15_sub->id,
+                'item' => $item
+            ]);
+        }
+
+
 
         $question16 = Question::create([
             'user_id' => $user->id,
@@ -228,7 +250,7 @@ class QuestionSeeder extends Seeder
             'answer_type' => 'boolean',
             'is_required' => false,
             'is_active' => true,
-
+            'need_proof' => true
         ]);
 
 
@@ -238,7 +260,86 @@ class QuestionSeeder extends Seeder
             'answer_type' => 'boolean',
             'is_required' => false,
             'is_active' => true,
+            'need_proof' => true
+        ]);
 
+        $question18 = Question::create([
+            'user_id' => $user->id,
+            'question' => "Solo Parent Student",
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+            'need_proof' => true
+        ]);
+
+        $question19 = Question::create([
+            'user_id' => $user->id,
+            'question' => "Child of rebel returnee",
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+            'need_proof' => true
+        ]);
+
+        $question20 = Question::create([
+            'user_id' => $user->id,
+            'question' => "Child from families and subsistence farmers or fisherfolks",
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+            'need_proof' => true
+        ]);
+
+        $question21 = Question::create([
+            'user_id' => $user->id,
+            'question' => "Residing in Geographically isolated and Disadvantaged Areas (GIDA)",
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+            'need_proof' => true
+        ]);
+
+        $question22 = Question::create([
+            'user_id' => $user->id,
+            'question' => "Family Income is below 10,000 per month",
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+            'need_proof' => true
+        ]);
+
+        // Concerns
+
+        Question::create([
+            'user_id' => $user->id,
+            'question' => "If you experience personal, academic, or other concerns, would you be willing to discuss them with a guidance counselor?",
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+        ]);
+
+        Question::create([
+            'user_id' => $user->id,
+            'question' => "Are you currently experiencing any personal, academic, family, financial, health, or other concern(s) that you would like the Guidance Office to know about?",
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+        ]);
+
+        $concern = Question::create([
+            'user_id' => $user->id,
+            'question' => "Have you consulted a Medical Doctor/Psychologist/Psychiatrist?",
+            'sub_expected_answer' => 'true',
+            'answer_type' => 'boolean',
+            'is_required' => false,
+            'is_active' => true,
+        ]);
+
+        SubQuestion::create([
+            'question_id' => $concern->id,
+            'sub_question' => 'If yes, what specific concerns did you consult for them for?',
+            'answer_type' => 'text',
+            'is_required' => true,
         ]);
     }
 }

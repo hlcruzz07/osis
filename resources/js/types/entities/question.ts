@@ -1,3 +1,10 @@
+export type QuestionSelectionProps = {
+    id?: number;
+    question_id?: number | null;
+    sub_question_id?: number | null;
+    item: string;
+};
+
 export type QuestionProps = {
     id?: number;
     user_id?: number;
@@ -5,8 +12,9 @@ export type QuestionProps = {
     answer_type: any;
     sub_expected_answer?: string;
     is_required: boolean;
+    need_proof?: boolean;
     sub_questions?: SubQuestionProps[];
-    select_items?: string[];
+    select_items?: QuestionSelectionProps[];
 };
 
 export type SubQuestionProps = {
@@ -15,6 +23,7 @@ export type SubQuestionProps = {
     sub_question: string;
     answer_type: any;
     is_required: boolean;
+    select_items?: QuestionSelectionProps[];
 };
 
 export type AnswerProps = {

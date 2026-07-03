@@ -53,6 +53,13 @@ class Student extends Model
 
         'scholarship_contact',
         'scholarship_contact_hash',
+        'is_complete_scholarship',
+        'remarks',
+        'remarks_hash',
+        'nationality',
+        'nationality_hash',
+        'current_address',
+        'current_address_hash',
 
         'academic_year_hash',
         'semester_hash',
@@ -115,15 +122,12 @@ class Student extends Model
             'weight' => 'encrypted',
             'status' => 'encrypted',
             'major' => 'encrypted',
-        ];
+            'social_media_account' => 'encrypted',
+            'is_complete_scholarship' => 'boolean',
+            'nationality' => 'encrypted',
+            'current_address' => 'encrypted'
 
-    protected function castAttribute($key, $value)
-    {
-        if (is_null($value) && array_key_exists($key, $this->getCasts()) && str_starts_with($this->getCasts()[$key], 'encrypted')) {
-            return null;
-        }
-        return parent::castAttribute($key, $value);
-    }
+        ];
 
 
     public function guardians()
@@ -164,5 +168,10 @@ class Student extends Model
     public function scholarships()
     {
         return $this->hasMany(Scholarship::class, 'student_id');
+    }
+
+    public function psychTests()
+    {
+        return $this->hasMany(PsychTest::class, 'student_id');
     }
 }

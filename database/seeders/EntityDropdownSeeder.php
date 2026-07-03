@@ -172,7 +172,7 @@ class EntityDropdownSeeder extends Seeder
                 'Returnee',
                 'Continuing',
                 'Transferee',
-                'Fresh Graduate',
+                'Freshmen',
             ],
 
             'Equity Indicator' => [
@@ -200,13 +200,10 @@ class EntityDropdownSeeder extends Seeder
             ],
 
             'Financer' => [
-                'None',
                 'Parents',
                 'Spouse',
-                'Siblings',
+                'Sibling(s)',
                 'Relative',
-                'Scholarship',
-                'Self Supporting',
                 'Others',
             ],
 
@@ -248,12 +245,12 @@ class EntityDropdownSeeder extends Seeder
             ],
 
             'Sexual Orientation' => [
-                'Heterosexual',
+                'Heterosexual/Straight',
                 'Lesbian',
                 'Gay',
                 'Bisexual',
                 'Transgender',
-                'Prefer Not To Say',
+                'Rather not say',
                 'Others',
             ],
 
@@ -278,17 +275,29 @@ class EntityDropdownSeeder extends Seeder
             ],
 
             'Household Monthly Income' => [
-                'Less than Php 10,957',
-                'Php 10,958 - Php 21,193',
-                'Php 21,194 - Php 43,823',
-                'Php 43,824 - Php 76,668',
-                'Php 76,669 - Php 131,483',
-                'Php 131,484 - Php 219,319',
-                'Php 219,140 and above',
+                [
+                    'monthly' => 'Less than Php 13,873 - 36,400',
+                    'annual' => 'Php 166,476 - 436,800'
+                ],
+                [
+                    'monthly' => 'Php 36,401 - 63,700',
+                    'annual' => 'Php 436,812 - 764,400'
+                ],
+                [
+                    'monthly' => 'Php 63,701 - 109,200',
+                    'annual' => 'Php 764,412 - 1,310,400'
+                ],
+                [
+                    'monthly' => 'Php 109,201 - 182,000',
+                    'annual' => 'Php 1,310,412 - 2,184,000'
+                ],
+                [
+                    'monthly' => 'Above Php 182,001',
+                    'annual' => 'Above Php 2,184,012'
+                ],
             ],
 
             'Parents Martial Status' => [
-                'None',
                 'Married And Living Together',
                 'Single Parent',
                 'Annulled',
@@ -299,11 +308,11 @@ class EntityDropdownSeeder extends Seeder
 
             'Nature Of Residence' => [
                 'Family Home',
-                'Boarding House',
-                'Rented Room',
-                'Relatives House',
                 'Rented Apartment',
+                'Boarding House',
                 'Dorm',
+                "Relative's House",
+                'Rented Room',
                 'House of Married Sibling',
                 'Others',
             ],
@@ -344,6 +353,10 @@ class EntityDropdownSeeder extends Seeder
                 ],
                 [
                     'name' => 'DOST',
+                    'type' => [],
+                ],
+                [
+                    'name' => 'LGU',
                     'type' => [],
                 ],
                 [

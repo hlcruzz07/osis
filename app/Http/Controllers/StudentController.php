@@ -35,6 +35,7 @@ use App\Repositories\GuardianRepo;
 use App\Repositories\QuestionRepo;
 use App\Repositories\SiblingRepo;
 use App\Repositories\StudentRepo;
+use App\Services\HashingService;
 use App\Services\ReferenceNumberService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
@@ -53,7 +54,7 @@ class StudentController extends Controller
      * Display a listing of the resource.
      */
 
-    public function __construct(protected StudentRepo $studentRepo, protected QuestionRepo $questionRepo, protected AcademicYearAndSemesterRepo $academicYearAndSemesterRepo, protected AnswerRepo $answerRepo, protected ReferenceNumberService $referenceNumberService, protected GuardianRepo $guardianRepo, protected EducationRepo $educationRepo, protected FamilyInfoRepo $familyInfoRepo, protected AddressRepo $addressRepo, protected SiblingRepo $siblingRepo)
+    public function __construct(protected HashingService $hashingService, protected StudentRepo $studentRepo, protected QuestionRepo $questionRepo, protected AcademicYearAndSemesterRepo $academicYearAndSemesterRepo, protected AnswerRepo $answerRepo, protected ReferenceNumberService $referenceNumberService, protected GuardianRepo $guardianRepo, protected EducationRepo $educationRepo, protected FamilyInfoRepo $familyInfoRepo, protected AddressRepo $addressRepo, protected SiblingRepo $siblingRepo)
     {
     }
 
@@ -103,6 +104,10 @@ class StudentController extends Controller
             return redirect()->back()->with('error', 'Invalid reference number');
         }
 
+        if (!$this->studentRepo->hasUpdatedGuidanceByReferenceNumber($ref_number)) {
+            return redirect()->back()->with('error', 'Please complete the guidance information first');
+        }
+
         if ($this->studentRepo->hasUpdatedScholarshipByReferenceNumber($ref_number)) {
             return redirect()->back()->with('error', 'Scholarship Information already submitted');
         }
@@ -118,7 +123,6 @@ class StudentController extends Controller
         return Inertia::render('Student/Forms/Scholarship', [
             'questions' => $questions,
             'student' => $student,
-
             'dropdowns' => $dropdowns,
         ]);
     }
@@ -335,35 +339,19 @@ class StudentController extends Controller
             $student_data = data_get($data, 'student');
             $scholarships_data = data_get($data, 'scholarships');
 
-            $answers_data = data_get($data, 'answers');
-
-            $student_main_answers = collect($answers_data)
-                ->filter(fn($item) => is_null($item['sub_question_id']))
-                ->values()
-                ->toArray();
-
-            $student_sub_answers = collect($answers_data)
-                ->filter(fn($item) => !is_null($item['sub_question_id']) && !is_null($item['answer']))
-                ->values()
-                ->toArray();
-
-            DB::transaction(function () use ($student_data, $student_main_answers, $student_sub_answers, $scholarships_data, $ref_number) {
+            DB::transaction(function () use ($student_data, $scholarships_data, $ref_number) {
 
                 $student = $this->studentRepo->updateStudentByReferenceNumber($student_data, $ref_number);
 
-                $this->answerRepo->updateAnswers(
-                    $student_main_answers,
-                    $student->id
-                );
-
-                if (!empty($student_sub_answers)) {
-                    $this->answerRepo->updateSubAnswers(
-                        $student_sub_answers,
-                        $student->id
-                    );
+                foreach ($scholarships_data as $scholarship) {
+                    $student->scholarships()->create([
+                        'name' => $scholarship['name'],
+                        'name_hash' => $this->hashingService->hashValue($scholarship['name']),
+                        'type' => $scholarship['type'],
+                        'type_hash' => $this->hashingService->hashValue($scholarship['type'])
+                    ]);
                 }
-
-                $student->scholarships()->createMany($scholarships_data);
+                $student->update(['is_complete_scholarship' => true]);
             });
 
             return redirect()->route('home')->with('success', 'Student Scholarship Information Submitted!');
@@ -374,6 +362,32 @@ class StudentController extends Controller
             return back()->with('error', 'Something went wrong, please try again');
         }
     }
+
+    public function guidance(string $ref_number)
+    {
+        if (!$this->studentRepo->isValidReferenceNumber($ref_number)) {
+            return redirect()->back()->with('error', 'Invalid reference number');
+        }
+
+        if ($this->studentRepo->hasUpdatedGuidanceByReferenceNumber($ref_number)) {
+            return redirect()->back()->with('error', 'Guidance Information already submitted');
+        }
+
+        $questions = $this->questionRepo->getActive();
+
+        $student = $this->studentRepo->getStudentByReferenceNumber($ref_number);
+
+        $dropdowns = cache()->remember('entity_dropdowns_all', 600, function () {
+            return EntityDropdown::all();
+        });
+
+        return Inertia::render('Student/Forms/Guidance', [
+            'questions' => $questions,
+            'student' => $student,
+            'dropdowns' => $dropdowns,
+        ]);
+    }
+
 
     public function success()
     {

@@ -13,6 +13,7 @@
         "barryvdh/laravel-dompdf": "*",
         "barryvdh/laravel-snappy": "*",
         "doctrine/dbal": "*",
+        "google/apiclient": "*",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^12.0",
         "laravel/socialite": "*",

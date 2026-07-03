@@ -120,8 +120,6 @@ export default function AddressTab({ studentData }: PageProps) {
         street: studentData.address?.street,
     });
 
-    console.log(studentData);
-
     useEffect(() => {
         const loadInitialAddressData = async () => {
             if (

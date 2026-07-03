@@ -188,6 +188,8 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
     const [religionPopover, setReligionPopover] = useState(false);
     const [citizenshipPopover, setCitizenshipPopover] = useState(false);
 
+    console.log(studentData);
+
     // Initialize selected values from data
     const [selectedFinancer, setSelectedFinancer] = useState<string | null>(
         data.financer && !financerArr?.includes(data.financer)

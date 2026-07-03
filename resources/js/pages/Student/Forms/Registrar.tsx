@@ -88,6 +88,8 @@ export default function Registrar() {
     const { questions, academic_year_and_semester, dropdowns } =
         usePage<PageProps>().props;
 
+    console.log(questions);
+
     const suffixArr = dropdowns.find(
         (item) => item.title === 'Suffix',
     )?.dropdowns;
@@ -119,10 +121,6 @@ export default function Registrar() {
         'shadow-orange-500',
         'shadow-red-500',
     ];
-
-    const [selectedSexOrient, setSelectedOrient] = useState<string | null>(
-        null,
-    );
 
     const [islandGroup, setIslandGroup] = useState<IslandGroupProps[]>([]);
     const [regionArr, setRegionArr] = useState<RegionProps[]>([]);
@@ -749,6 +747,26 @@ export default function Registrar() {
                     title="Student Information"
                     description="Please provide accurate and complete information about your personal, educational, and family background. This information will be used by the administration to maintain official student records."
                 />
+
+                <TwoColumnInput>
+                    <div className="flex flex-col gap-3">
+                        <Label>Semester</Label>
+                        <Input
+                            type="text"
+                            value={academic_year_and_semester.semester}
+                            disabled
+                        />
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <Label>Academic Year</Label>
+                        <Input
+                            type="text"
+                            value={academic_year_and_semester.academic_year}
+                            disabled
+                        />
+                    </div>
+                </TwoColumnInput>
+
                 <div className="flex flex-col gap-3">
                     <Label>LRN ( Learner Reference Number )</Label>
                     <Input
@@ -1216,7 +1234,7 @@ export default function Registrar() {
                     const question7 = questions.find(
                         (q) =>
                             q.question ===
-                            'Are a member of any Indigenous People (IP) or Indigenous Cultural Community (ICC)?',
+                            'Member of Indigenous Peoples (IP) or Indigenous Cultural Community (ICC)?',
                     );
                     const question7SubQuestion = question7?.sub_questions?.[0];
 
@@ -2704,7 +2722,7 @@ export default function Registrar() {
                             <div className="flex flex-col gap-3">
                                 <LabelExample
                                     title="Strand"
-                                    isRequired
+                                    isRequired={false}
                                     example="STEM, HUMSS, ABM"
                                 />
                                 <Input
@@ -2734,7 +2752,9 @@ export default function Registrar() {
                                 example="2020"
                             />
                             <Input
-                                type="number"
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
                                 value={
                                     data.educations[index].year_graduated ?? ''
                                 }
@@ -2742,7 +2762,9 @@ export default function Registrar() {
                                 onChange={(e) =>
                                     setData(
                                         `educations.${index}.year_graduated`,
-                                        e.target.value.slice(0, 4),
+                                        e.target.value
+                                            .replace(/\D/g, '')
+                                            .slice(0, 4),
                                     )
                                 }
                                 className="py-2"
@@ -2756,6 +2778,10 @@ export default function Registrar() {
                         </div>
                     </div>
                 ))}
+                <HeadingSmall
+                    title="Current Scholarship"
+                    description="Indicate the scholarship program under which you are currently enrolled or receiving financial assistance."
+                />
                 <TwoColumnInput>
                     <div className="flex flex-col gap-3">
                         <Label>Scholarship Program</Label>

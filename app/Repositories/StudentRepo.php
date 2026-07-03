@@ -49,7 +49,7 @@ class StudentRepo
     public function find(int $id)
     {
         return $this->model
-            ->with(['guardians.address', 'address', 'educations', 'siblings', 'answers.question', 'subAnswers.subQuestion', 'familyInfo'])
+            ->with(['guardians.address', 'address', 'educations', 'siblings', 'answers.question', 'subAnswers.subQuestion', 'familyInfo', 'scholarships'])
             ->findOrFail($id);
     }
 
@@ -403,7 +403,7 @@ class StudentRepo
     {
         $hashedRefNumber = $this->hashingService->hashValue($ref_number);
 
-        return $this->model->where('ref_number_hash', $hashedRefNumber)->whereNotNull('year_level')->exists();
+        return $this->model->where('ref_number_hash', $hashedRefNumber)->where('is_complete_scholarship', true)->exists();
     }
 
     public function getStudentByReferenceNumber(string $ref_number)
@@ -414,5 +414,12 @@ class StudentRepo
             ->with(['guardians.address', 'address', 'educations', 'siblings', 'answers.question', 'subAnswers.subQuestion', 'familyInfo'])
             ->where('ref_number_hash', $hashedRefNumber)
             ->firstOrFail();
+    }
+
+    public function hasUpdatedGuidanceByReferenceNumber(string $ref_number): bool
+    {
+        $hashedRefNumber = $this->hashingService->hashValue($ref_number);
+
+        return $this->model->where('ref_number_hash', $hashedRefNumber)->where('is_complete_guidance', true)->exists();
     }
 }

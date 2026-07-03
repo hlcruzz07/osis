@@ -104,6 +104,7 @@ export default function EditGuardian({
                 city: '',
                 brgy: '',
                 zip_code: null,
+                street: '',
             },
         });
 
@@ -133,6 +134,7 @@ export default function EditGuardian({
                     city: guardian?.address.city || '',
                     brgy: guardian?.address.brgy || '',
                     zip_code: guardian?.address.zip_code ?? null,
+                    street: guardian?.address.street || '',
                 },
             });
             clearErrors();
@@ -304,6 +306,8 @@ export default function EditGuardian({
 
         loadInitialAddressData();
     }, [data.address.island, islandGroup, initialLoadComplete]);
+
+    console.log(data.address);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -554,7 +558,7 @@ export default function EditGuardian({
                             />
 
                             <div className="flex flex-col gap-3">
-                                <Label>Full Student Address</Label>
+                                <Label>Full Guardian Address</Label>
                                 <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                     {[
                                         data.address.street,
@@ -655,6 +659,19 @@ export default function EditGuardian({
                                     />
                                 </div>
                             </TwoColumnInput>
+                            <div className="flex flex-col gap-3">
+                                <Label>
+                                    House No. / Street
+                                    <Asterisk color="red" size={12} />
+                                </Label>
+                                <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                    {data.address.street || ''}
+                                </p>
+
+                                <InputError
+                                    message={errors['address.street']}
+                                />
+                            </div>
                         </div>
                     </fieldset>
                     <DialogFooter>

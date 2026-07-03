@@ -36,7 +36,7 @@ class StoreRegistrarRequest extends FormRequest
             'student.email' => 'required|email|max:50',
             'student.religion' => 'required|string',
             'student.mobile_num' => 'nullable|numeric|starts_with:9|digits:10',
-            'student.date_admitted' => 'required|date|before_or_equal:today',
+            'student.date_admitted' => 'required|date',
             'student.campus' => 'required|string|max:100',
             'student.course' => 'required|string|max:100',
             'student.major' => [
@@ -91,7 +91,7 @@ class StoreRegistrarRequest extends FormRequest
             'educations.*.school_address' => 'required|string|max:250',
             'educations.*.school_type' => 'required|string|max:50',
             'educations.*.year_graduated' => 'nullable|numeric|digits:4',
-            'educations.*.strand' => 'nullable|string|max:50|required_if:educations.*.education_level,Senior High School',
+            'educations.*.strand' => 'nullable|string|max:50',
         ];
     }
 
@@ -211,7 +211,6 @@ class StoreRegistrarRequest extends FormRequest
             'educations.*.general_average.numeric' => 'General average must be numeric.',
             'educations.*.general_average.min' => 'General average must be at least 75.',
             'educations.*.general_average.max' => 'General average may not exceed 100.',
-            'educations.*.strand.required_if' => 'Strand is required for Senior High School.',
             'educations.*.strand.max' => 'Strand may not exceed 50 characters.',
             'educations.*.course.max' => 'Course may not exceed 50 characters.',
             'educations.*.scholarship_program.max' => 'Scholarship program may not exceed 50 characters.',

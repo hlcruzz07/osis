@@ -34,8 +34,17 @@ Route::middleware(['throttle:60,1'])->group(function () {
     Route::get('/scholarship', function () {
         return redirect()->route('home');
     });
+
     Route::get('/scholarship/{ref_number}', [StudentController::class, 'scholarship'])->name('scholarship');
     Route::post('/scholarship/store/{ref_number}', [StudentController::class, 'storeScholarship'])->name('storeScholarship');
+
+
+    Route::get('/guidance', function () {
+        return redirect()->route('home');
+    });
+
+    Route::get('/guidance/{ref_number}', [StudentController::class, 'guidance'])->name('guidance');
+    Route::post('/guidance/store/{ref_number}', [StudentController::class, 'storeGuidance'])->name('storeGuidance');
 
     Route::post('/student/validate/student-info', [StudentController::class, 'validateStudentInfo'])->name('validateStudentInfo');
     Route::post('/student/validate/student-address', [StudentController::class, 'validateAddress'])->name('validateAddress');
