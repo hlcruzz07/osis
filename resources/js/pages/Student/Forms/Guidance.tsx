@@ -96,7 +96,6 @@ export default function Guidance() {
         fetchCitizenship().then(setCitizenshipArr);
     }, []);
 
-    console.log(student.educations);
     const { data, setData, errors, setError, clearErrors, post, processing } =
         useForm({
             student: {
@@ -848,28 +847,22 @@ export default function Guidance() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    {dropdowns
-                                        .find(
-                                            (item) =>
-                                                item.title ===
-                                                'Household Monthly Income',
-                                        )
-                                        ?.dropdowns?.map(
-                                            (item: any, index: number) => (
-                                                <SelectItem
-                                                    key={index}
-                                                    value={
-                                                        typeof item === 'string'
-                                                            ? item
-                                                            : item.monthly
-                                                    }
-                                                >
-                                                    {typeof item === 'string'
+                                    {houseMonthlyIncomeArr?.map(
+                                        (item: any, index: number) => (
+                                            <SelectItem
+                                                key={index}
+                                                value={
+                                                    typeof item === 'string'
                                                         ? item
-                                                        : item.monthly}
-                                                </SelectItem>
-                                            ),
-                                        )}
+                                                        : item.monthly
+                                                }
+                                            >
+                                                {typeof item === 'string'
+                                                    ? item
+                                                    : item.monthly}
+                                            </SelectItem>
+                                        ),
+                                    )}
                                 </SelectGroup>
                             </SelectContent>
                         </Select>

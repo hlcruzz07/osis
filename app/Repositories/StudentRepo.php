@@ -30,7 +30,7 @@ class StudentRepo
             $this->hashingService->appendHashValues($data)
         );
 
-        return $student->id;
+        return $student;
     }
 
     public function updateStudentByReferenceNumber(array $data, string $ref_number)

@@ -284,34 +284,139 @@ class StudentController extends Controller
 
             DB::transaction(function () use ($student_data, $address_data, $educations_data, $guardians_data, $student_main_answers, $student_sub_answers) {
 
-                $student_id = $this->studentRepo->storeStudent($student_data);
+                $student = $this->studentRepo->storeStudent($student_data);
 
                 $this->addressRepo->storeStudentAddress(
                     $address_data,
-                    $student_id
+                    $student->id
                 );
 
                 $this->educationRepo->store(
                     $educations_data,
-                    $student_id
+                    $student->id
                 );
 
                 $this->guardianRepo->store(
                     $guardians_data,
-                    $student_id
+                    $student->id
                 );
 
                 $this->answerRepo->storeAnswers(
                     $student_main_answers,
-                    $student_id
+                    $student->id
                 );
 
                 if (!empty($student_sub_answers)) {
                     $this->answerRepo->storeSubAnswers(
                         $student_sub_answers,
-                        $student_id
+                        $student->id
                     );
                 }
+
+                $connection = match (strtolower($student->campus)) {
+                    'talisay' => 'tal_mysql',
+                    'alijis' => 'ali_mysql',
+                    'fortune towne' => 'ft_mysql',
+                    'binalbagan' => 'bin_mysql',
+                    default => null,
+                };
+
+                if (!$connection) {
+                    return null;
+                }
+
+                $contactPerson = $student->guardians
+                    ->where('is_contact_person', true)
+                    ->first();
+
+                DB::connection($connection)
+                    ->table('record')
+                    ->insert([
+                        'email' => $student->email,
+                        'campus' => $student->campus,
+                        'student_lastname' => $student->lname,
+                        'student_firstname' => $student->fname,
+                        'student_middlename' => $student->mname ?? ' ',
+                        'extension' => $student->suffix ?? '',
+                        'birthdate' => $student->birthdate,
+                        'gender' => $student->gender,
+                        'birthplace' => $student->birthplace,
+                        'street' => $student->address->street,
+                        'barangay' => "Brgy. " . $student->address->brgy,
+                        'city' => $student->address->city,
+                        'zip_code' => $student->address->zip_code,
+                        'civilstatus' => $student->civil_status,
+                        'religion' => $student->religion,
+                        'contact_number' => $student->mobile_num ? "0" . $student->mobile_num : '',
+                        'mother_lastname' => $student->guardians->where('role', 'Mother')->first()?->lname,
+                        'mother_firstname' => $student->guardians->where('role', 'Mother')->first()?->fname,
+                        'mother_middlename' => $student->guardians->where('role', 'Mother')->first()?->mname ?? '',
+                        'mother_occupation' => $student->guardians->where('role', 'Mother')->first()?->occupation ?? '',
+                        'father_lastname' => $student->guardians->where('role', 'Father')->first()?->lname,
+                        'father_firstname' => $student->guardians->where('role', 'Father')->first()?->fname,
+                        'father_middlename' => $student->guardians->where('role', 'Father')->first()?->mname ?? '',
+                        'father_occupation' => $student->guardians->where('role', 'Father')->first()?->occupation ?? '',
+                        'year_admitted' => date('d/m/Y', strtotime($student->date_admitted)),
+                        'semester' => $student->semester === '1st Semester' ? 'First Semester' : 'Second Semester',
+                        'year' => $student->academic_year,
+                        'curriculum' => 'N/A',
+                        'lrn_no' => $student->lrn ?? '',
+                        'e_name_of_school' => $student->educations->where('education_level', 'Elementary')->first()?->school_name ?? '',
+                        'e_address_of_school' => $student->educations->where('education_level', 'Elementary')->first()?->school_address ?? '',
+                        'e_school_year_attended' => $student->educations->where('education_level', 'Elementary')->first()?->year_graduated ?? '',
+                        's_name_of_school' => $student->educations->where('education_level', 'Junior High School')->first()?->school_name ?? '',
+                        's_address_of_school' => $student->educations->where('education_level', 'Junior High School')->first()?->school_address ?? '',
+                        's_school_year_attended' => $student->educations->where('education_level', 'Junior High School')->first()?->year_graduated ?? '',
+                        'shs_name_of_school' => $student->educations->where('education_level', 'Senior High School')->first()?->school_name ?? '',
+                        'shs_address_of_school' => $student->educations->where('education_level', 'Senior High School')->first()?->school_address ?? '',
+                        'shs_school_year_attended' => $student->educations->where('education_level', 'Senior High School')->first()?->year_graduated ?? '',
+                        'c_name_of_school' => $student->educations->where('education_level', 'College')->first()?->school_name ?? '',
+                        'c_address_of_school' => $student->educations->where('education_level', 'College')->first()?->school_address ?? '',
+                        'c_school_year_attended' => $student->educations->where('education_level', 'College')->first()?->year_graduated ?? '',
+                        'g_name_of_school' => $student->educations->where('education_level', 'Grad School')->first()?->school_name ?? '',
+                        'g_address_of_school' => $student->educations->where('education_level', 'Grad School')->first()?->school_address ?? '',
+                        'g_school_year_attended' => $student->educations->where('education_level', 'Grad School')->first()?->year_graduated ?? '',
+                        'scholarship_title' => $student->scholarship_program ?? '',
+                        'scholarship_contactperson' => $student->scholarship_contact ?? '',
+                        'scholarship_address' => $student->scholarship_address ?? '',
+                        'scholarship_contactnumber' => $student->scholarship_contact ? "0" . $student->scholarship_contact : '',
+                        'person_notify_name' => $contactPerson
+                            ? trim(implode(' ', array_filter([
+                                $contactPerson->fname,
+                                $contactPerson->mname ? $contactPerson->mname . '.' : null,
+                                $contactPerson->lname,
+                                $contactPerson->suffix,
+                            ])))
+                            : null,
+
+                        'person_notify_address' => $contactPerson->address
+                            ? trim(implode(', ', array_filter([
+                                $contactPerson->address->street ?? null,
+                                'Brgy. ' . $contactPerson->address->brgy,
+                                $contactPerson->address->city,
+                                $contactPerson->address->province,
+                                $contactPerson->address->zip_code,
+                            ])))
+                            : null,
+                        'person_notify_cellphone' => $contactPerson->mobile_num ? "0" . $contactPerson->mobile_num : '',
+                        'mother_highest_educational_attainment' => $student->guardians->where('role', 'Mother')->first()?->highest_educ_attainment,
+                        'father_highest_educational_attainment' => $student->guardians->where('role', 'Father')->first()?->highest_educ_attainment,
+                        'first_gen_student' => (int) $student->answers()
+                            ->where('question_id', 6)
+                            ->where('answer_boolean', true)
+                            ->exists() ? "1" : "0",
+
+                        'ip_or_icc' => (int) $student->answers()
+                            ->where('question_id', 7)
+                            ->where('answer_boolean', true)
+                            ->exists() ? "1" : "0",
+                        'ip_or_icc_yes' => (int) $student->answers()
+                            ->where('question_id', 7)
+                            ->where('answer_boolean', true)
+                            ->exists() ? "1" : "0",
+                        'shs_school_type' => $student->educations->where('education_level', 'Senior High School')->first()?->school_type ?? '',
+                        'college_school_type' => $student->educations->where('education_level', 'College')->first()?->school_type ?? '',
+                    ]);
             });
 
             $success_data = Arr::only($student_data, [
