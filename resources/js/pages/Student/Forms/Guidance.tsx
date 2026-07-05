@@ -54,7 +54,7 @@ import {
     handleErrors,
     isSelectedAsContactPerson,
 } from '@/lib/utils';
-import { storeRegistrar, storeScholarship } from '@/routes';
+import { storeGuidance, storeRegistrar, storeScholarship } from '@/routes';
 import { DropdownProps } from '@/types/entities/dropdowns';
 import { EducationProps } from '@/types/entities/education';
 import { GuardianProps } from '@/types/entities/guardian';
@@ -68,16 +68,19 @@ import {
     CheckIcon,
     ChevronsUpDown,
     MailIcon,
+    MapIcon,
+    PhilippinePeso,
+    Plus,
     RulerIcon,
     School,
     SendIcon,
     StarIcon,
-    Trash2Icon,
-    UserPlus,
+    Trash2,
     WeightIcon,
 } from 'lucide-react';
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 type PageProps = {
     student: StudentProps;
@@ -92,6 +95,36 @@ export default function Guidance() {
     )?.dropdowns;
     const [citizenshipArr, setCitizenshipArr] = useState<string[]>([]);
     const [nationalityOpen, setNationalityOpen] = useState(false);
+    const [selectedFinancer, setSelectedFinancer] = useState<string | null>(
+        null,
+    );
+    const [selectedMartialStatus, setSelectedMaritalStatus] = useState(
+        student.family_info?.parent_martial_status ?? '',
+    );
+    const [selectedNatureOfResidence, setSelectedNatureOfResidence] = useState(
+        student.family_info?.nature_residence ?? '',
+    );
+    const [selectedGuardians, setSelectedGuardians] = useState<string[]>([]);
+
+    const lifeStatusArr = dropdowns.find(
+        (item) => item.title === 'Life Status',
+    )?.dropdowns;
+
+    const parentsMartialStatusArr = dropdowns.find(
+        (item) => item.title === 'Parents Martial Status',
+    )?.dropdowns;
+
+    const natureOfResidenceArr = dropdowns.find(
+        (item) => item.title === 'Nature Of Residence',
+    )?.dropdowns;
+
+    const familyRoleArr = dropdowns.find(
+        (item) => item.title === 'Family Role',
+    )?.dropdowns;
+
+    const religionArr = dropdowns.find(
+        (item) => item.title === 'Religion',
+    )?.dropdowns;
     useEffect(() => {
         fetchCitizenship().then(setCitizenshipArr);
     }, []);
@@ -137,8 +170,31 @@ export default function Guidance() {
         (item) => item.title === 'Suffix',
     )?.dropdowns;
 
+    const financerArr = dropdowns.find(
+        (item) => item.title === 'Financer',
+    )?.dropdowns;
+
     const [siblingCount, setSiblingCount] = useState(0);
+    const [psychTestCount, setPsychTestCount] = useState(0);
     const [proofs, setProofs] = useState<Record<number, File[]>>({});
+
+    // --- Notice-on-add state/refs for Siblings & Psych Tests ---
+    const [highlightedSibling, setHighlightedSibling] = useState<number | null>(
+        null,
+    );
+    const [highlightedPsychTest, setHighlightedPsychTest] = useState<
+        number | null
+    >(null);
+    const siblingRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const psychTestRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const prevSiblingsLengthRef = useRef<number | null>(null);
+    const prevPsychTestsLengthRef = useRef<number | null>(null);
+
+    // NEW: refs that always hold the latest siblings / psych_tests arrays.
+    // Used by the count-driven effects below so we never rebuild the whole
+    // array from scratch (which was wiping out data the user had typed in).
+    const siblingsDataRef = useRef<any[]>([]);
+    const psychTestsDataRef = useRef<any[]>([]);
 
     const requiredLevels = [
         'Elementary',
@@ -166,6 +222,7 @@ export default function Guidance() {
         school_type: '',
         year_graduated: null,
         general_average: '',
+        honor_received: '',
         strand: null,
     });
 
@@ -186,6 +243,9 @@ export default function Guidance() {
     }, []);
 
     const hasExistingSiblings = (student.siblings?.length ?? 0) > 0;
+    const hasExistingGuardians = (student.guardians?.length ?? 0) > 0;
+    const hasExistingPsychTests =
+        ((student as any).psych_tests?.length ?? 0) > 0;
 
     // Pre-populate from DB if the student already has siblings
     useEffect(() => {
@@ -196,18 +256,69 @@ export default function Guidance() {
     }, []);
 
     useEffect(() => {
+        if (hasExistingGuardians && data.guardians.length === 0) {
+            setAny('guardians', student.guardians);
+            // Pre-populate selectedGuardians from existing student guardians
+            setSelectedGuardians(
+                (student.guardians ?? []).map((g) => g.role).filter(Boolean),
+            );
+        }
+    }, []);
+
+    // FIXED: append/trim instead of rebuilding the whole array, so existing
+    // sibling input the user already typed is preserved when the count changes.
+    useEffect(() => {
         if (hasExistingSiblings) return;
-        const newSiblings = Array.from({ length: siblingCount }, () => ({
-            fname: '',
-            mname: null,
-            lname: '',
-            suffix: null,
-            gender: '',
-            is_attending_college: false,
-            is_employed: false,
-        }));
-        setAny('siblings', newSiblings);
+
+        const current = siblingsDataRef.current ?? [];
+
+        if (siblingCount > current.length) {
+            const toAdd = Array.from(
+                { length: siblingCount - current.length },
+                () => ({
+                    fname: '',
+                    mname: null,
+                    lname: '',
+                    suffix: null,
+                    gender: '',
+                    is_attending_college: false,
+                    is_employed: false,
+                }),
+            );
+            setAny('siblings', [...current, ...toAdd]);
+        } else if (siblingCount < current.length) {
+            setAny('siblings', current.slice(0, siblingCount));
+        }
     }, [siblingCount]);
+
+    useEffect(() => {
+        if (hasExistingPsychTests && data.psych_tests.length === 0) {
+            setAny('psych_tests', (student as any).psych_tests);
+            setPsychTestCount((student as any).psych_tests!.length);
+        }
+    }, []);
+
+    // FIXED: same append/trim approach for psych tests.
+    useEffect(() => {
+        if (hasExistingPsychTests) return;
+
+        const current = psychTestsDataRef.current ?? [];
+
+        if (psychTestCount > current.length) {
+            const toAdd = Array.from(
+                { length: psychTestCount - current.length },
+                () => ({
+                    name: '',
+                    date_taken: '',
+                    result: '',
+                    interpretation: '',
+                }),
+            );
+            setAny('psych_tests', [...current, ...toAdd]);
+        } else if (psychTestCount < current.length) {
+            setAny('psych_tests', current.slice(0, psychTestCount));
+        }
+    }, [psychTestCount]);
 
     // cast aliases for dynamic nested paths on never[] arrays
     const setAny = setData as any;
@@ -235,7 +346,58 @@ export default function Guidance() {
     };
     const educations = data.educations as EducationProps[];
     const siblings = data.siblings as any[];
+    const guardians = data.guardians as GuardianProps[];
     const answers = data.answers as any[];
+    const psychTests = data.psych_tests as any[];
+
+    // Keep the "latest data" refs in sync on every render, BEFORE any effect
+    // for this render runs. This is what lets the count-driven effects above
+    // append/trim against the true current array instead of a stale closure.
+    siblingsDataRef.current = siblings;
+    psychTestsDataRef.current = psychTests;
+
+    const hasValue = (value: unknown) =>
+        value !== null && value !== undefined && String(value).trim() !== '';
+
+    // Notice on new sibling added (skips the initial DB pre-population)
+    useEffect(() => {
+        const prevLength = prevSiblingsLengthRef.current;
+        if (prevLength !== null && siblings.length > prevLength) {
+            const newIndex = siblings.length - 1;
+            setHighlightedSibling(newIndex);
+            toast.success(`Sibling #${newIndex + 1} added`);
+            setTimeout(() => {
+                siblingRefs.current[newIndex]?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                });
+            }, 100);
+            const timer = setTimeout(() => setHighlightedSibling(null), 2000);
+            prevSiblingsLengthRef.current = siblings.length;
+            return () => clearTimeout(timer);
+        }
+        prevSiblingsLengthRef.current = siblings.length;
+    }, [siblings.length]);
+
+    // Notice on new psych test added (skips the initial DB pre-population)
+    useEffect(() => {
+        const prevLength = prevPsychTestsLengthRef.current;
+        if (prevLength !== null && psychTests.length > prevLength) {
+            const newIndex = psychTests.length - 1;
+            setHighlightedPsychTest(newIndex);
+            toast.success(`Psych Test #${newIndex + 1} added`);
+            setTimeout(() => {
+                psychTestRefs.current[newIndex]?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                });
+            }, 100);
+            const timer = setTimeout(() => setHighlightedPsychTest(null), 2000);
+            prevPsychTestsLengthRef.current = psychTests.length;
+            return () => clearTimeout(timer);
+        }
+        prevPsychTestsLengthRef.current = psychTests.length;
+    }, [psychTests.length]);
 
     // answers helpers
     const findAnswerIndex = (
@@ -255,6 +417,7 @@ export default function Guidance() {
             sub_question_id: null,
             answer_type: q.answer_type,
             answer: null,
+            proof: [] as File[], // <-- add this
         }));
         setAny('answers', formatted);
     }, [questions, data.answers.length]);
@@ -343,13 +506,34 @@ export default function Guidance() {
         if (processing) return;
 
         clearErrors();
+        post(storeGuidance(student.ref_number).url, {
+            preserveScroll: true,
+            onError: (err) => {
+                handleErrors(err);
+            },
+        });
     };
-
-    console.log(data);
 
     return (
         <>
             <ThemeButton />
+            <Dialog open={processing}>
+                <DialogContent
+                    className="w-auto [&>button]:hidden"
+                    onInteractOutside={(e) => e.preventDefault()}
+                    onEscapeKeyDown={(e) => e.preventDefault()}
+                >
+                    <div className="flex flex-col items-center gap-3 py-4 text-center">
+                        <Spinner className="h-8 w-8" />
+                        <p className="font-medium">
+                            Submitting your information...
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                            Please don't close or refresh this page.
+                        </p>
+                    </div>
+                </DialogContent>
+            </Dialog>
             <header className="relative flex min-h-150 items-center justify-center bg-[url(/chmsu.webp)] bg-cover bg-fixed bg-bottom bg-no-repeat">
                 <div className="absolute top-0 right-0 z-1 h-full w-full bg-black/70"></div>
 
@@ -654,55 +838,84 @@ export default function Guidance() {
 
                     <div className="flex flex-col gap-3">
                         <Label>
-                            Financer <Asterisk size={12} color="red" />
+                            Who finances your education?
+                            <Asterisk color="red" size={12} />
                         </Label>
                         <Select
-                            value={data.student.financer}
-                            onValueChange={(val) =>
-                                setData('student.financer', val)
-                            }
+                            value={selectedFinancer ?? ''}
+                            onValueChange={(value) => {
+                                setSelectedFinancer(value);
+
+                                if (value !== 'Others') {
+                                    setData('student.financer', value);
+                                    return;
+                                }
+                                setData('student.financer', '');
+                            }}
+                            name="student.financer"
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Select financer" />
+                                <SelectValue placeholder="Choose an option" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    {dropdowns
-                                        .find(
-                                            (item) => item.title === 'Financer',
-                                        )
-                                        ?.dropdowns?.map(
-                                            (item: any, index: number) => (
-                                                <SelectItem
-                                                    key={index}
-                                                    value={item}
-                                                >
-                                                    {item}
-                                                </SelectItem>
-                                            ),
-                                        )}
+                                    {financerArr?.map((item, index) => (
+                                        <SelectItem key={index} value={item}>
+                                            {item}
+                                        </SelectItem>
+                                    ))}
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
+                        {selectedFinancer === 'Others' && (
+                            <Input
+                                type="text"
+                                value={data.student.financer}
+                                maxLength={50}
+                                onChange={(e) =>
+                                    setData(
+                                        'student.financer',
+                                        capitalizeString(e.target.value),
+                                    )
+                                }
+                                name="student.financer"
+                                placeholder="Please specify your financer"
+                            />
+                        )}
+
                         <InputError message={errors['student.financer']} />
                     </div>
                 </TwoColumnInput>
                 <TwoColumnInput>
                     <div className="flex flex-col gap-3">
-                        <Label>
-                            Weekly Allowance <Asterisk size={12} color="red" />
-                        </Label>
-                        <Input
-                            type="number"
-                            value={data.student.weekly_allowance}
-                            onChange={(e) =>
-                                setData(
-                                    'student.weekly_allowance',
-                                    e.target.value,
-                                )
-                            }
-                            placeholder="Enter amount"
+                        <LabelExample
+                            title="Weekly Allowance"
+                            isRequired={true}
+                            example="₱1500, ₱2000, ₱5000, etc."
                         />
+                        <div className="relative flex items-center">
+                            <PhilippinePeso
+                                size={15}
+                                className="absolute start-3"
+                            />
+                            <Input
+                                type="text"
+                                inputMode="numeric"
+                                name="student.weekly_allowance"
+                                pattern="[0-9]*"
+                                maxLength={5}
+                                value={data.student.weekly_allowance ?? ''}
+                                onChange={(e) => {
+                                    const value = e.target.value.replace(
+                                        /\D/g,
+                                        '',
+                                    );
+                                    setData('student.weekly_allowance', value);
+                                }}
+                                className="py-2 ps-8"
+                                placeholder="Enter Weekly Allowance"
+                            />
+                        </div>
                         <InputError
                             message={errors['student.weekly_allowance']}
                         />
@@ -730,6 +943,29 @@ export default function Guidance() {
                     </div>
                 </TwoColumnInput>
                 <div className="flex flex-col gap-3">
+                    <Label>Home Address</Label>
+                    <Input
+                        type="text"
+                        value={[
+                            student.address?.street,
+                            `Brgy. ${student.address?.brgy}`,
+                            student.address?.city,
+                            student.address?.province,
+                            student.address?.zip_code,
+                        ]
+                            .filter(Boolean)
+                            .join(', ')}
+                        onChange={(e) =>
+                            setData(
+                                'student.current_address',
+                                capitalizeString(e.target.value),
+                            )
+                        }
+                        placeholder="Enter current address"
+                    />
+                    <InputError message={errors['student.current_address']} />
+                </div>
+                <div className="flex flex-col gap-3">
                     <Label>
                         Current Address <Asterisk size={12} color="red" />
                     </Label>
@@ -743,6 +979,25 @@ export default function Guidance() {
                         }
                         placeholder="Enter current address"
                     />
+                    <Button
+                        type="button"
+                        onClick={() => {
+                            setData(
+                                'student.current_address',
+                                [
+                                    student.address?.street,
+                                    `Brgy. ${student.address?.brgy}`,
+                                    student.address?.city,
+                                    student.address?.province,
+                                    student.address?.zip_code,
+                                ]
+                                    .filter(Boolean)
+                                    .join(', '),
+                            );
+                        }}
+                    >
+                        <MapIcon /> Use Home Address
+                    </Button>
                     <InputError message={errors['student.current_address']} />
                 </div>
                 <Heading
@@ -752,39 +1007,57 @@ export default function Guidance() {
                 <TwoColumnInput>
                     <div className="flex flex-col gap-3">
                         <Label>
-                            Parent's Marital Status
+                            Parent's Martial Status{' '}
                             <Asterisk size={12} color="red" />
                         </Label>
                         <Select
-                            value={data.family.parent_martial_status}
-                            onValueChange={(val) =>
-                                setData('family.parent_martial_status', val)
-                            }
+                            value={selectedMartialStatus ?? ''}
+                            name="family.parent_martial_status"
+                            onValueChange={(value) => {
+                                setSelectedMaritalStatus(value);
+                                if (value !== 'Others') {
+                                    setData(
+                                        'family.parent_martial_status',
+                                        value,
+                                    );
+                                    return;
+                                }
+
+                                setData('family.parent_martial_status', '');
+                            }}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
+                                <SelectValue placeholder="Choose an option" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    {dropdowns
-                                        .find(
-                                            (item) =>
-                                                item.title ===
-                                                'Parents Martial Status',
-                                        )
-                                        ?.dropdowns?.map(
-                                            (item: any, index: number) => (
-                                                <SelectItem
-                                                    key={index}
-                                                    value={item}
-                                                >
-                                                    {item}
-                                                </SelectItem>
-                                            ),
-                                        )}
+                                    {parentsMartialStatusArr?.map(
+                                        (item, index) => (
+                                            <SelectItem
+                                                key={index}
+                                                value={item}
+                                            >
+                                                {item}
+                                            </SelectItem>
+                                        ),
+                                    )}
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
+
+                        {selectedMartialStatus === 'Others' && (
+                            <Input
+                                value={data.family.parent_martial_status ?? ''}
+                                name="family.parent_martial_status"
+                                onChange={(e) =>
+                                    setData(
+                                        'family.parent_martial_status',
+                                        capitalizeString(e.target.value),
+                                    )
+                                }
+                                placeholder="Please specify parent's martial status"
+                            />
+                        )}
                         <InputError
                             message={errors['family.parent_martial_status']}
                         />
@@ -792,39 +1065,54 @@ export default function Guidance() {
 
                     <div className="flex flex-col gap-3">
                         <Label>
-                            Nature of Residence{' '}
+                            Nature of Residence While Attendng School{' '}
                             <Asterisk size={12} color="red" />
                         </Label>
                         <Select
-                            value={data.family.nature_residence}
-                            onValueChange={(val) =>
-                                setData('family.nature_residence', val)
-                            }
+                            value={selectedNatureOfResidence ?? ''}
+                            name="family.nature_residence"
+                            onValueChange={(value) => {
+                                setSelectedNatureOfResidence(value);
+                                if (value !== 'Others') {
+                                    setData('family.nature_residence', value);
+                                    return;
+                                }
+
+                                setData('family.nature_residence', '');
+                            }}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Select residence type" />
+                                <SelectValue placeholder="Choose an option" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    {dropdowns
-                                        .find(
-                                            (item) =>
-                                                item.title ===
-                                                'Nature Of Residence',
-                                        )
-                                        ?.dropdowns?.map(
-                                            (item: any, index: number) => (
-                                                <SelectItem
-                                                    key={index}
-                                                    value={item}
-                                                >
-                                                    {item}
-                                                </SelectItem>
-                                            ),
-                                        )}
+                                    {natureOfResidenceArr?.map(
+                                        (item, index) => (
+                                            <SelectItem
+                                                key={index}
+                                                value={item}
+                                            >
+                                                {item}
+                                            </SelectItem>
+                                        ),
+                                    )}
                                 </SelectGroup>
                             </SelectContent>
                         </Select>
+
+                        {selectedNatureOfResidence === 'Others' && (
+                            <Input
+                                value={data.family.nature_residence ?? ''}
+                                name="family.nature_residence"
+                                onChange={(e) =>
+                                    setData(
+                                        'family.nature_residence',
+                                        capitalizeString(e.target.value),
+                                    )
+                                }
+                                placeholder="Please specify nature of residence"
+                            />
+                        )}
                         <InputError
                             message={errors['family.nature_residence']}
                         />
@@ -1119,10 +1407,7 @@ export default function Guidance() {
                                     <div className="flex flex-col gap-3">
                                         <LabelExample
                                             title="Year Graduated"
-                                            isRequired={
-                                                !educations[index]
-                                                    .year_graduated
-                                            }
+                                            isRequired={false}
                                             example="2020"
                                         />
                                         <Input
@@ -1134,7 +1419,7 @@ export default function Guidance() {
                                             onChange={(e) =>
                                                 setAny(
                                                     `educations.${index}.year_graduated`,
-                                                    e.target.value.slice(0, 4),
+                                                    e.target.value,
                                                 )
                                             }
                                             placeholder="Enter Year Graduated"
@@ -1186,6 +1471,39 @@ export default function Guidance() {
                                         />
                                     </div>
                                 </TwoColumnInput>
+
+                                <div className="flex flex-col gap-3">
+                                    <Label>Honor Received</Label>
+                                    <Input
+                                        type="text"
+                                        value={
+                                            educations[index].honor_received ??
+                                            educations[index].honor_receieved ??
+                                            ''
+                                        }
+                                        maxLength={150}
+                                        onChange={(e) =>
+                                            setAny(
+                                                `educations.${index}.honor_received`,
+                                                capitalizeString(
+                                                    e.target.value,
+                                                ),
+                                            )
+                                        }
+                                        placeholder="e.g., With Honors, With High Honors"
+                                        disabled={
+                                            !!originalEdu?.honor_received ||
+                                            !!originalEdu?.honor_receieved
+                                        }
+                                    />
+                                    <InputError
+                                        message={
+                                            errAny[
+                                                `educations.${index}.honor_received`
+                                            ]
+                                        }
+                                    />
+                                </div>
                             </div>
                         );
                     },
@@ -1195,39 +1513,19 @@ export default function Guidance() {
                     description="Provide information about your siblings."
                 />
                 <div className="flex flex-col gap-3">
-                    <LabelExample
-                        title="Number of Siblings"
-                        isRequired={false}
-                        example="0, 2, 4, 8, 10"
-                    />
-                    <div className="flex items-center">
+                    <Label>Siblings ({siblingCount} added)</Label>
+                    <p className="text-sm text-muted-foreground">
+                        Click below to add a sibling's information.
+                    </p>
+                    {!hasExistingSiblings && (
                         <Button
                             type="button"
-                            onClick={() =>
-                                setSiblingCount((prev) => Math.max(prev - 1, 0))
-                            }
-                            className="rounded-e-none"
-                            disabled={hasExistingSiblings}
-                        >
-                            -
-                        </Button>
-                        <Input
-                            type="number"
-                            min={0}
-                            disabled
-                            className="rounded-none text-center"
-                            value={siblingCount}
-                            placeholder="Enter number of siblings"
-                        />
-                        <Button
-                            type="button"
-                            className="rounded-s-none"
                             onClick={() => setSiblingCount((prev) => prev + 1)}
-                            disabled={hasExistingSiblings}
+                            className="w-full md:w-max"
                         >
-                            +
+                            <Plus className="h-4 w-4" /> Add Sibling
                         </Button>
-                    </div>
+                    )}
                     {hasExistingSiblings && (
                         <p className="text-sm text-muted-foreground">
                             Sibling records already exist and cannot be modified
@@ -1238,11 +1536,33 @@ export default function Guidance() {
                 {(data.siblings as any[])?.map((_: any, index: number) => (
                     <div
                         key={index}
-                        className="space-y-5 rounded-md p-5 shadow-sm shadow-green-500 lg:p-8"
+                        ref={(el: any) => (siblingRefs.current[index] = el)}
+                        className={cn(
+                            'space-y-5 rounded-md p-5 shadow-sm shadow-green-500 transition-shadow duration-500 lg:p-8',
+                            highlightedSibling === index &&
+                                'ring-4 ring-green-400 ring-offset-2',
+                        )}
                     >
-                        <HeadingSmall
-                            title={`Sibling #${index + 1} - Information`}
-                        />
+                        <div className="flex items-start justify-between gap-3">
+                            <HeadingSmall
+                                title={`Sibling #${index + 1} - Information`}
+                            />
+                            {!hasExistingSiblings && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="shrink-0 text-destructive hover:text-destructive"
+                                    onClick={() =>
+                                        setSiblingCount((prev) =>
+                                            Math.max(prev - 1, 0),
+                                        )
+                                    }
+                                >
+                                    <Trash2 className="h-4 w-4" /> Remove
+                                </Button>
+                            )}
+                        </div>
 
                         <div className="flex flex-col gap-3">
                             <Label>
@@ -1444,9 +1764,385 @@ export default function Guidance() {
                         )}
                     </div>
                 ))}
+                {!hasExistingSiblings && siblingCount > 0 && (
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setSiblingCount((prev) => prev + 1)}
+                        className="w-full md:w-max"
+                    >
+                        <Plus className="h-4 w-4" /> Add Another Sibling
+                    </Button>
+                )}
                 <Heading
-                    title="Additional Information"
-                    description="Provide additional information about the student."
+                    title="Guardian Information"
+                    description="Please select and complete your guardian details. Reference: FamilyInfo.tsx"
+                />
+                {selectedGuardians.length > 0 &&
+                    selectedGuardians.map((member, index) => (
+                        <div
+                            key={index}
+                            className="space-y-5 rounded-md p-5 shadow-sm shadow-emerald-500 lg:p-8"
+                        >
+                            <HeadingSmall
+                                title={`${member} - Information`}
+                                description={`Please supply accurate and up-to-date information regarding the applicant's ${member.toLocaleLowerCase()}.`}
+                            />
+
+                            <TwoColumnInput>
+                                <div className="flex flex-col gap-3">
+                                    <Label>
+                                        First Name{' '}
+                                        <Asterisk size={12} color="red" />
+                                    </Label>
+                                    <Input
+                                        type="text"
+                                        value={guardians[index]?.fname ?? ''}
+                                        onChange={(e) =>
+                                            setAny(
+                                                `guardians.${index}.fname`,
+                                                capitalizeString(
+                                                    e.target.value,
+                                                ),
+                                            )
+                                        }
+                                        placeholder="Enter First Name"
+                                        readOnly={hasValue(
+                                            student.guardians?.[index]?.fname,
+                                        )}
+                                    />
+                                    <InputError
+                                        message={
+                                            errAny[`guardians.${index}.fname`]
+                                        }
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                    <Label>Middle Name</Label>
+                                    <Input
+                                        type="text"
+                                        value={guardians[index]?.mname ?? ''}
+                                        onChange={(e) =>
+                                            setAny(
+                                                `guardians.${index}.mname`,
+                                                capitalizeString(
+                                                    e.target.value,
+                                                ),
+                                            )
+                                        }
+                                        placeholder="Enter Middle Name"
+                                        readOnly={hasValue(
+                                            student.guardians?.[index]?.mname,
+                                        )}
+                                    />
+                                    <InputError
+                                        message={
+                                            errAny[`guardians.${index}.mname`]
+                                        }
+                                    />
+                                </div>
+                            </TwoColumnInput>
+
+                            <TwoColumnInput>
+                                <div className="flex flex-col gap-3">
+                                    <Label>
+                                        Last Name{' '}
+                                        <Asterisk size={12} color="red" />
+                                    </Label>
+                                    <Input
+                                        type="text"
+                                        value={guardians[index]?.lname ?? ''}
+                                        onChange={(e) =>
+                                            setAny(
+                                                `guardians.${index}.lname`,
+                                                capitalizeString(
+                                                    e.target.value,
+                                                ),
+                                            )
+                                        }
+                                        placeholder="Enter Last Name"
+                                        readOnly={hasValue(
+                                            student.guardians?.[index]?.lname,
+                                        )}
+                                    />
+                                    <InputError
+                                        message={
+                                            errAny[`guardians.${index}.lname`]
+                                        }
+                                    />
+                                </div>
+                            </TwoColumnInput>
+
+                            <TwoColumnInput>
+                                <div className="flex flex-col gap-3">
+                                    <Label>Birthplace</Label>
+                                    <Input
+                                        type="text"
+                                        value={
+                                            guardians[index]?.birthplace ?? ''
+                                        }
+                                        onChange={(e) =>
+                                            setAny(
+                                                `guardians.${index}.birthplace`,
+                                                capitalizeString(
+                                                    e.target.value,
+                                                ),
+                                            )
+                                        }
+                                        placeholder="Enter Birthplace"
+                                        readOnly={hasValue(
+                                            student.guardians?.[index]
+                                                ?.birthplace,
+                                        )}
+                                    />
+                                    <InputError
+                                        message={
+                                            errAny[
+                                                `guardians.${index}.birthplace`
+                                            ]
+                                        }
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                    <Label>Nationality</Label>
+                                    <Select
+                                        value={
+                                            guardians[index]?.citizenship ?? ''
+                                        }
+                                        onValueChange={(value) =>
+                                            setAny(
+                                                `guardians.${index}.citizenship`,
+                                                value,
+                                            )
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select Nationality" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                {citizenshipArr?.map(
+                                                    (item, i) => (
+                                                        <SelectItem
+                                                            key={i}
+                                                            value={item}
+                                                        >
+                                                            {item}
+                                                        </SelectItem>
+                                                    ),
+                                                )}
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError
+                                        message={
+                                            errAny[
+                                                `guardians.${index}.citizenship`
+                                            ]
+                                        }
+                                    />
+                                </div>
+                            </TwoColumnInput>
+
+                            <div className="flex flex-col gap-3">
+                                <Label>Birthdate</Label>
+                                <Input
+                                    type="date"
+                                    value={guardians[index]?.birthdate ?? ''}
+                                    onChange={(e) =>
+                                        setAny(
+                                            `guardians.${index}.birthdate`,
+                                            e.target.value,
+                                        )
+                                    }
+                                    readOnly={hasValue(
+                                        student.guardians?.[index]?.birthdate,
+                                    )}
+                                />
+                                <InputError
+                                    message={
+                                        errAny[`guardians.${index}.birthdate`]
+                                    }
+                                />
+                            </div>
+
+                            <TwoColumnInput>
+                                <div className="flex flex-col gap-3">
+                                    <Label>Religion</Label>
+                                    <Select
+                                        value={guardians[index]?.religion ?? ''}
+                                        onValueChange={(value) =>
+                                            setAny(
+                                                `guardians.${index}.religion`,
+                                                value,
+                                            )
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select Religion" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                {religionArr?.map((item, i) => (
+                                                    <SelectItem
+                                                        key={i}
+                                                        value={item}
+                                                    >
+                                                        {item}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError
+                                        message={
+                                            errAny[
+                                                `guardians.${index}.religion`
+                                            ]
+                                        }
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                    <Label>Life Status</Label>
+                                    <Select
+                                        value={
+                                            guardians[index]?.life_status ?? ''
+                                        }
+                                        onValueChange={(value) => {
+                                            if (value === 'Deceased') {
+                                                setAny(
+                                                    `guardians.${index}.occupation`,
+                                                    null,
+                                                );
+                                            }
+                                            setAny(
+                                                `guardians.${index}.life_status`,
+                                                value,
+                                            );
+                                        }}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select Life Status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                {lifeStatusArr?.map(
+                                                    (item, i) => (
+                                                        <SelectItem
+                                                            key={i}
+                                                            value={item}
+                                                        >
+                                                            {item}
+                                                        </SelectItem>
+                                                    ),
+                                                )}
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError
+                                        message={
+                                            errAny[
+                                                `guardians.${index}.life_status`
+                                            ]
+                                        }
+                                    />
+                                    {guardians[index]?.life_status ===
+                                        'Deceased' && (
+                                        <>
+                                            <div className="flex flex-col gap-3">
+                                                <Label>Cause of Death</Label>
+                                                <Input
+                                                    type="text"
+                                                    maxLength={100}
+                                                    value={
+                                                        guardians[index]
+                                                            ?.cause_of_death ??
+                                                        ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        setAny(
+                                                            `guardians.${index}.cause_of_death`,
+                                                            capitalizeString(
+                                                                e.target.value,
+                                                            ),
+                                                        )
+                                                    }
+                                                    placeholder="Enter Cause of death"
+                                                />
+                                                <InputError
+                                                    message={
+                                                        errAny[
+                                                            `guardians.${index}.cause_of_death`
+                                                        ]
+                                                    }
+                                                />
+                                            </div>
+                                            <div className="flex flex-col gap-3">
+                                                <LabelExample
+                                                    title="Year of Death"
+                                                    isRequired={false}
+                                                    example="2012, 2015"
+                                                />
+                                                <Input
+                                                    type="number"
+                                                    value={
+                                                        guardians[index]
+                                                            ?.year_of_death ??
+                                                        ''
+                                                    }
+                                                    onChange={(e) =>
+                                                        setAny(
+                                                            `guardians.${index}.year_of_death`,
+                                                            e.target.value.slice(
+                                                                0,
+                                                                4,
+                                                            ),
+                                                        )
+                                                    }
+                                                    placeholder="Enter Year of Death"
+                                                />
+                                                <InputError
+                                                    message={
+                                                        errAny[
+                                                            `guardians.${index}.year_of_death`
+                                                        ]
+                                                    }
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </TwoColumnInput>
+
+                            <div className="flex flex-col gap-3">
+                                <Label>Occupation</Label>
+                                <Input
+                                    type="text"
+                                    maxLength={100}
+                                    disabled={
+                                        guardians[index]?.life_status ===
+                                        'Deceased'
+                                    }
+                                    value={guardians[index]?.occupation ?? ''}
+                                    onChange={(e) =>
+                                        setAny(
+                                            `guardians.${index}.occupation`,
+                                            capitalizeString(e.target.value),
+                                        )
+                                    }
+                                    placeholder="Enter Occupation"
+                                />
+                                <InputError
+                                    message={
+                                        errAny[`guardians.${index}.occupation`]
+                                    }
+                                />
+                            </div>
+                        </div>
+                    ))}
+                <Heading
+                    title="Equity Target Group"
+                    description="Please select all applicable equity target groups."
                 />
                 {(() => {
                     const concernsStartIdx = questions.findIndex((q) =>
@@ -1648,7 +2344,7 @@ export default function Guidance() {
                                             <div className="ml-6 flex flex-col gap-3">
                                                 <Label>
                                                     Upload Proof{' '}
-                                                    <span className="text-xs text-muted-foreground">
+                                                    <span className="ms-1.5 text-xs text-muted-foreground">
                                                         (max 2 images)
                                                     </span>
                                                 </Label>
@@ -1666,15 +2362,14 @@ export default function Guidance() {
                                                                 0,
                                                                 2,
                                                             ) as File[];
-                                                        if (q.id != null) {
-                                                            setProofs(
-                                                                (prev) => ({
-                                                                    ...prev,
-                                                                    [q.id!]:
-                                                                        files,
-                                                                }),
+
+                                                        if (parentIdx !== -1) {
+                                                            setAny(
+                                                                `answers.${parentIdx}.proof`,
+                                                                files,
                                                             );
                                                         }
+
                                                         if (
                                                             (e.target.files
                                                                 ?.length ?? 0) >
@@ -1684,12 +2379,16 @@ export default function Guidance() {
                                                         }
                                                     }}
                                                 />
-                                                {q.id != null &&
-                                                    proofs[q.id] && (
+                                                {parentIdx !== -1 &&
+                                                    (answers[parentIdx] as any)
+                                                        ?.proof?.length > 0 && (
                                                         <p className="text-xs text-muted-foreground">
                                                             {
-                                                                proofs[q.id]
-                                                                    .length
+                                                                (
+                                                                    answers[
+                                                                        parentIdx
+                                                                    ] as any
+                                                                ).proof.length
                                                             }{' '}
                                                             file(s) selected
                                                         </p>
@@ -1725,6 +2424,165 @@ export default function Guidance() {
                         );
                     });
                 })()}{' '}
+                <Heading
+                    title="Psychological Test Result"
+                    description="Provide your psychological test records."
+                />
+                <div className="flex flex-col gap-3">
+                    <Label>Psych Tests ({psychTestCount} added)</Label>
+                    <p className="text-sm text-muted-foreground">
+                        Click below to add a psychological test record.
+                    </p>
+                    {!hasExistingPsychTests && (
+                        <Button
+                            type="button"
+                            onClick={() =>
+                                setPsychTestCount((prev) => prev + 1)
+                            }
+                            className="w-full md:w-max"
+                        >
+                            <Plus className="h-4 w-4" /> Add Psych Test
+                        </Button>
+                    )}
+                    {hasExistingPsychTests && (
+                        <p className="text-sm text-muted-foreground">
+                            Psychological test records already exist and cannot
+                            be modified here.
+                        </p>
+                    )}
+                </div>
+                {psychTests?.map((_: any, index: number) => (
+                    <div
+                        key={index}
+                        ref={(el) => (psychTestRefs.current[index] = el)}
+                        className={cn(
+                            'space-y-5 rounded-md p-5 shadow-sm shadow-purple-500 transition-shadow duration-500 lg:p-8',
+                            highlightedPsychTest === index &&
+                                'ring-4 ring-purple-400 ring-offset-2',
+                        )}
+                    >
+                        <div className="flex items-start justify-between gap-3">
+                            <HeadingSmall title={`Psych Test #${index + 1}`} />
+                            {!hasExistingPsychTests && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="shrink-0 text-destructive hover:text-destructive"
+                                    onClick={() =>
+                                        setPsychTestCount((prev) =>
+                                            Math.max(prev - 1, 0),
+                                        )
+                                    }
+                                >
+                                    <Trash2 className="h-4 w-4" /> Remove
+                                </Button>
+                            )}
+                        </div>
+                        <TwoColumnInput>
+                            <div className="flex flex-col gap-3">
+                                <Label>
+                                    Test Name <Asterisk size={12} color="red" />
+                                </Label>
+                                <Input
+                                    type="text"
+                                    value={psychTests[index]?.name ?? ''}
+                                    onChange={(e) =>
+                                        setAny(
+                                            `psych_tests.${index}.name`,
+                                            capitalizeString(e.target.value),
+                                        )
+                                    }
+                                    placeholder="Enter test name"
+                                    disabled={hasExistingPsychTests}
+                                />
+                                <InputError
+                                    message={
+                                        errAny[`psych_tests.${index}.name`]
+                                    }
+                                />
+                            </div>
+                            <div className="flex flex-col gap-3">
+                                <Label>
+                                    Date Taken{' '}
+                                    <Asterisk size={12} color="red" />
+                                </Label>
+                                <Input
+                                    type="date"
+                                    value={psychTests[index]?.date_taken ?? ''}
+                                    onChange={(e) =>
+                                        setAny(
+                                            `psych_tests.${index}.date_taken`,
+                                            e.target.value,
+                                        )
+                                    }
+                                    disabled={hasExistingPsychTests}
+                                />
+                                <InputError
+                                    message={
+                                        errAny[
+                                            `psych_tests.${index}.date_taken`
+                                        ]
+                                    }
+                                />
+                            </div>
+                        </TwoColumnInput>
+                        <div className="flex flex-col gap-3">
+                            <Label>
+                                Result <Asterisk size={12} color="red" />
+                            </Label>
+                            <Input
+                                type="text"
+                                value={psychTests[index]?.result ?? ''}
+                                onChange={(e) =>
+                                    setAny(
+                                        `psych_tests.${index}.result`,
+                                        capitalizeString(e.target.value),
+                                    )
+                                }
+                                placeholder="Enter test result"
+                                disabled={hasExistingPsychTests}
+                            />
+                            <InputError
+                                message={errAny[`psych_tests.${index}.result`]}
+                            />
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <Label>
+                                Interpretation{' '}
+                                <Asterisk size={12} color="red" />
+                            </Label>
+                            <Textarea
+                                value={psychTests[index]?.interpretation ?? ''}
+                                onChange={(e) =>
+                                    setAny(
+                                        `psych_tests.${index}.interpretation`,
+                                        capitalizeString(e.target.value),
+                                    )
+                                }
+                                placeholder="Enter interpretation"
+                                disabled={hasExistingPsychTests}
+                            />
+                            <InputError
+                                message={
+                                    errAny[
+                                        `psych_tests.${index}.interpretation`
+                                    ]
+                                }
+                            />
+                        </div>
+                    </div>
+                ))}
+                {!hasExistingPsychTests && psychTestCount > 0 && (
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setPsychTestCount((prev) => prev + 1)}
+                        className="w-full md:w-max"
+                    >
+                        <Plus className="h-4 w-4" /> Add Another Psych Test
+                    </Button>
+                )}
                 <div className="flex justify-end">
                     <div className="flex w-full gap-3 md:w-auto">
                         <Button

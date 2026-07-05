@@ -53,8 +53,6 @@ Route::middleware(['throttle:60,1'])->group(function () {
     Route::post('/student/validate/additional-info', [StudentController::class, 'validateAdditionalInfo'])->name('validateAdditionalInfo');
 
     Route::post('/student/store', [StudentController::class, 'store'])->name('storeStudent');
-
-
 });
 
 
@@ -73,6 +71,7 @@ Route::middleware(['custom.auth', 'throttle:60,1'])->group(function () {
         Route::post('/students/export-zip', [StudentController::class, 'export'])->name('exportStudentsZip');
         Route::post('/students/export-pdf', [StudentController::class, 'exportPdf'])->name('exportStudentsPdf');
         Route::get('/download-excel', [ExportController::class, 'downloadExcel'])->name('downloadExcel');
+        Route::post('/students/export-csv', [StudentController::class, 'exportCsv'])->name('exportStudentsCsv');
     });
 
     Route::middleware('permission:update_students')->group(function () {

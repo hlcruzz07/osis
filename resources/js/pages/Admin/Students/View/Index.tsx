@@ -9,6 +9,8 @@ import Heading from '@/components/heading';
 import {
     ArrowLeft,
     BanIcon,
+    BrainIcon,
+    CoinsIcon,
     ContactIcon,
     GraduationCap,
     GraduationCapIcon,
@@ -42,13 +44,9 @@ import GuardiansTab from './Tabs/GuardiansTab';
 import SiblingsTab from './Tabs/SiblingsTab';
 import { StudentProps } from '@/types/entities/student';
 import AdditionalInfoTab from './Tabs/AdditionalInfoTab';
+import PsychTestTab from './Tabs/PsychTestTab';
+import ScholarshipsTab from './Tabs/ScholarshipsTab';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Student Profile',
-        href: students().url,
-    },
-];
 type PageProps = {
     student: StudentProps;
     dropdowns: DropdownProps[];
@@ -58,6 +56,12 @@ export default function Index() {
     const { student, dropdowns } = usePage<PageProps>().props;
 
     const [activeTab, setActiveTab] = useState<number>(0);
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: `Student Profile - ${[student.fname, student.mname ? student.mname.slice(0, 1) + '.' : '', student.lname, student.suffix].filter(Boolean).join(' ')}`,
+            href: students().url,
+        },
+    ];
 
     const sidebarNavItems = [
         {
@@ -94,6 +98,17 @@ export default function Index() {
             title: 'Siblings',
             tab: <SiblingsTab dropdowns={dropdowns} studentData={student} />,
             icon: <Users2Icon />,
+        },
+
+        {
+            title: 'Scholarships',
+            tab: <ScholarshipsTab studentData={student} />,
+            icon: <CoinsIcon />,
+        },
+        {
+            title: 'Psychological Test Result',
+            tab: <PsychTestTab studentData={student} />,
+            icon: <BrainIcon />,
         },
         {
             title: 'Additional Information',

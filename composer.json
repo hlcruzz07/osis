@@ -21,6 +21,7 @@
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.9",
         "maatwebsite/excel": "*",
+        "nesbot/carbon": "*",
         "predis/predis": "*",
         "spatie/laravel-permission": "*"
     },

@@ -1,14 +1,24 @@
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import FormLayout from '@/layouts/form-layout';
+import { gdriveImage } from '@/routes';
 import { StudentProps } from '@/types/entities/student';
 import { Head } from '@inertiajs/react';
+import { useState } from 'react';
+
 type PageProps = {
     studentData: StudentProps;
 };
+
+type Attachment = {
+    id: number;
+    img: string; // Google Drive file ID
+};
+
 export default function AdditionalInfoTab({ studentData }: PageProps) {
     const answers = studentData?.answers || [];
     const subAnswers = studentData?.sub_answers || [];
+    const [previewSrc, setPreviewSrc] = useState<string | null>(null);
 
     function formatAnswer(item: any) {
         if (item?.answer_text !== null && item?.answer_text !== undefined) {
@@ -33,6 +43,10 @@ export default function AdditionalInfoTab({ studentData }: PageProps) {
         return 'N/A';
     }
 
+    function gdriveImageUrl(fileId: string) {
+        return gdriveImage(fileId).url;
+    }
+
     return (
         <>
             <Head title="Additional Information" />
@@ -43,7 +57,7 @@ export default function AdditionalInfoTab({ studentData }: PageProps) {
                     description="This section contains the student's additional information."
                 />
 
-                <div>
+                <div className="space-y-4">
                     {answers.length === 0 ? (
                         <p className="text-sm">No answers found.</p>
                     ) : (
@@ -54,6 +68,9 @@ export default function AdditionalInfoTab({ studentData }: PageProps) {
                                     sub?.sub_question?.question_id ===
                                     answer?.question_id,
                             );
+
+                            const attachments: Attachment[] =
+                                answer?.attachments || [];
 
                             return (
                                 <div
@@ -79,6 +96,40 @@ export default function AdditionalInfoTab({ studentData }: PageProps) {
                                             {formatAnswer(answer)}
                                         </Badge>
                                     </div>
+
+                                    {/* PROOF ATTACHMENTS */}
+                                    {attachments.length > 0 && (
+                                        <div className="mt-2">
+                                            <span className="text-sm font-semibold">
+                                                Proof:
+                                            </span>
+                                            <div className="mt-2 flex flex-wrap gap-3">
+                                                {attachments.map((att) => (
+                                                    <button
+                                                        key={att.id}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setPreviewSrc(
+                                                                gdriveImageUrl(
+                                                                    att.img,
+                                                                ),
+                                                            )
+                                                        }
+                                                        className="overflow-hidden rounded-md border transition hover:opacity-80"
+                                                    >
+                                                        <img
+                                                            src={gdriveImageUrl(
+                                                                att.img,
+                                                            )}
+                                                            alt="Proof attachment"
+                                                            className="h-24 w-24 object-cover"
+                                                            loading="lazy"
+                                                        />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* SUB QUESTIONS */}
                                     {relatedSubs.length > 0 && (
@@ -116,6 +167,20 @@ export default function AdditionalInfoTab({ studentData }: PageProps) {
                     )}
                 </div>
             </FormLayout>
+
+            {/* FULLSCREEN PREVIEW MODAL */}
+            {previewSrc && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+                    onClick={() => setPreviewSrc(null)}
+                >
+                    <img
+                        src={previewSrc}
+                        alt="Proof attachment preview"
+                        className="max-h-full max-w-full rounded-md object-contain"
+                    />
+                </div>
+            )}
         </>
     );
 }

@@ -86,7 +86,7 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
     const { data, setData, put, processing, clearErrors, errors } = useForm<{
         educations: EducationProps[];
     }>({
-        educations: studentData.educations.map((edu) => ({
+        educations: studentData.educations?.map((edu) => ({
             id: edu.id,
             education_level: edu.education_level || '',
             school_name: edu.school_name || '',
@@ -119,7 +119,7 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
 
     const setDefaultValue = () => {
         setData({
-            educations: studentData.educations.map((edu) => ({
+            educations: studentData.educations?.map((edu) => ({
                 education_level: edu.education_level || '',
                 school_name: edu.school_name || '',
                 school_address: edu.school_address || '',
@@ -139,6 +139,17 @@ export default function EducationTab({ studentData, dropdowns }: PageProps) {
                         title="Educational Background"
                         description="This section contains the student's education details, including school type, school name, school address, and the student's educational attainment."
                     />
+                    <div className="flex flex-col gap-3">
+                        <Label>Last Attended School</Label>
+                        <Input
+                            type="text"
+                            value={
+                                studentData.last_attended_school ??
+                                'No Last Attended School'
+                            }
+                            readOnly
+                        />
+                    </div>
 
                     {data.educations?.map((item, index) => (
                         <div

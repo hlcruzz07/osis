@@ -2,6 +2,7 @@ import { AddressProps } from './address';
 import { EducationProps } from './education';
 import { FamilyProps } from './family';
 import { GuardianProps } from './guardian';
+import { PsychTestProps } from './psych-test';
 import { ScholarshipProps } from './scholarship';
 import { SiblingProps } from './sibling';
 
@@ -37,6 +38,7 @@ export type StudentProps = {
     height: string | null;
     weight: string | null;
     status: string;
+    current_address?: string;
 
     family_info: FamilyProps;
 
@@ -52,6 +54,7 @@ export type StudentProps = {
     answers?: any[];
     schoarship?: ScholarshipProps[];
     sub_answers?: any[];
+    psych_tests: PsychTestProps[];
 
     address?: AddressProps;
 };

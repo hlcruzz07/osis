@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\AcademicYearAndSemester;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class AcademicYearAndSemesterSeeder extends Seeder
@@ -15,7 +14,7 @@ class AcademicYearAndSemesterSeeder extends Seeder
     {
         // Get or create an academic year
         AcademicYearAndSemester::firstOrCreate([
-            'academic_year' => '2025-2026',
+            'academic_year' => '2026-2027',
             'semester' => '1st Semester',
         ]);
     }

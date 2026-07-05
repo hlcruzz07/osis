@@ -245,6 +245,15 @@ export default function AddressTab({ studentData }: PageProps) {
                     />
 
                     <div className="flex flex-col gap-3">
+                        <Label>Current Address</Label>
+                        <Input
+                            type="text"
+                            value={studentData.current_address}
+                            readOnly
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-3">
                         <Label>Full Student Address</Label>
                         <Input
                             type="text"

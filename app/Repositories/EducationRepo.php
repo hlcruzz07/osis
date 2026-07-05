@@ -28,4 +28,16 @@ class EducationRepo
             );
         }
     }
+
+    public function createIfNotExists(array $item, int $student_id): void
+    {
+        $exists = $this->model
+            ->where('student_id', $student_id)
+            ->where('education_level_hash', $this->hashingService->hashValue($item['education_level']))
+            ->exists();
+
+        if (!$exists) {
+            $this->store([$item], $student_id);
+        }
+    }
 }

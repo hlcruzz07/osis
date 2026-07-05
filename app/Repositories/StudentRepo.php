@@ -18,9 +18,7 @@ class StudentRepo
     /**
      * Create a new class instance.
      */
-    public function __construct(protected Student $model, protected Sibling $sibling, protected Guardian $guardian, protected Education $education, protected AnswerRepo $answerRepo, protected FamilyInfo $familyInfo, protected HashingService $hashingService, protected ReferenceNumberService $referenceNumberService)
-    {
-    }
+    public function __construct(protected Student $model, protected Sibling $sibling, protected Guardian $guardian, protected Education $education, protected AnswerRepo $answerRepo, protected FamilyInfo $familyInfo, protected HashingService $hashingService, protected ReferenceNumberService $referenceNumberService) {}
 
 
     // CREATE QUERIES
@@ -49,7 +47,7 @@ class StudentRepo
     public function find(int $id)
     {
         return $this->model
-            ->with(['guardians.address', 'address', 'educations', 'siblings', 'answers.question', 'subAnswers.subQuestion', 'familyInfo', 'scholarships'])
+            ->with(['guardians.address', 'address', 'educations', 'siblings', 'answers.question', 'subAnswers.subQuestion', 'familyInfo', 'scholarships', 'answers.attachments', 'psychTests'])
             ->findOrFail($id);
     }
 

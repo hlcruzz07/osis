@@ -28,9 +28,9 @@ export default function SiblingsTab({ studentData, dropdowns }: PageProps) {
     const tableColumns = [
         '#',
         'Name',
+        'Gender',
         'Attending College',
         'Employed',
-        'Action',
     ];
 
     return (
@@ -62,6 +62,7 @@ export default function SiblingsTab({ studentData, dropdowns }: PageProps) {
                                     <td data-label="Name">
                                         {`${row.fname} ${row.mname ? row.mname.slice(0, 1) + '.' : ''} ${row.lname} ${row.suffix ? row.suffix + '.' : ''}`}
                                     </td>
+                                    <td data-label="Gender">{row.gender}</td>
                                     <td data-label="Attending College">
                                         {row.is_attending_college ? (
                                             <Badge variant="secondary">
@@ -84,21 +85,6 @@ export default function SiblingsTab({ studentData, dropdowns }: PageProps) {
                                             </Badge>
                                         )}
                                     </td>
-
-                                    <td data-label="Action">
-                                        <div className="flex flex-wrap gap-2">
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button size="sm">
-                                                        <UserPenIcon />
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>Edit Guardian</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </div>
-                                    </td>
                                 </tr>
                             ))}
                             {studentData.siblings?.length === 0 ||
@@ -117,132 +103,6 @@ export default function SiblingsTab({ studentData, dropdowns }: PageProps) {
                                 ''
                             )}
                         </tbody>
-                        {/* <tfoot>
-                                    <tr>
-                                        <td colSpan={12} className="px-6 py-4">
-                                            <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
-                                                <p className="text-sm text-muted-foreground">
-                                                    Showing{' '}
-                                                    <span className="font-medium">
-                                                        {students?.from}
-                                                    </span>
-                                                    –
-                                                    <span className="font-medium">
-                                                        {students?.to}
-                                                    </span>{' '}
-                                                    of{' '}
-                                                    <span className="font-medium">
-                                                        {students?.total}
-                                                    </span>
-                                                </p>
-
-                                                <div className="flex flex-wrap gap-2">
-                                                    {students?.links?.map(
-                                                        (link, idx) => {
-                                                            // Extract page number from link URL
-                                                            let page:
-                                                                | string
-                                                                | null = null;
-                                                            if (link.url) {
-                                                                const url =
-                                                                    new URL(
-                                                                        link.url,
-                                                                    );
-                                                                page =
-                                                                    url.searchParams.get(
-                                                                        'page',
-                                                                    );
-                                                            }
-
-                                                            return (
-                                                                <button
-                                                                    key={idx}
-                                                                    disabled={
-                                                                        !link.url
-                                                                    }
-                                                                    onClick={async (
-                                                                        e,
-                                                                    ) => {
-                                                                        e.preventDefault();
-                                                                        if (
-                                                                            !page
-                                                                        )
-                                                                            return;
-
-                                                                        try {
-                                                                            const {
-                                                                                data,
-                                                                            } =
-                                                                                await apiService.get(
-                                                                                    '/api/student/filterPaginate',
-                                                                                    {
-                                                                                        params: {
-                                                                                            search:
-                                                                                                searchValue ||
-                                                                                                null,
-                                                                                            college:
-                                                                                                selectedCollege ||
-                                                                                                null,
-                                                                                            program:
-                                                                                                selectedProgram ||
-                                                                                                null,
-                                                                                            major:
-                                                                                                selectedMajor ||
-                                                                                                null,
-                                                                                            section:
-                                                                                                selectedSection ||
-                                                                                                null,
-                                                                                            is_exported:
-                                                                                                isExported,
-                                                                                            is_completed:
-                                                                                                isCompleted,
-                                                                                            from: startOfDay(
-                                                                                                range?.from,
-                                                                                            ),
-                                                                                            to: endOfDay(
-                                                                                                range?.to,
-                                                                                            ),
-                                                                                            perPage:
-                                                                                                perPage,
-                                                                                            sort: sort,
-                                                                                            order: order,
-                                                                                            page,
-                                                                                            campus: titlePage,
-                                                                                        },
-                                                                                    },
-                                                                                );
-
-                                                                            setStudents(
-                                                                                data,
-                                                                            );
-                                                                        } catch (error) {
-                                                                            console.error(
-                                                                                'Failed to fetch page:',
-                                                                                error,
-                                                                            );
-                                                                        }
-                                                                    }}
-                                                                    className={`rounded px-3 py-1 ${
-                                                                        link.active
-                                                                            ? 'bg-primary text-white dark:text-black'
-                                                                            : 'bg-muted text-muted-foreground hover:bg-muted/70'
-                                                                    }`}
-                                                                    type="button"
-                                                                >
-                                                                    <span
-                                                                        dangerouslySetInnerHTML={{
-                                                                            __html: link.label,
-                                                                        }}
-                                                                    />
-                                                                </button>
-                                                            );
-                                                        },
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tfoot> */}
                     </table>
                 </div>
             </FormLayout>

@@ -21,6 +21,7 @@ class Education extends Model
         'scholarship_program',
         'scholarship_address',
         'scholarship_mobile_num',
+        'honor_receieved',
 
         // Hash fields
         'education_level_hash',
@@ -35,22 +36,23 @@ class Education extends Model
         'scholarship_program_hash',
         'scholarship_address_hash',
         'scholarship_mobile_num_hash',
+        'honor_receieved_hash'
     ];
     protected $casts =
-        [
-            'education_level' => 'encrypted',
-            'school_name' => 'encrypted',
-            'school_address' => 'encrypted',
-            'school_type' => 'encrypted',
-            'year_graduated' => 'encrypted',
-            'general_average' => 'encrypted',
-            'course' => 'encrypted',
-            'strand' => 'encrypted',
-            'academic_year' => 'encrypted',
-            'scholarship_program' => 'encrypted',
-            'scholarship_address' => 'encrypted',
-            'scholarship_mobile_num' => 'encrypted',
-        ];
+    [
+        'education_level' => 'encrypted',
+        'school_name' => 'encrypted',
+        'school_address' => 'encrypted',
+        'school_type' => 'encrypted',
+        'year_graduated' => 'encrypted',
+        'general_average' => 'encrypted',
+        'course' => 'encrypted',
+        'strand' => 'encrypted',
+        'academic_year' => 'encrypted',
+        'scholarship_program' => 'encrypted',
+        'scholarship_address' => 'encrypted',
+        'scholarship_mobile_num' => 'encrypted',
+    ];
 
     public function student()
     {

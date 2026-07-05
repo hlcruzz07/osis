@@ -40,7 +40,12 @@ import {
 } from '@/components/ui/tooltip';
 import apiService from '@/lib/api-service';
 import { handleErrors } from '@/lib/utils';
-import { downloadExcel, exportStudentsPdf, exportStudentsZip } from '@/routes';
+import {
+    downloadExcel,
+    exportStudentsCsv,
+    exportStudentsPdf,
+    exportStudentsZip,
+} from '@/routes';
 import { DropdownProps } from '@/types/entities/dropdowns';
 import { FilterData } from '@/types/filter-data';
 import { Link } from '@inertiajs/react';
@@ -234,6 +239,43 @@ export default function TableFilters({
         form.submit();
         document.body.removeChild(form);
     };
+
+    const handleExportCsv = async () => {
+        const exportPromise = new Promise(async (resolve, reject) => {
+            try {
+                const response = await apiService.post(
+                    exportStudentsCsv().url,
+                    data,
+                    { responseType: 'blob' },
+                );
+
+                const url = window.URL.createObjectURL(
+                    new Blob([response.data], { type: 'application/zip' }),
+                );
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute(
+                    'download',
+                    `students_by_campus_${new Date().getTime()}.zip`,
+                );
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                window.URL.revokeObjectURL(url);
+                resolve('Download complete');
+            } catch (err: any) {
+                reject(err?.response?.data?.message || 'Failed to export');
+            }
+        });
+
+        toast.promise(exportPromise, {
+            loading: 'Processing data...',
+            success: 'Exported successfully',
+            error: (err) => err || 'Failed to export',
+        });
+    };
     return (
         <>
             <div className="flex flex-col items-start justify-between gap-3 lg:flex-row">
@@ -406,6 +448,12 @@ export default function TableFilters({
                                             onClick={handleExportExcel}
                                         >
                                             <SheetIcon /> Excel
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            disabled={total === 0}
+                                            onClick={handleExportCsv}
+                                        >
+                                            <SheetIcon /> CSV
                                         </DropdownMenuItem>
                                     </DropdownMenuGroup>
                                 </DropdownMenuContent>

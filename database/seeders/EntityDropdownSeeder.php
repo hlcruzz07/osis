@@ -172,7 +172,7 @@ class EntityDropdownSeeder extends Seeder
                 'Returnee',
                 'Continuing',
                 'Transferee',
-                'Freshmen',
+                'Fresh Graduate',
             ],
 
             'Equity Indicator' => [

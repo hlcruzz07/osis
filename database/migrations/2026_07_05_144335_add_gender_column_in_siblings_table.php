@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('siblings', function (Blueprint $table) {
+            $table->text('gender')->nullable();
+            $table->text('gender_hash')->nullable();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('siblings', function (Blueprint $table) {
+            $table->dropColumn([
+                'gender',
+                'gender_hash'
+            ]);
+        });
+    }
+};

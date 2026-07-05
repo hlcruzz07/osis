@@ -168,6 +168,7 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
             // Demographics
             religion: studentData.religion || '',
             citizenship: studentData.citizenship || '',
+            nationality: studentData.nationality || '',
             civil_status: studentData.civil_status || '',
             sexual_orient: studentData.sexual_orient || '',
 
@@ -530,33 +531,19 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         );
                     })()}
 
-                    <TwoColumnInput>
-                        <div className="flex flex-col gap-3">
-                            <Label>LRN ( Learner Reference Number )</Label>
-                            <Input
-                                type="text"
-                                name="lrn"
-                                inputMode="numeric"
-                                readOnly={!isEditMode}
-                                maxLength={12}
-                                value={data.lrn ?? ''}
-                                placeholder="Enter 12-digit LRN"
-                            />
-                            <InputError message={errors.lrn} />
-                        </div>
-                        <div className="flex flex-col gap-3">
-                            <Label>
-                                Equity Target Indicator{' '}
-                                {/* <Asterisk color="red" size={12} /> */}
-                            </Label>
-                            <Input
-                                readOnly
-                                value={data.equity_indicator ?? ''}
-                                placeholder="No equity indicator"
-                            />
-                            <InputError message={errors.equity_indicator} />
-                        </div>
-                    </TwoColumnInput>
+                    <div className="flex flex-col gap-3">
+                        <Label>LRN ( Learner Reference Number )</Label>
+                        <Input
+                            type="text"
+                            name="lrn"
+                            inputMode="numeric"
+                            readOnly={!isEditMode}
+                            maxLength={12}
+                            value={data.lrn ?? ''}
+                            placeholder="Enter 12-digit LRN"
+                        />
+                        <InputError message={errors.lrn} />
+                    </div>
                     <TwoColumnInput>
                         <div className="flex flex-col gap-3">
                             <LabelExample
@@ -685,7 +672,7 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         </div>
                         <div className="flex flex-col gap-3">
                             <Label>
-                                Birthplace
+                                Birth of Place
                                 {/* <Asterisk color="red" size={12} /> */}
                             </Label>
                             <Input
@@ -768,15 +755,15 @@ export default function StudentTab({ studentData, dropdowns }: PageProps) {
                         </div>
                         <div className="flex flex-col gap-3">
                             <Label>
-                                Citizenship
+                                Nationality 
                                 {/* <Asterisk color="red" size={12} /> */}
                             </Label>
                             <Input
                                 readOnly
-                                value={data.citizenship ?? ''}
-                                placeholder="No citizenship"
+                                value={data.nationality ?? ''}
+                                placeholder="No nationality"
                             />
-                            <InputError message={errors['citizenship']} />
+                            <InputError message={errors['nationality']} />
                         </div>
                     </TwoColumnInput>
 

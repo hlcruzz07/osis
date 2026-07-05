@@ -154,14 +154,14 @@ export default function FamilyTab({ studentData, dropdowns }: PageProps) {
 
                     <TwoColumnInput>
                         <div className="flex flex-col gap-3">
-                            <LabelExample
-                                title="Family Size"
-                                isRequired
-                                example="1, 3, 5"
-                            />
+                            <Label>Number of Employed Siblings</Label>
                             <Input
                                 type="number"
-                                value={data.family_size ?? ''}
+                                value={
+                                    studentData.siblings?.filter(
+                                        (item) => item.is_employed === true,
+                                    ).length ?? ''
+                                }
                                 readOnly
                                 placeholder="Enter family size"
                             />

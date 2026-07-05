@@ -115,7 +115,6 @@ export default function Index() {
     const tableColumns = [
         '#',
         'Reference #',
-        'Equity Indicator',
         'Name',
         'Year Level',
         'Type',
@@ -243,23 +242,6 @@ export default function Index() {
                                         <td data-label="ID">{row.id}</td>
                                         <td data-label="Reference #">
                                             {row.ref_number}
-                                        </td>
-                                        <td data-label="Equity Indicator">
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <p>
-                                                        {sliceText(
-                                                            row.equity_indicator,
-                                                            20,
-                                                        )}
-                                                    </p>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>
-                                                        {row.equity_indicator}
-                                                    </p>
-                                                </TooltipContent>
-                                            </Tooltip>
                                         </td>
 
                                         <td data-label="Name">

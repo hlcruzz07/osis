@@ -12,6 +12,7 @@ class Sibling extends Model
         'mname',
         'lname',
         'suffix',
+        'gender',
         'is_attending_college',
         'is_employed',
 
@@ -19,12 +20,14 @@ class Sibling extends Model
         'mname_hash',
         'lname_hash',
         'suffix_hash',
+        'gender_hash',
     ];
 
     protected $casts = [
         'fname' => 'encrypted',
         'mname' => 'encrypted',
         'lname' => 'encrypted',
+        'gender' => 'encrypted',
         'suffix' => 'encrypted',
         'is_attending_college' => 'boolean',
         'is_employed' => 'boolean',

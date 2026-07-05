@@ -62,6 +62,7 @@ import { AddressProps } from '@/types/entities/address';
 import { DropdownProps } from '@/types/entities/dropdowns';
 import { GuardianProps } from '@/types/entities/guardian';
 import { useForm } from '@inertiajs/react';
+import dayjs from 'dayjs';
 import { Asterisk, Check, ChevronsUpDown } from 'lucide-react';
 import { FormEvent, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -79,6 +80,11 @@ export default function EditGuardian({
     guardian,
     dropdowns,
 }: Props) {
+    const calculateAge = (birthdate: string) => {
+        const today = dayjs();
+        const birthDate = dayjs(birthdate);
+        return `${today.diff(birthDate, 'year')} yrs`;
+    };
     const { data, setData, errors, processing, put, clearErrors } =
         useForm<GuardianProps>({
             fname: '',
@@ -86,7 +92,7 @@ export default function EditGuardian({
             lname: '',
             suffix: null,
             role: '',
-            birthdate: null,
+            birthdate: '',
             birthplace: null,
             mobile_num: null,
             religion: '',
@@ -324,10 +330,7 @@ export default function EditGuardian({
                         <div className="no-scrollbar -mx-4 my-3 max-h-[50vh] space-y-5 overflow-y-auto p-5">
                             <TwoColumnInput>
                                 <div className="flex flex-col gap-3">
-                                    <Label>
-                                        First Name{' '}
-                                        <Asterisk size={12} color="red" />
-                                    </Label>
+                                    <Label>First Name </Label>
                                     <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                         {data?.fname || ''}
                                     </p>
@@ -341,13 +344,9 @@ export default function EditGuardian({
                                     <InputError message={errors[`mname`]} />
                                 </div>
                             </TwoColumnInput>
-
                             <TwoColumnInput>
                                 <div className="flex flex-col gap-3">
-                                    <Label>
-                                        Last Name{' '}
-                                        <Asterisk size={12} color="red" />
-                                    </Label>
+                                    <Label>Last Name </Label>
                                     <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                         {data?.lname || ''}
                                     </p>
@@ -365,24 +364,24 @@ export default function EditGuardian({
                                     </div>
                                 )}
                             </TwoColumnInput>
-
                             <div className="flex flex-col gap-3">
-                                <Label>
-                                    Role
-                                    <Asterisk size={12} color="red" />
-                                </Label>
+                                <Label>Role</Label>
                                 <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                     {data?.role || ''}
                                 </p>
                                 <InputError message={errors[`role`]} />
                             </div>
+                            <div className="flex flex-col gap-3">
+                                <Label>Age</Label>
+                                <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
+                                    {calculateAge(data.birthdate!) || ''}
+                                </p>
+                                <InputError message={errors[`birthdate`]} />
+                            </div>
 
                             <TwoColumnInput>
                                 <div className="flex flex-col gap-3">
-                                    <Label>
-                                        Birthdate
-                                        <Asterisk size={12} color="red" />
-                                    </Label>
+                                    <Label>Birthdate</Label>
                                     <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                         {data?.birthdate || ''}
                                     </p>
@@ -398,11 +397,10 @@ export default function EditGuardian({
                                     />
                                 </div>
                             </TwoColumnInput>
-
                             <div className="flex flex-col gap-3">
                                 <LabelExample
                                     title="Mobile Number"
-                                    isRequired={!!data?.is_contact_person}
+                                    isRequired={false}
                                     example="+639123456789"
                                 />
                                 <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
@@ -412,23 +410,16 @@ export default function EditGuardian({
                                 </p>
                                 <InputError message={errors[`mobile_num`]} />
                             </div>
-
                             <TwoColumnInput>
                                 <div className="flex flex-col gap-3">
-                                    <Label>
-                                        Religion{' '}
-                                        <Asterisk size={12} color="red" />
-                                    </Label>
+                                    <Label>Religion </Label>
                                     <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                         {data?.religion || ''}
                                     </p>
                                     <InputError message={errors[`religion`]} />
                                 </div>
                                 <div className="flex flex-col gap-3">
-                                    <Label>
-                                        Citizenship{' '}
-                                        <Asterisk size={12} color="red" />
-                                    </Label>
+                                    <Label>Nationality </Label>
                                     <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                         {data?.citizenship || ''}
                                     </p>
@@ -437,12 +428,10 @@ export default function EditGuardian({
                                     />
                                 </div>
                             </TwoColumnInput>
-
                             <TwoColumnInput>
                                 <div className="flex flex-col gap-3">
                                     <Label>
                                         Highest Educational Attainment{' '}
-                                        <Asterisk size={12} color="red" />
                                     </Label>
                                     <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                         {data?.highest_educ_attainment || ''}
@@ -454,10 +443,7 @@ export default function EditGuardian({
                                     />
                                 </div>
                                 <div className="flex flex-col gap-3">
-                                    <Label>
-                                        Life Status{' '}
-                                        <Asterisk size={12} color="red" />
-                                    </Label>
+                                    <Label>Life Status </Label>
                                     <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                         {data?.life_status || ''}
                                     </p>
@@ -499,7 +485,6 @@ export default function EditGuardian({
                                     )}
                                 </div>
                             </TwoColumnInput>
-
                             <div className="flex flex-col gap-3">
                                 <Label>Occupation</Label>
                                 <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
@@ -507,7 +492,6 @@ export default function EditGuardian({
                                 </p>
                                 <InputError message={errors[`occupation`]} />
                             </div>
-
                             <div className="flex flex-col gap-3">
                                 <FieldLabel
                                     className={`${
@@ -551,12 +535,10 @@ export default function EditGuardian({
                                     </Field>
                                 </FieldLabel>
                             </div>
-
                             <Heading
                                 title="Address"
                                 description="This section displays your current address, including your island group, region, province, city/municipality, barangay, and zip code."
                             />
-
                             <div className="flex flex-col gap-3">
                                 <Label>Full Guardian Address</Label>
                                 <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
@@ -572,13 +554,9 @@ export default function EditGuardian({
                                         .join(', ')}
                                 </p>
                             </div>
-
                             <TwoColumnInput>
                                 <div className="flex flex-col gap-3">
-                                    <Label>
-                                        Island Group
-                                        <Asterisk color="red" size={12} />
-                                    </Label>
+                                    <Label>Island Group</Label>
                                     <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                         {data.address.island || ''}
                                     </p>
@@ -588,10 +566,7 @@ export default function EditGuardian({
                                     />
                                 </div>
                                 <div className="flex flex-col gap-3">
-                                    <Label>
-                                        Region
-                                        <Asterisk color="red" size={12} />
-                                    </Label>
+                                    <Label>Region</Label>
                                     <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                         {data.address.region || ''}
                                     </p>
@@ -601,13 +576,9 @@ export default function EditGuardian({
                                     />
                                 </div>
                             </TwoColumnInput>
-
                             <TwoColumnInput>
                                 <div className="flex flex-col gap-3">
-                                    <Label>
-                                        Province
-                                        <Asterisk color="red" size={12} />
-                                    </Label>
+                                    <Label>Province</Label>
                                     <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                         {data.address.province || ''}
                                     </p>
@@ -617,10 +588,7 @@ export default function EditGuardian({
                                     />
                                 </div>
                                 <div className="flex flex-col gap-3">
-                                    <Label>
-                                        City / Municipality
-                                        <Asterisk color="red" size={12} />
-                                    </Label>
+                                    <Label>City / Municipality</Label>
                                     <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                         {data.address.city || ''}
                                     </p>
@@ -630,13 +598,9 @@ export default function EditGuardian({
                                     />
                                 </div>
                             </TwoColumnInput>
-
                             <TwoColumnInput>
                                 <div className="flex flex-col gap-3">
-                                    <Label>
-                                        Barangay
-                                        <Asterisk color="red" size={12} />
-                                    </Label>
+                                    <Label>Barangay</Label>
                                     <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                         {data.address.brgy || ''}
                                     </p>
@@ -646,10 +610,7 @@ export default function EditGuardian({
                                     />
                                 </div>
                                 <div className="flex flex-col gap-3">
-                                    <Label>
-                                        Zip Code
-                                        <Asterisk color="red" size={12} />
-                                    </Label>
+                                    <Label>Zip Code</Label>
                                     <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                         {data.address.zip_code || ''}
                                     </p>
@@ -660,10 +621,7 @@ export default function EditGuardian({
                                 </div>
                             </TwoColumnInput>
                             <div className="flex flex-col gap-3">
-                                <Label>
-                                    House No. / Street
-                                    <Asterisk color="red" size={12} />
-                                </Label>
+                                <Label>House No. / Street</Label>
                                 <p className="flex min-h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs">
                                     {data.address.street || ''}
                                 </p>

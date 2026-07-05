@@ -64,8 +64,8 @@ class RegistrarStudentSeeder extends Seeder
                         'semester'      => $semester,
                     ]
                 );
-
-                $studentId = $studentRepo->storeStudent($studentData);
+                $student = $studentRepo->storeStudent($studentData);
+                $studentId = $student->id;
 
                 $addressRepo->storeStudentAddress($case['address'], $studentId);
 

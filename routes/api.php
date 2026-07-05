@@ -13,5 +13,6 @@ Route::middleware(['custom.auth', 'throttle:60,1'])->group(function () {
 
     Route::get('/accounts/paginate', [AccountApiController::class, 'paginate'])->name('paginateAccounts')->middleware(['role:super_administrator', 'permission:view_accounts']);
     Route::get('/roles/paginate', [RoleApiController::class, 'paginate'])->name('paginateRoles')->middleware(['role:super_administrator', 'permission:view_roles']);
+    Route::get('/gdrive-image/{fileId}', [StudentApiController::class, 'image'])
+        ->name('gdriveImage');
 });
-
