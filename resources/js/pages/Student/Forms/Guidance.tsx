@@ -215,6 +215,80 @@ export default function Guidance() {
         },
     );
 
+    const validateProofs = (): boolean => {
+        let isValid = true;
+
+        questions.forEach((q) => {
+            if (q.id == null) return;
+
+            const parentIdx = findAnswerIndex(q.id, null);
+            const parentAnswer =
+                parentIdx !== -1
+                    ? (data.answers[parentIdx] as any)?.answer
+                    : null;
+            const isChecked = Boolean(parentAnswer);
+
+            // Only questions explicitly flagged need_proof are checked — everything else is skipped
+            if (q.need_proof && isChecked) {
+                const proof =
+                    parentIdx !== -1
+                        ? (data.answers[parentIdx] as any)?.proof
+                        : null;
+                const hasProof = Array.isArray(proof) && proof.length > 0;
+
+                if (!hasProof) {
+                    isValid = false;
+                    setError(
+                        `answers.${parentIdx}.proof` as any,
+                        'Proof upload is required for this item.',
+                    );
+                }
+            }
+
+            // sub-question required check (unchanged)
+            const shouldShowSubs =
+                (q.sub_questions?.length ?? 0) > 0 &&
+                (q.sub_expected_answer != null
+                    ? String(parentAnswer).toLowerCase() ===
+                      String(q.sub_expected_answer).toLowerCase()
+                    : true);
+
+            if (shouldShowSubs) {
+                q.sub_questions?.forEach((subQ) => {
+                    if (!subQ.is_required || subQ.id == null) return;
+
+                    const subIdx = findAnswerIndex(q.id, subQ.id);
+                    const subAnswer =
+                        subIdx !== -1
+                            ? (data.answers[subIdx] as any)?.answer
+                            : null;
+                    const isEmpty =
+                        subAnswer === null ||
+                        subAnswer === undefined ||
+                        String(subAnswer).trim() === '';
+
+                    if (isEmpty) {
+                        isValid = false;
+                        if (subIdx !== -1) {
+                            setError(
+                                `answers.${subIdx}.answer` as any,
+                                'This field is required.',
+                            );
+                        }
+                    }
+                });
+            }
+        });
+
+        if (!isValid) {
+            toast.error(
+                'Please complete all required fields, including any sub-questions and proof uploads.',
+            );
+        }
+
+        return isValid;
+    };
+
     const blankEducation = (level: string): EducationProps => ({
         education_level: level,
         school_name: '',
@@ -505,9 +579,15 @@ export default function Guidance() {
 
         if (processing) return;
 
-        clearErrors();
+        clearErrors(); // clear stale errors first
+
+        if (!validateProofs()) {
+            return; // stop submission — don't call post()
+        }
+
         post(storeGuidance(student.ref_number).url, {
             preserveScroll: true,
+            forceFormData: true,
             onError: (err) => {
                 handleErrors(err);
             },
@@ -2350,23 +2430,47 @@ export default function Guidance() {
                                                 </Label>
                                                 <Input
                                                     type="file"
-                                                    accept="image/*"
+                                                    accept=".jpg,.jpeg,.png"
                                                     multiple
                                                     onChange={(e) => {
-                                                        const files =
+                                                        const MAX_SIZE =
+                                                            2 * 1024 * 1024; // 2MB
+
+                                                        const allFiles =
                                                             Array.from(
                                                                 e.target
                                                                     .files ??
                                                                     [],
-                                                            ).slice(
-                                                                0,
-                                                                2,
-                                                            ) as File[];
+                                                            );
+                                                        const validFiles =
+                                                            allFiles
+                                                                .slice(0, 2)
+                                                                .filter(
+                                                                    (f) =>
+                                                                        f.size <=
+                                                                        MAX_SIZE,
+                                                                );
+                                                        const oversized =
+                                                            allFiles
+                                                                .slice(0, 2)
+                                                                .filter(
+                                                                    (f) =>
+                                                                        f.size >
+                                                                        MAX_SIZE,
+                                                                );
+
+                                                        if (
+                                                            oversized.length > 0
+                                                        ) {
+                                                            toast.error(
+                                                                `${oversized.length} file(s) exceed the 2MB limit and were not added.`,
+                                                            );
+                                                        }
 
                                                         if (parentIdx !== -1) {
                                                             setAny(
                                                                 `answers.${parentIdx}.proof`,
-                                                                files,
+                                                                validFiles,
                                                             );
                                                         }
 

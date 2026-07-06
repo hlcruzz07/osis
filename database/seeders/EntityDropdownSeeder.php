@@ -165,6 +165,10 @@ class EntityDropdownSeeder extends Seeder
                     'name' => 'Bs In Electronics Engineering',
                     'majors' => [],
                 ],
+                [
+                    'name' => 'Bs In Fisheries',
+                    'majors' => [],
+                ],
             ],
 
             'Student Type' => [
