@@ -88,8 +88,6 @@ export default function Registrar() {
     const { questions, academic_year_and_semester, dropdowns } =
         usePage<PageProps>().props;
 
-    console.log(questions);
-
     const suffixArr = dropdowns.find(
         (item) => item.title === 'Suffix',
     )?.dropdowns;
@@ -252,6 +250,7 @@ export default function Registrar() {
                     zip_code: null,
                     street: '',
                 },
+                occupation: null,
             },
             {
                 role: 'Father',
@@ -271,6 +270,7 @@ export default function Registrar() {
                     zip_code: null,
                     street: '',
                 },
+                occupation: null,
             },
         ];
 
@@ -286,6 +286,7 @@ export default function Registrar() {
                 mobile_num: null,
                 highest_educ_attainment: '',
                 is_contact_person: false,
+                occupation: null,
                 address: {
                     island: '',
                     region: '',
@@ -2059,6 +2060,35 @@ export default function Registrar() {
                                         errors[
                                             `guardians.${index}.highest_educ_attainment`
                                         ]
+                                    }
+                                />
+                            </div>
+                            <div className="flex flex-col gap-3">
+                                <LabelExample
+                                    title={member + "'s Occupation"}
+                                    isRequired={false}
+                                    example="Farmer, Teacher, OFW"
+                                />
+                                <Input
+                                    type="text"
+                                    value={
+                                        data.guardians?.[index]?.occupation ??
+                                        ''
+                                    }
+                                    name={`guardians.${index}.occupation`}
+                                    onChange={(e) =>
+                                        setData(
+                                            `guardians.${index}.occupation`,
+                                            capitalizeString(e.target.value) ||
+                                                null,
+                                        )
+                                    }
+                                    maxLength={100}
+                                    placeholder={`Enter ${member + "'s"} Occupation`}
+                                />
+                                <InputError
+                                    message={
+                                        errors[`guardians.${index}.occupation`]
                                     }
                                 />
                             </div>

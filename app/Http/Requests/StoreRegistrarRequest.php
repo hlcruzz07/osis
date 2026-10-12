@@ -73,6 +73,7 @@ class StoreRegistrarRequest extends FormRequest
                 'digits:10',
             ],
             'guardians.*.highest_educ_attainment' => 'required|string|max:50',
+            'guardians.*.occupation' => 'nullable|max:50',
             'guardians.*.is_contact_person' => 'boolean',
 
             // GUARDIAN ADDRESS
@@ -171,6 +172,7 @@ class StoreRegistrarRequest extends FormRequest
             'guardians.*.citizenship.required' => 'Guardian citizenship is required.',
             'guardians.*.highest_educ_attainment.required' => 'Guardian educational attainment is required.',
             'guardians.*.highest_educ_attainment.in' => 'Selected educational attainment is invalid.',
+            'guardians.*.occupation.max' => 'Guardian occupation may not exceed 50 characters.',
             'guardians.*.life_status.required' => 'Guardian life status is required.',
             'guardians.*.life_status.in' => 'Selected life status is invalid.',
             'guardians.*.mobile_num.required_if' => 'Guardian mobile number is required when they are the contact person.',

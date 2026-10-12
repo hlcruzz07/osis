@@ -169,6 +169,57 @@ class EntityDropdownSeeder extends Seeder
                     'name' => 'Bs In Fisheries',
                     'majors' => [],
                 ],
+                [
+                    'name' => 'M In Public Administration',
+                    'majors' => ['Human Resource Management', 'Urban Planning and Management'],
+                ],
+                [
+                    'name' => 'D In Public Administration',
+                    'majors' => ['Professional Track'],
+                ],
+                [
+                    'name' => 'Teacher Certificate Program (Supplementals)',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'M Of Arts In Education',
+                    'majors' => ['Educational Management'],
+                ],
+                [
+                    'name' => 'M Of Arts In Education (Academic Track)',
+                    'majors' => [
+                        'Educational Management',
+                        'English',
+                        'General Science',
+                        'Mathematics',
+                        'Physical Education',
+                        'Technology and Livelihood Education',
+                    ],
+                ],
+                [
+                    'name' => 'D Of Education',
+                    'majors' => ['Educational Management'],
+                ],
+                [
+                    'name' => 'M In Technology Management',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'D In Philosophy In Technology Management',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'M Of Business Administration',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'M Of Public Administration',
+                    'majors' => [],
+                ],
+                [
+                    'name' => 'B Of Technical Vocational Teacher Education',
+                    'majors' => ['Electrical Technology', 'Electronics Technology'],
+                ],
             ],
 
             'Student Type' => [

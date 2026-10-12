@@ -45,27 +45,16 @@ class StudentController extends Controller
      * Display a listing of the resource.
      */
 
-    public function __construct(protected HashingService $hashingService, protected StudentRepo $studentRepo, protected QuestionRepo $questionRepo, protected AcademicYearAndSemesterRepo $academicYearAndSemesterRepo, protected AnswerRepo $answerRepo, protected ReferenceNumberService $referenceNumberService, protected GuardianRepo $guardianRepo, protected EducationRepo $educationRepo, protected FamilyInfoRepo $familyInfoRepo, protected AddressRepo $addressRepo, protected SiblingRepo $siblingRepo, protected GoogleDriveService $googleDriveService) {}
+    public function __construct(protected HashingService $hashingService, protected StudentRepo $studentRepo, protected QuestionRepo $questionRepo, protected AcademicYearAndSemesterRepo $academicYearAndSemesterRepo, protected AnswerRepo $answerRepo, protected ReferenceNumberService $referenceNumberService, protected GuardianRepo $guardianRepo, protected EducationRepo $educationRepo, protected FamilyInfoRepo $familyInfoRepo, protected AddressRepo $addressRepo, protected SiblingRepo $siblingRepo, protected GoogleDriveService $googleDriveService)
+    {
+    }
 
     // STUDENT SIDE
 
     public function index()
     {
 
-        $questions = $this->questionRepo->getActive();
-
-
-        $academic_year_and_semester = $this->academicYearAndSemesterRepo->getLatest();
-
-        $dropdowns = cache()->remember('entity_dropdowns_all', 600, function () {
-            return EntityDropdown::all();
-        });
-
-        return Inertia::render('Student/Forms/Index', [
-            'questions' => $questions,
-            'academic_year_and_semester' => $academic_year_and_semester,
-            'dropdowns' => $dropdowns,
-        ]);
+        return redirect()->route('registrar');
     }
 
     public function registrar()
@@ -89,6 +78,7 @@ class StudentController extends Controller
 
     public function scholarship(string $ref_number)
     {
+        return redirect()->back()->with('error', 'Scholarship Form is under maintenance');
         if (!$this->studentRepo->isValidReferenceNumber($ref_number)) {
             return redirect()->back()->with('error', 'Invalid reference number');
         }
@@ -325,8 +315,8 @@ class StudentController extends Controller
                     ->insert([
                         'email' => $student->email,
                         'campus' => $student->campus,
-                        'student_lastname' => $student->lname,
-                        'student_firstname' => $student->fname,
+                        'student_lastname' => strtoupper($student->lname),
+                        'student_firstname' => strtoupper($student->fname),
                         'student_middlename' => $student->mname ?? ' ',
                         'extension' => $student->suffix ?? '',
                         'birthdate' => $student->birthdate,
@@ -397,14 +387,19 @@ class StudentController extends Controller
                             ->where('answer_boolean', true)
                             ->exists() ? "1" : "0",
 
-                        'ip_or_icc' => (int) $student->answers()
+                        'ip_or_icc' => $student->answers()
                             ->where('question_id', 7)
                             ->where('answer_boolean', true)
-                            ->exists() ? "1" : "0",
-                        'ip_or_icc_yes' => (int) $student->answers()
+                            ->exists()
+                            ? ($student->campus === 'Binalbagan' ? 'true' : '1')
+                            : ($student->campus === 'Binalbagan' ? 'false' : '0'),
+
+                        'ip_or_icc_yes' => $student->answers()
                             ->where('question_id', 7)
                             ->where('answer_boolean', true)
-                            ->exists() ? "1" : "0",
+                            ->exists()
+                            ? ($student->campus === 'Binalbagan' ? 'true' : '1')
+                            : ($student->campus === 'Binalbagan' ? 'false' : '0'),
                         'shs_school_type' => $student->educations->where('education_level', 'Senior High School')->first()?->school_type ?? '',
                         'college_school_type' => $student->educations->where('education_level', 'College')->first()?->school_type ?? '',
                     ]);
@@ -461,6 +456,8 @@ class StudentController extends Controller
 
     public function guidance(string $ref_number)
     {
+        return redirect()->back()->with('error', 'Guidance Form is under maintenance');
+
         if (!$this->studentRepo->isValidReferenceNumber($ref_number)) {
             return redirect()->back()->with('error', 'Invalid reference number');
         }
@@ -486,28 +483,18 @@ class StudentController extends Controller
 
     public function storeGuidance(StoreGuidanceRequest $request, string $ref_number)
     {
+        set_time_limit(0);
         try {
-            $student_data    = $request->input('student');
-            $family_data     = $request->input('family');
+            $student_data = $request->input('student');
+            $family_data = $request->input('family');
             $educations_data = $request->input('educations', []);
-            $guardians_data  = $request->input('guardians', []);
-            $siblings_data  = $request->input('siblings', []);
-            $answers_data    = $request->input('answers', []);
+            $guardians_data = $request->input('guardians', []);
+            $siblings_data = $request->input('siblings', []);
+            $answers_data = $request->input('answers', []);
             $psych_tests_data = $request->input('psych_tests', []);
-            $answers_files   = $request->file('answers', []);
+            $answers_files = $request->file('answers', []);
 
-            DB::transaction(function () use (
-                $student_data,
-                $family_data,
-                $educations_data,
-                $guardians_data,
-                $siblings_data,
-                $answers_data,
-                $psych_tests_data,
-                $answers_files,
-                $ref_number,
-
-            ) {
+            DB::transaction(function () use ($student_data, $family_data, $educations_data, $guardians_data, $siblings_data, $answers_data, $psych_tests_data, $answers_files, $ref_number, ) {
                 // Update student fields
                 $student = $this->studentRepo->updateStudentByReferenceNumber($student_data, $ref_number);
 
@@ -543,14 +530,14 @@ class StudentController extends Controller
                     }
 
                     $updateFields = array_filter([
-                        'birthplace'     => $guardian['birthplace']     ?? null,
-                        'citizenship'    => $guardian['citizenship']    ?? null,
-                        'religion'       => $guardian['religion']       ?? null,
-                        'life_status'    => $guardian['life_status']    ?? null,
+                        'birthplace' => $guardian['birthplace'] ?? null,
+                        'citizenship' => $guardian['citizenship'] ?? null,
+                        'religion' => $guardian['religion'] ?? null,
+                        'life_status' => $guardian['life_status'] ?? null,
                         'cause_of_death' => $guardian['cause_of_death'] ?? null,
-                        'year_of_death'  => $guardian['year_of_death']  ?? null,
-                        'occupation'     => $guardian['occupation']     ?? null,
-                        'birthdate'      => $guardian['birthdate']     ?? null,
+                        'year_of_death' => $guardian['year_of_death'] ?? null,
+                        'occupation' => $guardian['occupation'] ?? null,
+                        'birthdate' => $guardian['birthdate'] ?? null,
                     ], fn($v) => !is_null($v));
 
                     if (!empty($updateFields)) {
@@ -613,9 +600,9 @@ class StudentController extends Controller
                 foreach ($psych_tests_data as $test) {
                     $student->psychTests()->create(
                         $this->hashingService->appendHashValues([
-                            'name'           => $test['name'],
-                            'date_taken'     => $test['date_taken'],
-                            'result'         => $test['result'],
+                            'name' => $test['name'],
+                            'date_taken' => $test['date_taken'],
+                            'result' => $test['result'],
                             'interpretation' => $test['interpretation'] ?? null,
                         ])
                     );
@@ -785,6 +772,21 @@ class StudentController extends Controller
 
             $student = $this->studentRepo->updateStudentById($id, $validated);
 
+            $connection = match (strtolower($student->campus)) {
+                'talisay' => 'tal_mysql',
+                'alijis' => 'ali_mysql',
+                'fortune towne' => 'ft_mysql',
+                'binalbagan' => 'bin_mysql',
+                default => null,
+            };
+
+            if ($connection) {
+                DB::connection($connection)
+                    ->table('record')
+                    ->where('email', $student->email)
+                    ->update(['status' => $student->status]);
+            }
+
             $updated_status = $student['status'];
 
             ActivityLog::log('update', "updated student's status to $updated_status for id: $id", Auth::user()->email, request(), 'success');
@@ -824,8 +826,8 @@ class StudentController extends Controller
         return [
             'email' => $student->email,
             'campus' => $student->campus,
-            'student_lastname' => $student->lname,
-            'student_firstname' => $student->fname,
+            'student_lastname' => strtoupper($student->lname),
+            'student_firstname' => strtoupper($student->fname),
             'student_middlename' => $student->mname ?? '',
             'extension' => $student->suffix ?? '',
             'birthdate' => $this->formatBirthdate($student->birthdate),
@@ -850,7 +852,7 @@ class StudentController extends Controller
             'semester' => $student->semester === '1st Semester' ? 'First Semester' : 'Second Semester',
             'year' => $student->academic_year,
             'curriculum' => 'N/A',
-            'lrn_no' => $student->lrn ?? '',
+            'lrn_no' => $student->lrn ? '="' . $student->lrn . '"' : '',
             'e_name_of_school' => $student->educations->where('education_level', 'Elementary')->first()?->school_name ?? '',
             'e_address_of_school' => $student->educations->where('education_level', 'Elementary')->first()?->school_address ?? '',
             'e_school_year_attended' => $student->educations->where('education_level', 'Elementary')->first()?->year_graduated ?? '',
@@ -904,148 +906,168 @@ class StudentController extends Controller
                 ->exists() ? "1" : "0",
             'shs_school_type' => $student->educations->where('education_level', 'Senior High School')->first()?->school_type ?? '',
             'college_school_type' => $student->educations->where('education_level', 'College')->first()?->school_type ?? '',
+            'equity_indicator' => $student->equity_indicator
+                ?? (
+                    $student->answers()
+                        ->where('question_id', 6)
+                        ->where('answer_boolean', true)
+                        ->exists()
+                    ? "First Generation College Student"
+                    : (
+                        $student->answers()
+                            ->where('question_id', 7)
+                            ->where('answer_boolean', true)
+                            ->exists()
+                        ? "Member of Indigenous People"
+                        : ''
+                    )
+                ),
+            'equity_indicator_old' => $student->equity_indicator
         ];
     }
 
     public function exportCsv(ExportStudentsRequest $request)
     {
-        try {
-            $students = $this->studentRepo->export($request->all());
+        set_time_limit(0);
+        $columns = [
+            'email',
+            'campus',
+            'student_lastname',
+            'student_firstname',
+            'student_middlename',
+            'extension',
+            'birthdate',
+            'gender',
+            'birthplace',
+            'street',
+            'barangay',
+            'city',
+            'zip_code',
+            'civilstatus',
+            'religion',
+            'contact_number',
+            'mother_lastname',
+            'mother_firstname',
+            'mother_middlename',
+            'mother_occupation',
+            'father_lastname',
+            'father_firstname',
+            'father_middlename',
+            'father_occupation',
+            'year_admitted',
+            'semester',
+            'year',
+            'curriculum',
+            'lrn_no',
+            'e_name_of_school',
+            'e_address_of_school',
+            'e_school_year_attended',
+            's_name_of_school',
+            's_address_of_school',
+            's_school_year_attended',
+            'shs_name_of_school',
+            'shs_address_of_school',
+            'shs_school_year_attended',
+            'c_name_of_school',
+            'c_address_of_school',
+            'c_school_year_attended',
+            'g_name_of_school',
+            'g_address_of_school',
+            'g_school_year_attended',
+            'scholarship_title',
+            'scholarship_contactperson',
+            'scholarship_address',
+            'scholarship_contactnumber',
+            'person_notify_name',
+            'person_notify_address',
+            'person_notify_cellphone',
+            'mother_highest_educational_attainment',
+            'father_highest_educational_attainment',
+            'first_gen_student',
+            'ip_or_icc',
+            'ip_or_icc_yes',
+            'shs_school_type',
+            'college_school_type',
+            'equity_indicator',
+            'equity_indicator_old',
+        ];
 
-            if ($students->isEmpty()) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'No students found'
-                ], 400);
+        $campusMap = [
+            'talisay' => 'Talisay',
+            'alijis' => 'Alijis',
+            'fortune towne' => 'Fortune Towne',
+            'binalbagan' => 'Binalbagan',
+        ];
+
+        $tmpDir = storage_path('app/tmp_csv_export_' . uniqid());
+        mkdir($tmpDir, 0755, true);
+
+        $zipFilename = 'students_by_campus_' . now()->timestamp . '.zip';
+        $zipPath = storage_path('app/' . $zipFilename);
+
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            throw new Exception('Could not create zip archive');
+        }
+
+        $totalCount = 0;
+        $fileHandles = [];
+
+        $getHandle = function (string $campusLabel) use (&$fileHandles, $tmpDir, $columns) {
+            if (!isset($fileHandles[$campusLabel])) {
+                $path = $tmpDir . '/' . str_replace(' ', '_', $campusLabel) . '.csv';
+                $file = fopen($path, 'w');
+                fwrite($file, "\xEF\xBB\xBF");
+                fputcsv($file, $columns);
+                $fileHandles[$campusLabel] = $file;
             }
+            return $fileHandles[$campusLabel];
+        };
 
-            $students->load([
+        try {
+            Student::with([
                 'guardians.address',
                 'address',
                 'educations',
                 'answers',
-            ]);
+            ])->chunk(200, function ($chunk) use ($getHandle, $columns, $campusMap, &$totalCount) {
+                foreach ($chunk as $student) {
+                    $key = strtolower(trim($student->campus ?? ''));
+                    $campusLabel = $campusMap[$key] ?? 'Others';
 
-            ActivityLog::log('export', 'Exported (' . count($students) . ') students data as CSV by campus', Auth::user()->email, request(), 'success');
-
-            $columns = [
-                'email',
-                'campus',
-                'student_lastname',
-                'student_firstname',
-                'student_middlename',
-                'extension',
-                'birthdate',
-                'gender',
-                'birthplace',
-                'street',
-                'barangay',
-                'city',
-                'zip_code',
-                'civilstatus',
-                'religion',
-                'contact_number',
-                'mother_lastname',
-                'mother_firstname',
-                'mother_middlename',
-                'mother_occupation',
-                'father_lastname',
-                'father_firstname',
-                'father_middlename',
-                'father_occupation',
-                'year_admitted',
-                'semester',
-                'year',
-                'curriculum',
-                'lrn_no',
-                'e_name_of_school',
-                'e_address_of_school',
-                'e_school_year_attended',
-                's_name_of_school',
-                's_address_of_school',
-                's_school_year_attended',
-                'shs_name_of_school',
-                'shs_address_of_school',
-                'shs_school_year_attended',
-                'c_name_of_school',
-                'c_address_of_school',
-                'c_school_year_attended',
-                'g_name_of_school',
-                'g_address_of_school',
-                'g_school_year_attended',
-                'scholarship_title',
-                'scholarship_contactperson',
-                'scholarship_address',
-                'scholarship_contactnumber',
-                'person_notify_name',
-                'person_notify_address',
-                'person_notify_cellphone',
-                'mother_highest_educational_attainment',
-                'father_highest_educational_attainment',
-                'first_gen_student',
-                'ip_or_icc',
-                'ip_or_icc_yes',
-                'shs_school_type',
-                'college_school_type',
-            ];
-
-            // Canonical campus list -> normalize whatever casing is stored on the student
-            $campusMap = [
-                'talisay' => 'Talisay',
-                'alijis' => 'Alijis',
-                'fortune towne' => 'Fortune Towne',
-                'binalbagan' => 'Binalbagan',
-            ];
-
-            // Group students by normalized campus name; anything unmatched goes into "Others"
-            $grouped = $students->groupBy(function ($student) use ($campusMap) {
-                $key = strtolower(trim($student->campus ?? ''));
-                return $campusMap[$key] ?? 'Others';
+                    $row = $this->mapStudentToRecordRow($student);
+                    fputcsv(
+                        $getHandle($campusLabel),
+                        array_map(fn($col) => $this->truncateField($row[$col] ?? ''), $columns)
+                    );
+                    $totalCount++;
+                }
             });
 
-            $tmpDir = storage_path('app/tmp_csv_export_' . uniqid());
-            mkdir($tmpDir, 0755, true);
-
-            $zipFilename = 'students_by_campus_' . now()->timestamp . '.zip';
-            $zipPath = storage_path('app/' . $zipFilename);
-
-            $zip = new \ZipArchive();
-            $zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
-
-            foreach ($grouped as $campusName => $campusStudents) {
-                $csvPath = $tmpDir . '/' . str_replace(' ', '_', $campusName) . '.csv';
-                $file = fopen($csvPath, 'w');
-
-                // BOM so Excel opens UTF-8 correctly
-                fwrite($file, "\xEF\xBB\xBF");
-                fputcsv($file, $columns);
-
-                foreach ($campusStudents as $student) {
-                    $row = $this->mapStudentToRecordRow($student);
-                    fputcsv($file, array_map(fn($col) => $row[$col] ?? '', $columns));
-                }
-
+            foreach ($fileHandles as $campusLabel => $file) {
                 fclose($file);
-
-                $zip->addFile($csvPath, basename($csvPath));
+                $zip->addFile($tmpDir . '/' . str_replace(' ', '_', $campusLabel) . '.csv', str_replace(' ', '_', $campusLabel) . '.csv');
             }
-
+        } finally {
             $zip->close();
-
-            // Clean up the loose CSV files, keep the zip
             array_map('unlink', glob($tmpDir . '/*.csv'));
-            rmdir($tmpDir);
-
-            return response()->download($zipPath, $zipFilename)->deleteFileAfterSend(true);
-        } catch (Exception $e) {
-            Log::error("Failed to export students csv by campus: " . $e->getMessage());
-
-            ActivityLog::log('export', 'Failed to export students csv by campus: ' . $e->getMessage(), Auth::user()->email, request(), 'failed');
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Something went wrong'
-            ], 500);
+            @rmdir($tmpDir);
         }
+
+        if ($totalCount === 0) {
+            @unlink($zipPath);
+            return response()->json(['status' => 'error', 'message' => 'No students found'], 400);
+        }
+
+        ActivityLog::log('export', "Exported ($totalCount) students data as CSV by campus", Auth::user()->email, request(), 'success');
+
+        return response()->download($zipPath, $zipFilename)->deleteFileAfterSend(true);
+    }
+
+    private function truncateField(string $value, int $maxLength = 90): string
+    {
+        return mb_strlen($value) > $maxLength
+            ? mb_substr($value, 0, $maxLength)
+            : $value;
     }
 }
